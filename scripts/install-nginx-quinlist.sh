@@ -21,4 +21,4 @@ ln -sf "$CONF_DST" "/etc/nginx/sites-enabled/${SITE_NAME}"
 nginx -t
 systemctl reload nginx
 
-echo "Nginx OK para ${SITE_NAME} (HTTP → puerto 3010)"
+echo "Nginx OK para ${SITE_NAME} (HTTP → puerto 3012)"

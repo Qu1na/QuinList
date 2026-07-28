@@ -39,5 +39,5 @@ pm2 start ecosystem.config.cjs
 pm2 save
 
 echo ""
-echo "OK. App en http://127.0.0.1:3010"
-echo "Siguiente: configurar nginx (ver docs/deployment.md)"
+echo "OK. App en http://127.0.0.1:3012"
+echo "Siguiente: sudo ./deploy.sh --nginx  (o ver docs/deployment.md)"

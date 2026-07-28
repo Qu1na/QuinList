@@ -104,7 +104,7 @@ pm2 startup   # sigue las instrucciones que imprime (systemd)
 Comprobar localmente en el servidor:
 
 ```bash
-curl -I http://127.0.0.1:3010
+curl -I http://127.0.0.1:3012
 ```
 
 ## 5. Nginx
@@ -141,10 +141,24 @@ Abre: **https://quinlist.matubyte.com**
 
 ```bash
 cd ~/apps/QuinList
-git pull
-npm ci --legacy-peer-deps
-npm run build
-pm2 restart quinlist
+./deploy.sh
+```
+
+O sin `git pull` (si subiste archivos por rsync):
+
+```bash
+./deploy.sh --no-pull
+```
+
+### Primera instalación (todo en uno)
+
+```bash
+cd ~/apps/QuinList
+chmod +x deploy.sh
+cp .env.production.example .env.production   # editar VITE_MATUDB_*
+./deploy.sh --setup
+sudo ./deploy.sh --nginx
+sudo certbot --nginx -d quinlist.matubyte.com
 ```
 
 ## Comandos útiles
@@ -159,7 +173,7 @@ pm2 restart quinlist
 
 ## Notas
 
-- El puerto **3012** es solo interno (localhost); Nginx es la cara pública (80/443). En este VPS el **3010** puede estar ocupado por otro servicio.
+- El puerto **3012** es solo interno (localhost); Nginx es la cara pública (80/443).
 - Vue Router usa `history` mode: PM2 `serve -s` y Nginx proxy ya envían todo a `index.html`.
 - No subas `.env` con claves al repositorio; usa `.env.production` solo en el servidor.
 - Módulo de proyectos: controlado en `src/config/features.ts` (`PROJECTS_MODULE_ENABLED`).
