@@ -61,7 +61,7 @@ function exportIcs() {
 }
 
 function copyBoardLink() {
-  const url = `${window.location.origin}/board/${board.value?.id}`
+  const url = `${window.location.origin}/app/board/${board.value?.id}`
   navigator.clipboard.writeText(url)
   copied.value = true
   setTimeout(() => (copied.value = false), 2000)

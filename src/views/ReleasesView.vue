@@ -30,7 +30,7 @@ const completedCards = computed(() =>
         v-for="card in completedCards"
         :key="card.id"
         class="flex w-full items-center gap-4 rounded-xl border border-slate-200 bg-white p-4 text-left hover:border-green-200"
-        @click="router.push(`/board/${card.boardId}`)"
+        @click="router.push({ name: 'board', params: { boardId: card.boardId } })"
       >
         <CheckCircle2 :size="20" class="shrink-0 text-green-500" />
         <div class="flex-1">

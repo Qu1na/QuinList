@@ -66,3 +66,126 @@
   background: #cbd5e1;
   border-radius: 999px;
 }
+
+/* Kanban drag & drop */
+body.kanban-dnd-active,
+body.kanban-dnd-active * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  cursor: grabbing !important;
+}
+
+body.kanban-dnd-active .kanban-card {
+  cursor: grabbing !important;
+}
+
+.kanban-drop-zone {
+  min-height: 48px;
+}
+
+.kanban-ghost {
+  opacity: 0.35;
+  background: #e8f0fe !important;
+  border: 2px dashed #0c66e4 !important;
+  border-radius: 0.5rem;
+  min-height: 2.5rem;
+}
+
+.kanban-ghost > * {
+  visibility: hidden;
+}
+
+.kanban-chosen {
+  cursor: grabbing !important;
+}
+
+.kanban-dragging {
+  transform: rotate(3deg) scale(1.02);
+  box-shadow: 0 16px 32px rgba(9, 30, 66, 0.22);
+  cursor: grabbing !important;
+  z-index: 9999;
+  opacity: 1 !important;
+}
+
+.kanban-card {
+  touch-action: none;
+}
+
+/* Auth — pantalla fija sin scroll */
+html.auth-screen,
+html.auth-screen body {
+  overflow: hidden;
+  height: 100%;
+}
+
+.auth-field {
+  @apply w-full rounded-[10px] border border-[#e2e8f0] bg-white py-2.5 pr-3 pl-10 text-sm text-[#1e293b] outline-none transition-colors placeholder:text-[#94a3b8] focus:border-[#2563eb] focus:ring-2 focus:ring-[#2563eb]/15;
+}
+
+.auth-field-icon {
+  @apply pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[#94a3b8];
+}
+
+.auth-social-btn {
+  @apply flex items-center justify-center gap-2 rounded-[10px] border border-[#e2e8f0] bg-white py-2.5 text-sm font-medium text-[#475569] transition-colors hover:bg-[#f8fafc] disabled:cursor-not-allowed disabled:opacity-55;
+}
+
+.auth-divider {
+  @apply relative my-5 text-center text-xs text-[#94a3b8];
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  @apply absolute top-1/2 h-px w-[38%] bg-[#e2e8f0];
+}
+
+.auth-divider::before {
+  left: 0;
+}
+
+.auth-divider::after {
+  right: 0;
+}
+
+.auth-checkbox {
+  @apply h-4 w-4 rounded border-[#cbd5e1] text-[#2563eb] focus:ring-[#2563eb];
+}
+
+.auth-submit {
+  @apply flex w-full items-center justify-center gap-2 rounded-[10px] bg-[#2563eb] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#1d4ed8] disabled:opacity-60;
+}
+
+.landing-page {
+  scroll-behavior: smooth;
+}
+
+.landing-enroll-btn {
+  @apply inline-flex items-center rounded-full border-2 border-[#2d2d2d] px-6 py-2 text-sm font-semibold text-[#2d2d2d] transition-all hover:bg-[#2d2d2d] hover:text-white;
+}
+
+.landing-explore-btn {
+  @apply inline-flex items-center rounded-full bg-[#f4845f] px-7 py-3 text-sm font-bold text-white shadow-lg shadow-orange-200/60 transition-all hover:bg-[#e8754f] hover:shadow-xl;
+}
+
+.landing-module-card {
+  @apply rounded-2xl border border-[#eee] bg-white p-6 transition-transform hover:-translate-y-1 hover:shadow-lg;
+}
+
+.landing-module-card--featured {
+  @apply border-transparent bg-[#f4845f] shadow-xl shadow-orange-200/50;
+}
+
+@keyframes landing-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--rot, 0deg));
+  }
+  50% {
+    transform: translateY(-10px) rotate(var(--rot, 0deg));
+  }
+}
+
+.landing-float-shape {
+  animation: landing-float 4s ease-in-out infinite;
+}

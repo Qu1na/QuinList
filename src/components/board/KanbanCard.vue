@@ -6,6 +6,7 @@ import { useQuinListStore } from '@/stores/quinlist'
 import { useUiStore } from '@/stores/ui'
 import { canEdit } from '@/utils/permissions'
 import { formatDate, isDueSoon, isOverdue } from '@/utils/permissions'
+import { burstConfettiFromElement } from '@/utils/confetti'
 import { useBoardUsers } from '@/composables/useBoardUsers'
 
 const props = defineProps<{ card: Card }>()
@@ -74,25 +75,30 @@ function openCard() {
   ui.openCard(props.card.id)
 }
 
-async function toggleComplete(e: Event) {
+function toggleComplete(e: Event) {
   e.stopPropagation()
   if (!canEditCard.value) return
-  await store.toggleCardCompleted(props.card.id)
+  if (!props.card.completed) {
+    burstConfettiFromElement(e.currentTarget as HTMLElement)
+  }
+  store.toggleCardCompleted(props.card.id)
 }
 </script>
 
 <template>
   <div
-    class="group relative cursor-pointer rounded-lg border border-gray-200/80 bg-white px-2 py-1.5 shadow-sm transition-colors hover:border-gray-300 hover:bg-gray-50"
+    class="kanban-card group relative select-none rounded-lg border border-gray-200/80 bg-white px-2 py-1.5 shadow-sm transition-colors hover:border-gray-300 hover:bg-gray-50"
     :class="{
       'opacity-60': card.completed,
       'ring-2 ring-red-400 ring-offset-1': card.blocked,
+      'cursor-grab': canEditCard,
+      'cursor-pointer': !canEditCard,
     }"
     @click="openCard"
   >
     <button
       v-if="canEditCard"
-      class="absolute left-1 top-1 z-10 flex h-4 w-4 items-center justify-center rounded border border-gray-300 bg-white opacity-0 shadow-sm transition-opacity group-hover:opacity-100"
+      class="no-drag absolute left-1 top-1 z-10 flex h-4 w-4 items-center justify-center rounded border border-gray-300 bg-white opacity-0 shadow-sm transition-opacity group-hover:opacity-100"
       :class="{ 'opacity-100': card.completed }"
       @click="toggleComplete"
     >

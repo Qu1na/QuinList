@@ -8,13 +8,14 @@
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
     "build-only": "vite build",
-    "start": "serve dist -s -l 3010",
+    "start": "serve dist -s -l 3012",
     "type-check": "vue-tsc --build",
     "lint": "run-s \"lint:*\"",
     "lint:oxlint": "oxlint . --fix",
     "lint:eslint": "eslint . --fix --cache",
     "format": "prettier --write --experimental-cli src/",
-    "db:migrate": "node scripts/migrate.mjs"
+    "db:migrate": "node scripts/migrate.mjs",
+    "logo:process": "python scripts/process-logo.py"
   },
   "dependencies": {
     "@devjuanes/matuclient": "^2.2.3",

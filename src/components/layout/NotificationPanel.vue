@@ -14,7 +14,7 @@ function handleClick(notification: (typeof notif.userNotifications)[0]) {
   notif.markAsRead(notification.id)
   if (notification.metadata?.cardId) {
     if (notification.metadata.boardId) {
-      router.push(`/board/${notification.metadata.boardId}`)
+      router.push({ name: 'board', params: { boardId: notification.metadata.boardId } })
     }
     ui.openCard(notification.metadata.cardId)
     notif.showPanel = false

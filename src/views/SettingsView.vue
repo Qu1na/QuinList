@@ -90,7 +90,7 @@ async function save() {
 function openIntegrations() {
   const board = workspaceBoards.value[0]
   if (!board) return
-  router.push(`/board/${board.id}`)
+  router.push({ name: 'board', params: { boardId: board.id } })
   integrations.openPanel(board.id)
 }
 </script>

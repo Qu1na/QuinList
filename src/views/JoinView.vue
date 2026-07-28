@@ -71,7 +71,7 @@ onMounted(async () => {
         <p class="mt-2 text-sm text-[#626f86]">{{ error }}</p>
         <button
           class="mt-6 rounded-lg bg-[#0c66e4] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#0055cc]"
-          @click="router.push('/')"
+          @click="router.push({ name: 'home' })"
         >
           Ir al inicio
         </button>

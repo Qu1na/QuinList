@@ -3,6 +3,7 @@ import { computed, watch, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { LayoutGrid, Search, Bell, ChevronDown, Plus, UserPlus, X, Users, BarChart3, LogOut, FolderKanban } from '@lucide/vue'
 import { useQuinListStore } from '@/stores/quinlist'
+import AppLogo from '@/components/brand/AppLogo.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notifications'
 import { useUiStore } from '@/stores/ui'
@@ -43,7 +44,7 @@ function onSearchInput() {
 }
 
 function selectSearchResult(cardId: string, boardIdResult: string) {
-  router.push(`/board/${boardIdResult}`)
+  router.push({ name: 'board', params: { boardId: boardIdResult } })
   ui.openCard(cardId)
   ui.searchQuery = ''
   showSearchResults.value = false
@@ -133,10 +134,9 @@ onUnmounted(() => {
   >
     <button
       class="flex items-center gap-2 rounded px-2 py-1.5 transition-colors hover:bg-white/20"
-      @click="router.push('/')"
+      @click="router.push({ name: 'home' })"
     >
-      <LayoutGrid :size="20" />
-      <span class="text-base font-bold tracking-tight">QuinList</span>
+      <AppLogo size="sm" />
     </button>
 
     <div class="relative hidden sm:block">
@@ -286,7 +286,7 @@ onUnmounted(() => {
             QuinList
           </p>
           <RouterLink
-            to="/settings"
+            to="/app/settings"
             class="block px-4 py-2 text-sm text-[#172b4d] hover:bg-[#091e420a]"
             @click="showAccountMenu = false"
           >
@@ -294,7 +294,7 @@ onUnmounted(() => {
           </RouterLink>
           <RouterLink
             v-if="PROJECTS_MODULE_ENABLED"
-            to="/projects"
+            to="/app/projects"
             class="flex items-center gap-2 px-4 py-2 text-sm text-[#172b4d] hover:bg-[#091e420a]"
             @click="showAccountMenu = false"
           >
@@ -302,7 +302,7 @@ onUnmounted(() => {
             Proyectos
           </RouterLink>
           <RouterLink
-            to="/reports"
+            to="/app/reports"
             class="flex items-center gap-2 px-4 py-2 text-sm text-[#172b4d] hover:bg-[#091e420a]"
             @click="showAccountMenu = false"
           >
@@ -310,7 +310,7 @@ onUnmounted(() => {
             Métricas
           </RouterLink>
           <RouterLink
-            to="/team"
+            to="/app/team"
             class="flex items-center gap-2 px-4 py-2 text-sm text-[#172b4d] hover:bg-[#091e420a]"
             @click="showAccountMenu = false"
           >

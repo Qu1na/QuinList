@@ -14,6 +14,7 @@ import {
 } from '@lucide/vue'
 import { useQuinListStore } from '@/stores/quinlist'
 import { useUiStore } from '@/stores/ui'
+import AppLogo from '@/components/brand/AppLogo.vue'
 
 const store = useQuinListStore()
 const ui = useUiStore()
@@ -21,30 +22,30 @@ const router = useRouter()
 const route = useRoute()
 
 const navItems = computed(() => [
-  { icon: LayoutDashboard, label: 'Inicio', to: '/' },
-  { icon: Calendar, label: 'Calendario', to: '/calendar' },
-  { icon: BarChart3, label: 'Reportes', to: '/reports' },
-  { icon: Bug, label: 'Issues', to: '/issues' },
-  { icon: Rocket, label: 'Releases', to: '/releases' },
-  { icon: Users, label: 'Equipo', to: '/team' },
-  { icon: Settings, label: 'Configuración', to: '/settings' },
+  { icon: LayoutDashboard, label: 'Inicio', to: '/app' },
+  { icon: Calendar, label: 'Calendario', to: '/app/calendar' },
+  { icon: BarChart3, label: 'Reportes', to: '/app/reports' },
+  { icon: Bug, label: 'Issues', to: '/app/issues' },
+  { icon: Rocket, label: 'Releases', to: '/app/releases' },
+  { icon: Users, label: 'Equipo', to: '/app/team' },
+  { icon: Settings, label: 'Configuración', to: '/app/settings' },
 ])
 
 const workspaces = computed(() => store.workspaces)
 
 function isActive(path: string) {
-  if (path === '/') return route.path === '/' || route.path.startsWith('/board/')
+  if (path === '/app') return route.path === '/app' || route.path.startsWith('/app/board/')
   return route.path === path
 }
 
 function selectWorkspace(id: string) {
   store.setCurrentWorkspace(id)
-  router.push('/')
+  router.push({ name: 'home' })
 }
 
 function openBoard(boardId: string) {
   store.setCurrentBoard(boardId)
-  router.push(`/board/${boardId}`)
+  router.push({ name: 'board', params: { boardId } })
 }
 </script>
 
@@ -52,12 +53,8 @@ function openBoard(boardId: string) {
   <aside
     class="flex h-screen w-56 min-w-56 flex-col overflow-y-auto bg-gradient-to-b from-[#1a2b4a] to-[#0f1c33] px-3 py-4 text-slate-300"
   >
-    <button class="px-3 pb-6 text-left" @click="router.push('/')">
-      <div
-        class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-lg font-bold text-white"
-      >
-        Q
-      </div>
+    <button class="px-3 pb-6 text-left" @click="router.push({ name: 'home' })">
+      <AppLogo size="sm" />
     </button>
 
     <nav class="mb-6 flex flex-col gap-0.5">

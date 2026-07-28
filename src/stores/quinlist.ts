@@ -95,6 +95,79 @@ export const useQuinListStore = defineStore('quinlist', () => {
   let reloadingCards = false
   let pendingCardsReload = false
   let dragLock = 0
+  let activeCardMove: Promise<void> | null = null
+  const cardsRevision = ref(0)
+  const pendingCardWrites = new Set<string>()
+  let suppressCardsReloadUntil = 0
+  let cardsReloadTimer: ReturnType<typeof setTimeout> | null = null
+
+  function bumpCardsRevision() {
+    cardsRevision.value++
+  }
+
+  function cloneCard(card: Card): Card {
+    return {
+      ...card,
+      labelIds: [...card.labelIds],
+      assigneeIds: [...card.assigneeIds],
+      checklist: card.checklist.map((i) => ({ ...i })),
+      comments: card.comments.map((c) => ({ ...c })),
+      attachments: card.attachments?.map((a) => ({ ...a })) ?? [],
+    }
+  }
+
+  function markLocalCardWrite(cardId: string) {
+    pendingCardWrites.add(cardId)
+    suppressCardsReloadUntil = Date.now() + 2500
+  }
+
+  function unmarkLocalCardWrite(cardId: string) {
+    pendingCardWrites.delete(cardId)
+  }
+
+  function restoreCard(cardId: string, snapshot: Card) {
+    const idx = cards.value.findIndex((c) => c.id === cardId)
+    if (idx === -1) return
+    cards.value[idx] = snapshot
+    bumpCardsRevision()
+  }
+
+  function patchCard(cardId: string, updates: Partial<Card>): Card | null {
+    const idx = cards.value.findIndex((c) => c.id === cardId)
+    if (idx === -1) return null
+    const prev = cloneCard(cards.value[idx]!)
+    cards.value[idx] = {
+      ...cards.value[idx]!,
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    }
+    bumpCardsRevision()
+    return prev
+  }
+
+  function persistCardAsync(card: Card, onError?: () => void) {
+    markLocalCardWrite(card.id)
+    void persistCard(card)
+      .catch((err) => {
+        console.error('Error guardando tarjeta:', err)
+        onError?.()
+        const notif = useNotificationStore()
+        notif.push({
+          type: 'card_moved',
+          title: 'Error al guardar',
+          message: 'No se pudo sincronizar los cambios. Se revirtió la tarjeta.',
+          userId: useAuthStore().currentUserId ?? 'system',
+          metadata: { cardId: card.id, boardId: card.boardId },
+        })
+      })
+      .finally(() => {
+        unmarkLocalCardWrite(card.id)
+        if (pendingCardsReload && pendingCardWrites.size === 0 && dragLock === 0) {
+          pendingCardsReload = false
+          scheduleCardsReload()
+        }
+      })
+  }
 
   const currentWorkspace = computed(() =>
     workspaces.value.find((w) => w.id === currentWorkspaceId.value),
@@ -204,17 +277,40 @@ export const useQuinListStore = defineStore('quinlist', () => {
   }
 
   async function scheduleCardsReload() {
-    if (dragLock > 0) {
+    if (dragLock > 0 || pendingCardWrites.size > 0) {
       pendingCardsReload = true
+      return
+    }
+    if (Date.now() < suppressCardsReloadUntil) {
+      pendingCardsReload = true
+      if (cardsReloadTimer) clearTimeout(cardsReloadTimer)
+      cardsReloadTimer = setTimeout(() => {
+        cardsReloadTimer = null
+        pendingCardsReload = false
+        scheduleCardsReload()
+      }, suppressCardsReloadUntil - Date.now() + 100)
       return
     }
     if (reloadingCards) {
       pendingCardsReload = true
       return
     }
+    if (cardsReloadTimer) clearTimeout(cardsReloadTimer)
+    cardsReloadTimer = setTimeout(() => {
+      cardsReloadTimer = null
+      void doCardsReload()
+    }, 500)
+  }
+
+  async function doCardsReload() {
+    if (dragLock > 0 || pendingCardWrites.size > 0 || Date.now() < suppressCardsReloadUntil) {
+      pendingCardsReload = true
+      return
+    }
     reloadingCards = true
     try {
       await reloadCardsFromDb()
+      bumpCardsRevision()
     } catch (err) {
       console.error(err)
     } finally {
@@ -235,6 +331,12 @@ export const useQuinListStore = defineStore('quinlist', () => {
     if (dragLock === 0 && pendingCardsReload) {
       pendingCardsReload = false
       scheduleCardsReload()
+    }
+  }
+
+  async function waitForCardMove() {
+    if (activeCardMove) {
+      await activeCardMove
     }
   }
 
@@ -266,6 +368,10 @@ export const useQuinListStore = defineStore('quinlist', () => {
   function destroy() {
     unsubscribeRealtime?.()
     unsubscribeRealtime = null
+    if (cardsReloadTimer) {
+      clearTimeout(cardsReloadTimer)
+      cardsReloadTimer = null
+    }
   }
 
   function getUserRole(workspaceId: string): UserRole {
@@ -351,7 +457,7 @@ export const useQuinListStore = defineStore('quinlist', () => {
     currentBoardId.value = id
   }
 
-  async function createCard(listId: string, title: string) {
+  function createCard(listId: string, title: string) {
     const auth = useAuthStore()
     const list = boards.value.flatMap((b) => b.lists).find((l) => l.id === listId)
     if (!list) return
@@ -383,24 +489,32 @@ export const useQuinListStore = defineStore('quinlist', () => {
       blockedReason: null,
     }
     cards.value.push(card)
-    await persistCard(card)
+    bumpCardsRevision()
+    persistCardAsync(card, () => {
+      cards.value = cards.value.filter((c) => c.id !== card.id)
+      bumpCardsRevision()
+    })
     return card
   }
 
-  async function updateCard(cardId: string, updates: Partial<Card>) {
-    const idx = cards.value.findIndex((c) => c.id === cardId)
-    if (idx === -1) return
-    cards.value[idx] = {
-      ...cards.value[idx]!,
-      ...updates,
-      updatedAt: new Date().toISOString(),
-    }
-    await persistCard(cards.value[idx]!)
+  function updateCard(cardId: string, updates: Partial<Card>) {
+    const prev = patchCard(cardId, updates)
+    if (!prev) return
+    const card = getCard(cardId)
+    if (!card) return
+    persistCardAsync(card, () => restoreCard(cardId, prev))
   }
 
-  async function moveCard(cardId: string, toListId: string, newPosition: number, silent = false) {
+  function moveCard(cardId: string, toListId: string, newPosition: number, silent = false) {
     const card = cards.value.find((c) => c.id === cardId)
     if (!card) return
+
+    const snapshots = new Map<string, Card>()
+    for (const c of cards.value) {
+      if (c.listId === card.listId || c.listId === toListId) {
+        snapshots.set(c.id, cloneCard(c))
+      }
+    }
 
     const oldListId = card.listId
     const fromList = getCardsByList(oldListId).filter((c) => c.id !== cardId)
@@ -409,49 +523,86 @@ export const useQuinListStore = defineStore('quinlist', () => {
         ? fromList
         : getCardsByList(toListId).filter((c) => c.id !== cardId)
 
-    card.listId = toListId
-    toList.splice(newPosition, 0, card)
+    const movedCard = {
+      ...card,
+      listId: toListId,
+      updatedAt: new Date().toISOString(),
+    }
+    toList.splice(newPosition, 0, movedCard)
+
+    const now = new Date().toISOString()
+    const updates = new Map<string, Partial<Card>>()
 
     fromList.forEach((c, i) => {
-      const idx = cards.value.findIndex((x) => x.id === c.id)
-      if (idx !== -1) cards.value[idx]!.position = i
+      updates.set(c.id, { position: i })
     })
     toList.forEach((c, i) => {
-      const idx = cards.value.findIndex((x) => x.id === c.id)
-      if (idx !== -1) {
-        cards.value[idx]!.position = i
-        cards.value[idx]!.updatedAt = new Date().toISOString()
-      }
+      updates.set(c.id, {
+        listId: c.listId,
+        position: i,
+        updatedAt: now,
+      })
     })
 
+    cards.value = cards.value.map((c) => {
+      const patch = updates.get(c.id)
+      return patch ? { ...c, ...patch } : c
+    })
+    bumpCardsRevision()
+
     const affected = new Set([...fromList, ...toList].map((c) => c.id))
-    if (isMatuConfigured()) {
-      for (const id of affected) {
-        const c = getCard(id)
-        if (c) await saveCard(c)
+
+    const revert = () => {
+      for (const [id, snap] of snapshots) {
+        restoreCard(id, snap)
       }
-    } else {
-      saveLocal()
     }
 
-    if (!silent) {
-      const notif = useNotificationStore()
-      const auth = useAuthStore()
-      const list = boards.value.flatMap((b) => b.lists).find((l) => l.id === toListId)
-      notif.push({
-        type: 'card_moved',
-        title: 'Tarjeta movida',
-        message: `"${card.title}" movida a ${list?.title ?? 'otra lista'}`,
-        userId: auth.currentUserId!,
-        metadata: { cardId, boardId: card.boardId },
-      })
-      const integrations = useIntegrationsStore()
-      integrations.notifyEvent(card.boardId, 'card_moved', {
-        title: card.title,
-        message: `Movida a ${list?.title}`,
-        cardId,
-      })
-    }
+    const promise = (async () => {
+      try {
+        if (isMatuConfigured()) {
+          await Promise.all(
+            [...affected].map(async (id) => {
+              const c = getCard(id)
+              if (c) await saveCard(c)
+            }),
+          )
+        } else {
+          saveLocal()
+        }
+
+        if (!silent) {
+          const notif = useNotificationStore()
+          const auth = useAuthStore()
+          const list = boards.value.flatMap((b) => b.lists).find((l) => l.id === toListId)
+          notif.push({
+            type: 'card_moved',
+            title: 'Tarjeta movida',
+            message: `"${movedCard.title}" movida a ${list?.title ?? 'otra lista'}`,
+            userId: auth.currentUserId!,
+            metadata: { cardId, boardId: movedCard.boardId },
+          })
+          const integrations = useIntegrationsStore()
+          integrations.notifyEvent(movedCard.boardId, 'card_moved', {
+            title: movedCard.title,
+            message: `Movida a ${list?.title}`,
+            cardId,
+          })
+        }
+      } catch (err) {
+        console.error('Error al mover tarjeta:', err)
+        revert()
+        throw err
+      } finally {
+        for (const id of affected) unmarkLocalCardWrite(id)
+      }
+    })()
+
+    for (const id of affected) markLocalCardWrite(id)
+    activeCardMove = promise
+    void promise.finally(() => {
+      if (activeCardMove === promise) activeCardMove = null
+    })
   }
 
   async function deleteCard(cardId: string) {
@@ -508,38 +659,45 @@ export const useQuinListStore = defineStore('quinlist', () => {
     return ws
   }
 
-  async function toggleCardCompleted(cardId: string) {
+  function toggleCardCompleted(cardId: string) {
     const card = getCard(cardId)
     const auth = useAuthStore()
     if (!card) return
 
+    const prev = cloneCard(card)
     const now = new Date().toISOString()
+
     if (!card.completed) {
-      card.completed = true
-      card.completedAt = now
       const start = new Date(card.createdAt).getTime()
-      card.durationSeconds = Math.max(0, Math.round((Date.now() - start) / 1000))
-      card.updatedAt = now
-      await persistCard(card)
+      patchCard(cardId, {
+        completed: true,
+        completedAt: now,
+        durationSeconds: Math.max(0, Math.round((Date.now() - start) / 1000)),
+      })
+
+      const updated = getCard(cardId)!
+      persistCardAsync(updated, () => restoreCard(cardId, prev))
 
       const notif = useNotificationStore()
       const board = boards.value.find((b) => b.id === card.boardId)
-      for (const member of getBoardNotifyTargets(card)) {
+      for (const member of getBoardNotifyTargets(updated)) {
         if (member === auth.currentUserId) continue
         notif.push({
           type: 'card_moved',
           title: 'Tarea completada',
-          message: `"${card.title}" fue completada en ${board?.title ?? 'tablero'}`,
+          message: `"${updated.title}" fue completada en ${board?.title ?? 'tablero'}`,
           userId: member,
-          metadata: { boardId: card.boardId, cardId: card.id, workspaceId: board?.workspaceId },
+          metadata: { boardId: updated.boardId, cardId: updated.id, workspaceId: board?.workspaceId },
         })
       }
     } else {
-      card.completed = false
-      card.completedAt = null
-      card.durationSeconds = null
-      card.updatedAt = now
-      await persistCard(card)
+      patchCard(cardId, {
+        completed: false,
+        completedAt: null,
+        durationSeconds: null,
+      })
+      const updated = getCard(cardId)!
+      persistCardAsync(updated, () => restoreCard(cardId, prev))
     }
   }
 
@@ -609,65 +767,72 @@ export const useQuinListStore = defineStore('quinlist', () => {
     }
   }
 
-  async function addComment(cardId: string, text: string) {
+  function addComment(cardId: string, text: string) {
     const auth = useAuthStore()
     const card = getCard(cardId)
     if (!card || !auth.currentUser) return
 
+    const prev = cloneCard(card)
     const comment: Comment = {
       id: generateId(),
       userId: auth.currentUser.id,
       text,
       createdAt: new Date().toISOString(),
     }
-    card.comments.push(comment)
-    card.updatedAt = new Date().toISOString()
-    await persistCard(card)
+    patchCard(cardId, {
+      comments: [...card.comments, comment],
+    })
+    const updated = getCard(cardId)!
+    persistCardAsync(updated, () => restoreCard(cardId, prev))
 
     const notif = useNotificationStore()
     const integrations = useIntegrationsStore()
-    card.assigneeIds
+    updated.assigneeIds
       .filter((id) => id !== auth.currentUser!.id)
       .forEach((userId) => {
         notif.push({
           type: 'card_commented',
           title: 'Nuevo comentario',
-          message: `${auth.currentUser!.name} comentó en "${card.title}"`,
+          message: `${auth.currentUser!.name} comentó en "${updated.title}"`,
           userId,
-          metadata: { cardId, boardId: card.boardId },
+          metadata: { cardId, boardId: updated.boardId },
         })
       })
-    integrations.notifyEvent(card.boardId, 'card_commented', {
-      title: card.title,
+    integrations.notifyEvent(updated.boardId, 'card_commented', {
+      title: updated.title,
       message: `${auth.currentUser!.name}: ${text}`,
       cardId,
     })
   }
 
-  async function toggleChecklistItem(cardId: string, itemId: string) {
+  function toggleChecklistItem(cardId: string, itemId: string) {
     const card = getCard(cardId)
     if (!card) return
-    const item = card.checklist.find((i) => i.id === itemId)
-    if (item) item.completed = !item.completed
-    card.updatedAt = new Date().toISOString()
-    await persistCard(card)
+    const prev = cloneCard(card)
+    const checklist = card.checklist.map((i) =>
+      i.id === itemId ? { ...i, completed: !i.completed } : i,
+    )
+    patchCard(cardId, { checklist })
+    persistCardAsync(getCard(cardId)!, () => restoreCard(cardId, prev))
   }
 
-  async function addChecklistItem(cardId: string, text: string) {
+  function addChecklistItem(cardId: string, text: string) {
     const card = getCard(cardId)
     if (!card) return
+    const prev = cloneCard(card)
     const item: ChecklistItem = { id: generateId(), text, completed: false }
-    card.checklist.push(item)
-    card.updatedAt = new Date().toISOString()
-    await persistCard(card)
+    patchCard(cardId, { checklist: [...card.checklist, item] })
+    persistCardAsync(getCard(cardId)!, () => restoreCard(cardId, prev))
   }
 
-  async function removeChecklistItem(cardId: string, itemId: string) {
+  function removeChecklistItem(cardId: string, itemId: string) {
     const card = getCard(cardId)
     if (!card) return
-    card.checklist = card.checklist.filter((i) => i.id !== itemId)
-    card.updatedAt = new Date().toISOString()
-    await persistCard(card)
+    const prev = cloneCard(card)
+    patchCard(cardId, {
+      checklist: card.checklist.filter((i) => i.id !== itemId),
+    })
+    persistCardAsync(getCard(cardId)!, () => restoreCard(cardId, prev))
   }
 
   async function addAttachment(cardId: string, file: File) {
@@ -709,53 +874,54 @@ export const useQuinListStore = defineStore('quinlist', () => {
     }
   }
 
-  async function toggleLabel(cardId: string, labelId: string) {
+  function toggleLabel(cardId: string, labelId: string) {
     const card = getCard(cardId)
     if (!card) return
-    const idx = card.labelIds.indexOf(labelId)
-    if (idx === -1) card.labelIds.push(labelId)
-    else card.labelIds.splice(idx, 1)
-    card.updatedAt = new Date().toISOString()
-    await persistCard(card)
+    const prev = cloneCard(card)
+    const labelIds = card.labelIds.includes(labelId)
+      ? card.labelIds.filter((id) => id !== labelId)
+      : [...card.labelIds, labelId]
+    patchCard(cardId, { labelIds })
+    persistCardAsync(getCard(cardId)!, () => restoreCard(cardId, prev))
   }
 
-  async function setPriority(cardId: string, priority: Priority) {
-    await updateCard(cardId, { priority })
+  function setPriority(cardId: string, priority: Priority) {
+    updateCard(cardId, { priority })
   }
 
-  async function setDueDate(cardId: string, dueDate: string | null) {
-    await updateCard(cardId, { dueDate })
+  function setDueDate(cardId: string, dueDate: string | null) {
+    updateCard(cardId, { dueDate })
   }
 
-  async function setBlocked(cardId: string, blocked: boolean, reason: string | null = null) {
-    await updateCard(cardId, {
+  function setBlocked(cardId: string, blocked: boolean, reason: string | null = null) {
+    updateCard(cardId, {
       blocked,
       blockedReason: blocked ? reason?.trim() || null : null,
     })
   }
 
-  async function toggleAssignee(cardId: string, userId: string) {
+  function toggleAssignee(cardId: string, userId: string) {
     const card = getCard(cardId)
     if (!card) return
     const auth = useAuthStore()
-    const idx = card.assigneeIds.indexOf(userId)
-    if (idx === -1) {
-      card.assigneeIds.push(userId)
-      if (userId !== auth.currentUserId) {
-        const notif = useNotificationStore()
-        notif.push({
-          type: 'card_assigned',
-          title: 'Nueva asignación',
-          message: `Te asignaron "${card.title}"`,
-          userId,
-          metadata: { cardId, boardId: card.boardId },
-        })
-      }
-    } else {
-      card.assigneeIds.splice(idx, 1)
+    const prev = cloneCard(card)
+    const assigneeIds = card.assigneeIds.includes(userId)
+      ? card.assigneeIds.filter((id) => id !== userId)
+      : [...card.assigneeIds, userId]
+    patchCard(cardId, { assigneeIds })
+    const updated = getCard(cardId)!
+    persistCardAsync(updated, () => restoreCard(cardId, prev))
+
+    if (!prev.assigneeIds.includes(userId) && userId !== auth.currentUserId) {
+      const notif = useNotificationStore()
+      notif.push({
+        type: 'card_assigned',
+        title: 'Nueva asignación',
+        message: `Te asignaron "${updated.title}"`,
+        userId,
+        metadata: { cardId, boardId: updated.boardId },
+      })
     }
-    card.updatedAt = new Date().toISOString()
-    await persistCard(card)
   }
 
   function getUpcomingCards(): Card[] {
@@ -882,6 +1048,7 @@ export const useQuinListStore = defineStore('quinlist', () => {
     workspaces,
     boards,
     cards,
+    cardsRevision,
     currentWorkspaceId,
     currentBoardId,
     currentWorkspace,
@@ -893,6 +1060,7 @@ export const useQuinListStore = defineStore('quinlist', () => {
     destroy,
     beginCardDrag,
     endCardDrag,
+    waitForCardMove,
     reloadFromDb,
     getUserRole,
     getBoardRole,

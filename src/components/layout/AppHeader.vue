@@ -41,7 +41,7 @@ function onSearchInput() {
 }
 
 function selectSearchResult(cardId: string, boardId: string) {
-  router.push(`/board/${boardId}`)
+  router.push({ name: 'board', params: { boardId } })
   ui.openCard(cardId)
   ui.searchQuery = ''
   showSearchResults.value = false

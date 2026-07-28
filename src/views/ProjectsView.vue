@@ -146,7 +146,7 @@ async function createProject() {
       currency: newCurrency.value,
     })
     showCreate.value = false
-    if (project) router.push(`/projects/${project.id}`)
+    if (project) router.push(`/app/projects/${project.id}`)
   } finally {
     creating.value = false
   }
@@ -222,7 +222,7 @@ async function createProject() {
       <RouterLink
         v-for="{ project, progress, pending, total, finance, overdue, daysLeft, responsible } in items"
         :key="project.id"
-        :to="`/projects/${project.id}`"
+        :to="`/app/projects/${project.id}`"
         class="group relative overflow-hidden rounded-xl border border-[#091e4214] bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
       >
         <div

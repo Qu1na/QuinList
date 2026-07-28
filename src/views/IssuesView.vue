@@ -32,7 +32,7 @@ const highPriorityCards = computed(() =>
         v-for="card in highPriorityCards"
         :key="card.id"
         class="flex w-full items-center gap-4 rounded-xl border border-slate-200 bg-white p-4 text-left hover:border-red-200 hover:shadow-sm"
-        @click="router.push(`/board/${card.boardId}`)"
+        @click="router.push({ name: 'board', params: { boardId: card.boardId } })"
       >
         <span class="h-3 w-3 rounded-full" :style="{ background: priorityColor(card.priority) }" />
         <div class="flex-1">

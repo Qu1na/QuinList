@@ -60,7 +60,7 @@ async function submitBoard() {
     boardDescription.value.trim(),
   )
   ui.closeModal()
-  if (board) router.push(`/board/${board.id}`)
+  if (board) router.push({ name: 'board', params: { boardId: board.id } })
 }
 
 function submitList() {

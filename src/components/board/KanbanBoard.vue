@@ -33,7 +33,7 @@ function cancelList() {
 </script>
 
 <template>
-  <div class="kanban-scroll flex min-h-0 flex-1 items-start gap-3 overflow-x-auto overflow-y-hidden px-4 pb-3">
+  <div class="kanban-scroll kanban-board-scroll flex min-h-0 flex-1 items-start gap-3 overflow-x-auto overflow-y-hidden px-4 pb-3">
     <KanbanList v-for="list in lists" :key="list.id" :list="list" :can-edit="canEditBoard" />
 
     <div v-if="canEditBoard" class="w-[272px] shrink-0">

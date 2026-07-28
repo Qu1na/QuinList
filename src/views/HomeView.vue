@@ -44,7 +44,7 @@ const sharedBoards = computed(() => {
 })
 
 function openBoard(id: string) {
-  router.push(`/board/${id}`)
+  router.push({ name: 'board', params: { boardId: id } })
 }
 
 function progressPercent(stats: { total: number; completed: number }) {
@@ -136,7 +136,7 @@ const recentProjects = computed(() =>
           <FolderKanban :size="14" />
           Gestión de Proyectos
         </h2>
-        <RouterLink to="/projects" class="text-xs font-medium text-[#0c66e4] hover:underline">
+        <RouterLink to="/app/projects" class="text-xs font-medium text-[#0c66e4] hover:underline">
           Ver todos
         </RouterLink>
       </div>
@@ -144,7 +144,7 @@ const recentProjects = computed(() =>
         <RouterLink
           v-for="{ project, progress } in recentProjects"
           :key="project.id"
-          :to="`/projects/${project.id}`"
+          :to="`/app/projects/${project.id}`"
           class="h-28 w-52 rounded-lg border border-[#091e4214] bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
         >
           <p class="truncate text-sm font-bold text-[#172b4d]">{{ project.name }}</p>
@@ -160,7 +160,7 @@ const recentProjects = computed(() =>
           </div>
         </RouterLink>
         <RouterLink
-          to="/projects"
+          to="/app/projects"
           class="flex h-28 w-52 flex-col items-center justify-center rounded-lg bg-[#091e420f] text-[#44546f] transition-colors hover:bg-[#091e4221]"
         >
           <FolderKanban :size="24" class="mb-1" />

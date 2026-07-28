@@ -88,7 +88,7 @@ function exportCard(card: { title: string; description: string; dueDate: string;
 
 function openCard(cardId: string, boardId: string) {
   store.setCurrentBoard(boardId)
-  router.push(`/board/${boardId}`)
+  router.push({ name: 'board', params: { boardId } })
   ui.openCard(cardId)
 }
 </script>

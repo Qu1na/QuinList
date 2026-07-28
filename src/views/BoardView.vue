@@ -36,7 +36,7 @@ watch(
       return
     }
     if (!b) {
-      if (ready) router.replace('/')
+      if (ready) router.replace({ name: 'home' })
       void presence.unmount()
       return
     }

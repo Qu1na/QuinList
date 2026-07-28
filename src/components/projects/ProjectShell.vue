@@ -101,7 +101,7 @@ function setTab(tab: ProjectDetailTab) {
       <div class="mx-auto max-w-7xl px-4 py-3 md:px-6">
         <button
           class="mb-2 flex items-center gap-1.5 text-xs text-[#626f86] hover:text-[#172b4d]"
-          @click="router.push('/projects')"
+          @click="router.push('/app/projects')"
         >
           <ArrowLeft :size="14" />
           Proyectos
@@ -199,7 +199,7 @@ function setTab(tab: ProjectDetailTab) {
 
   <div v-else class="mx-auto max-w-6xl px-6 py-12 text-center">
     <p class="text-[#626f86]">Proyecto no encontrado.</p>
-    <button class="mt-4 text-sm text-[#0c66e4] hover:underline" @click="router.push('/projects')">
+    <button class="mt-4 text-sm text-[#0c66e4] hover:underline" @click="router.push('/app/projects')">
       Volver a proyectos
     </button>
   </div>

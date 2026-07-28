@@ -40,7 +40,7 @@ async function deleteProject() {
   })
   if (!ok) return
   await projectsStore.deleteProject(props.projectId)
-  router.push('/projects')
+  router.push('/app/projects')
 }
 </script>
 

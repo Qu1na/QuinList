@@ -3,6 +3,8 @@ import { useAuthStore } from '@/stores/auth'
 import { PROJECTS_MODULE_ENABLED } from '@/config/features'
 import AppLayout from '@/layouts/AppLayout.vue'
 import LoginView from '../views/LoginView.vue'
+import RegisterView from '../views/RegisterView.vue'
+import LandingView from '../views/LandingView.vue'
 
 const REDIRECT_KEY = 'quinlist_redirect'
 
@@ -10,9 +12,21 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
+      path: '/',
+      name: 'landing',
+      component: LandingView,
+      meta: { guestLanding: true },
+    },
+    {
       path: '/login',
       name: 'login',
       component: LoginView,
+      meta: { guest: true },
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: RegisterView,
       meta: { guest: true },
     },
     {
@@ -22,7 +36,7 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
-      path: '/',
+      path: '/app',
       component: AppLayout,
       meta: { requiresAuth: true },
       children: [
@@ -42,6 +56,15 @@ const router = createRouter({
         { path: 'settings', name: 'settings', component: () => import('../views/SettingsView.vue') },
       ],
     },
+    // Redirecciones de rutas antiguas
+    { path: '/board/:boardId', redirect: (to) => `/app/board/${to.params.boardId}` },
+    { path: '/calendar', redirect: '/app/calendar' },
+    { path: '/reports', redirect: '/app/reports' },
+    { path: '/issues', redirect: '/app/issues' },
+    { path: '/releases', redirect: '/app/releases' },
+    { path: '/team', redirect: '/app/team' },
+    { path: '/projects', redirect: '/app/projects' },
+    { path: '/settings', redirect: '/app/settings' },
   ],
 })
 
@@ -57,7 +80,7 @@ router.beforeEach(async (to) => {
     return { name: 'login' }
   }
 
-  if (to.meta.guest && auth.isAuthenticated) {
+  if ((to.meta.guest || to.meta.guestLanding) && auth.isAuthenticated) {
     const redirect = sessionStorage.getItem(REDIRECT_KEY)
     if (redirect) {
       sessionStorage.removeItem(REDIRECT_KEY)

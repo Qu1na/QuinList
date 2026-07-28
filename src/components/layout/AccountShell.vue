@@ -11,9 +11,9 @@ const auth = useAuthStore()
 const store = useQuinListStore()
 
 const nav = [
-  { id: 'settings', label: 'Perfil', to: '/settings', icon: User },
-  { id: 'reports', label: 'Métricas', to: '/reports', icon: BarChart3 },
-  { id: 'team', label: 'Equipo', to: '/team', icon: Users },
+  { id: 'settings', label: 'Perfil', to: '/app/settings', icon: User },
+  { id: 'reports', label: 'Métricas', to: '/app/reports', icon: BarChart3 },
+  { id: 'team', label: 'Equipo', to: '/app/team', icon: Users },
 ]
 
 const pageTitle = computed(() => {

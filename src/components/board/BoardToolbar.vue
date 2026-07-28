@@ -99,7 +99,7 @@ async function renameBoard() {
 }
 
 function goReports() {
-  router.push('/reports')
+  router.push('/app/reports')
   showMenu.value = false
 }
 
@@ -115,7 +115,7 @@ async function deleteBoard() {
   if (!confirmed) return
   const id = board.value.id
   await store.deleteBoard(id)
-  router.push('/')
+  router.push({ name: 'home' })
 }
 
 function toggleFocus() {
@@ -135,7 +135,7 @@ onUnmounted(() => document.removeEventListener('click', onClickOutside))
   <div v-if="board" class="flex shrink-0 items-center gap-2 px-4 py-2">
     <button
       class="rounded px-3 py-1.5 text-lg font-bold text-white hover:bg-white/20"
-      @click="router.push('/')"
+      @click="router.push({ name: 'home' })"
     >
       {{ board.title }}
     </button>

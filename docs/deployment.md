@@ -159,7 +159,7 @@ pm2 restart quinlist
 
 ## Notas
 
-- El puerto **3010** es solo interno (localhost); Nginx es la cara pública (80/443).
+- El puerto **3012** es solo interno (localhost); Nginx es la cara pública (80/443). En este VPS el **3010** puede estar ocupado por otro servicio.
 - Vue Router usa `history` mode: PM2 `serve -s` y Nginx proxy ya envían todo a `index.html`.
 - No subas `.env` con claves al repositorio; usa `.env.production` solo en el servidor.
 - Módulo de proyectos: controlado en `src/config/features.ts` (`PROJECTS_MODULE_ENABLED`).
