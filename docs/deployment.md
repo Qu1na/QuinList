@@ -43,9 +43,9 @@ cd ~/apps/QuinList
 
 chmod +x scripts/server-setup.sh scripts/install-nginx-quinlist.sh
 
-# 1. Crear .env.production con tus VITE_MATUDB_*
-cp .env.production.example .env.production
-nano .env.production
+# 1. Crear .env con tus VITE_MATUDB_*
+cp .env.example .env
+nano .env
 
 # 2. Build + PM2
 ./scripts/server-setup.sh
@@ -81,14 +81,14 @@ git clone <tu-repo> .
 
 ```bash
 cd /var/www/quinlist
-cp .env.production.example .env.production
-nano .env.production   # pegar VITE_MATUDB_* reales
+cp .env.example .env
+nano .env   # pegar VITE_MATUDB_* reales
 
 npm ci
 npm run build
 ```
 
-> **Importante:** `VITE_*` se compilan en el build. Si cambias `.env.production`, vuelve a ejecutar `npm run build`.
+> **Importante:** `VITE_*` se compilan en el build. En el servidor usamos **`.env`** (no `.env.production`). Si cambias `.env`, vuelve a ejecutar `npm run build` o `./deploy.sh`.
 
 ## 4. PM2
 
@@ -155,7 +155,7 @@ O sin `git pull` (si subiste archivos por rsync):
 ```bash
 cd ~/apps/QuinList
 chmod +x deploy.sh
-cp .env.production.example .env.production   # editar VITE_MATUDB_*
+cp .env.example .env   # editar VITE_MATUDB_*
 ./deploy.sh --setup
 sudo ./deploy.sh --nginx
 sudo certbot --nginx -d quinlist.matubyte.com
@@ -175,7 +175,7 @@ sudo certbot --nginx -d quinlist.matubyte.com
 
 - El puerto **3012** es solo interno (localhost); Nginx es la cara pública (80/443).
 - Vue Router usa `history` mode: PM2 `serve -s` y Nginx proxy ya envían todo a `index.html`.
-- No subas `.env` con claves al repositorio; usa `.env.production` solo en el servidor.
+- No subas `.env` con claves al repositorio; créalo solo en el servidor.
 - Módulo de proyectos: controlado en `src/config/features.ts` (`PROJECTS_MODULE_ENABLED`).
 
 ## Alternativa: Nginx sirve estáticos sin PM2

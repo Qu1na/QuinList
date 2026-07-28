@@ -15,10 +15,20 @@ if [[ ! -f package.json ]]; then
   exit 1
 fi
 
-if [[ ! -f .env.production ]] && [[ -f .env.production.example ]]; then
-  cp .env.production.example .env.production
-  echo "Creado .env.production — edítalo con tus VITE_MATUDB_* antes del build."
+if [[ ! -f .env ]] && [[ -f .env.example ]]; then
+  cp .env.example .env
+  echo "Creado .env — edítalo con tus VITE_MATUDB_* antes del build."
   exit 1
+fi
+
+if [[ ! -f .env ]]; then
+  echo "ERROR: Falta .env en el servidor."
+  exit 1
+fi
+
+if [[ -f .env.production ]]; then
+  echo "==> Desactivando .env.production (usamos .env)..."
+  mv .env.production .env.production.disabled 2>/dev/null || rm -f .env.production
 fi
 
 if [[ ! -f package-lock.json ]]; then

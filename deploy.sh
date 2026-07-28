@@ -56,16 +56,35 @@ require_package_json() {
 }
 
 ensure_env() {
-  if [[ ! -f .env.production ]]; then
-    if [[ -f .env.production.example ]]; then
-      cp .env.production.example .env.production
-      echo "Creado .env.production desde el ejemplo."
-      echo "Edita VITE_MATUDB_* y vuelve a ejecutar deploy."
+  if [[ ! -f .env ]]; then
+    if [[ -f .env.example ]]; then
+      cp .env.example .env
+      echo "Creado .env desde .env.example."
+      echo "Edita VITE_MATUDB_* con tus credenciales reales y vuelve a ejecutar deploy."
       exit 1
     fi
-    echo "ERROR: Falta .env.production (copia .env.production.example)."
+    echo "ERROR: Falta .env (copia .env.example y configura VITE_MATUDB_*)."
     exit 1
   fi
+
+  if grep -qE 'tu-project-id|tu-api-key|anon_xxxx|mb_xxxx' .env 2>/dev/null; then
+    echo "ERROR: .env tiene valores de ejemplo. Pon el PROJECT_ID y API_KEY reales de MatuDB."
+    exit 1
+  fi
+}
+
+prepare_env_for_build() {
+  if [[ -f .env.production ]]; then
+    if [[ ! -f .env.production.disabled ]]; then
+      echo "==> Desactivando .env.production (Vite lo prioriza sobre .env en build)..."
+      mv .env.production .env.production.disabled
+    else
+      rm -f .env.production
+    fi
+  fi
+
+  echo "==> Variables MatuDB para el build:"
+  grep -E '^VITE_MATUDB_' .env | sed 's/\(API_KEY=\).*/\1***oculto***/' || true
 }
 
 install_deps() {
@@ -79,7 +98,8 @@ install_deps() {
 }
 
 build_app() {
-  echo "==> Build de producción..."
+  prepare_env_for_build
+  echo "==> Build de producción (lee .env)..."
   npm run build
 }
 
