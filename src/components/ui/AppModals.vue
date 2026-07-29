@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
-import { X } from '@lucide/vue'
 import { useUiStore } from '@/stores/ui'
 import { useQuinListStore } from '@/stores/quinlist'
 import { useRouter } from 'vue-router'
+import AppWindow from '@/components/ui/AppWindow.vue'
 
 const ui = useUiStore()
 const store = useQuinListStore()
@@ -158,51 +158,48 @@ function submitWorkspace() {
   <Teleport to="body">
     <div
       v-if="ui.activeModal === 'createBoard'"
-      class="fixed inset-0 z-[2000] flex items-center justify-center bg-slate-900/50 p-4"
+      class="app-window-overlay fixed inset-0 z-[2000] flex items-center justify-center p-4"
       @click.self="ui.closeModal()"
     >
-      <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-        <div class="mb-4 flex items-center justify-between">
-          <h3 class="text-lg font-semibold text-slate-800">Crear tablero</h3>
-          <button class="text-slate-400 hover:text-slate-600" @click="ui.closeModal()">
-            <X :size="18" />
-          </button>
+      <AppWindow title="Nuevo tablero" subtitle="Espacio de trabajo" class="app-window--wide" @close="ui.closeModal()">
+        <div class="app-window-form-row app-window-form-row--2">
+          <div>
+            <label class="project-create-modal__label">Nombre *</label>
+            <input
+              v-model="boardTitle"
+              type="text"
+              class="project-create-modal__input"
+              placeholder="Ej. Sprint Q2"
+              autofocus
+              @keyup.enter="submitBoard"
+            />
+          </div>
+          <div>
+            <label class="project-create-modal__label">Descripción</label>
+            <input
+              v-model="boardDescription"
+              type="text"
+              class="project-create-modal__input"
+              placeholder="Opcional"
+              @keyup.enter="submitBoard"
+            />
+          </div>
         </div>
-        <label class="mb-3 block text-sm font-medium text-slate-600">
-          Nombre
-          <input
-            v-model="boardTitle"
-            placeholder="Ej: Sprint Q2"
-            class="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400"
-            autofocus
-            @keyup.enter="submitBoard"
-          />
-        </label>
-        <label class="mb-4 block text-sm font-medium text-slate-600">
-          Descripción
-          <textarea
-            v-model="boardDescription"
-            rows="2"
-            placeholder="Opcional..."
-            class="mt-1.5 w-full resize-none rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400"
-          />
-        </label>
-        <div class="flex justify-end gap-2">
-          <button
-            class="rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-600"
-            @click="ui.closeModal()"
-          >
-            Cancelar
-          </button>
-          <button
-            class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
-            :disabled="!boardTitle.trim()"
-            @click="submitBoard"
-          >
-            Crear tablero
-          </button>
-        </div>
-      </div>
+
+        <template #footer>
+          <div class="flex justify-end gap-2">
+            <button type="button" class="btn-brand-ghost" @click="ui.closeModal()">Cancelar</button>
+            <button
+              type="button"
+              class="btn-brand"
+              :disabled="!boardTitle.trim()"
+              @click="submitBoard"
+            >
+              Crear tablero
+            </button>
+          </div>
+        </template>
+      </AppWindow>
     </div>
   </Teleport>
 

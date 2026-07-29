@@ -61,7 +61,7 @@ watch(
 </script>
 
 <template>
-  <div class="flex h-full min-h-0 flex-col">
+  <div class="project-detail flex h-full min-h-0 flex-col overflow-hidden">
     <ProjectShell :project-id="projectId">
       <component :is="tabComponents[activeTab]" :project-id="projectId" />
     </ProjectShell>

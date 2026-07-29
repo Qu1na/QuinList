@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import type {
   Project,
   ProjectTask,
@@ -12,6 +12,7 @@ import type {
   ProjectInvite,
   ProjectMember,
   ProjectActivity,
+  ProjectTimeEntry,
   ProjectDetailTab,
   ProjectsDataState,
   TransactionType,
@@ -20,6 +21,7 @@ import type {
 } from '@/types/projects'
 import type { Attachment, Priority, UserRole } from '@/types'
 import { loadProjectsData, persistProjectsData } from '@/services/projectData'
+import { subscribeProjectsRealtime } from '@/services/projectMatuData'
 import { useQuinListStore } from './quinlist'
 import { useAuthStore } from './auth'
 import { generateId } from '@/utils/permissions'
@@ -34,6 +36,7 @@ import {
 import { findTodoList, getDefaultBoardLists } from '@/utils/boardDefaults'
 import { formatMoney, DEFAULT_CURRENCY } from '@/utils/currency'
 import { uploadProjectFile } from '@/services/storage'
+import { isMatuConfigured } from '@/lib/matu'
 
 export const DASHBOARD_ACTIVITY_LIMIT = 7
 
@@ -49,9 +52,15 @@ export const useProjectsStore = defineStore('projects', () => {
   const invites = ref<ProjectInvite[]>([])
   const members = ref<ProjectMember[]>([])
   const activities = ref<ProjectActivity[]>([])
+  const timeEntries = ref<ProjectTimeEntry[]>([])
   const isReady = ref(false)
   const currentProjectId = ref<string | null>(null)
   const activeTab = ref<ProjectDetailTab>('dashboard')
+  let unsubscribeRealtime: (() => void) | null = null
+  let reloadTimer: ReturnType<typeof setTimeout> | null = null
+  let suppressReloadUntil = 0
+  let loadedWorkspaceId: string | null = null
+  let workspaceWatchStop: (() => void) | null = null
 
   const currentProject = computed(() =>
     projects.value.find((p) => p.id === currentProjectId.value) ?? null,
@@ -103,6 +112,20 @@ export const useProjectsStore = defineStore('projects', () => {
     return members.value.filter((m) => m.projectId === projectId)
   }
 
+  function getProjectTimeEntries(projectId: string) {
+    return timeEntries.value
+      .filter((e) => e.projectId === projectId)
+      .sort((a, b) => new Date(b.entryDate).getTime() - new Date(a.entryDate).getTime())
+  }
+
+  function getTaskTimeEntries(taskId: string) {
+    return timeEntries.value.filter((e) => e.taskId === taskId)
+  }
+
+  function getProjectLoggedMinutes(projectId: string) {
+    return getProjectTimeEntries(projectId).reduce((sum, e) => sum + e.minutes, 0)
+  }
+
   function getProjectActivities(projectId: string) {
     return activities.value
       .filter((a) => a.projectId === projectId)
@@ -144,12 +167,17 @@ export const useProjectsStore = defineStore('projects', () => {
       invites: invites.value,
       members: members.value,
       activities: activities.value,
+      timeEntries: timeEntries.value,
     }
     return collectProjectFiles(state, projectId)
   }
 
   async function save() {
-    await persistProjectsData({
+    const quinlist = useQuinListStore()
+    const wsId = quinlist.currentWorkspaceId
+    if (!wsId) return
+    suppressReloadUntil = Date.now() + 1200
+    await persistProjectsData(wsId, {
       projects: projects.value,
       tasks: tasks.value,
       milestones: milestones.value,
@@ -161,6 +189,69 @@ export const useProjectsStore = defineStore('projects', () => {
       invites: invites.value,
       members: members.value,
       activities: activities.value,
+      timeEntries: timeEntries.value,
+    })
+  }
+
+  function scheduleRealtimeReload(workspaceId: string) {
+    if (Date.now() < suppressReloadUntil) return
+    if (reloadTimer) clearTimeout(reloadTimer)
+    reloadTimer = setTimeout(() => {
+      void reloadForWorkspace(workspaceId)
+    }, 450)
+  }
+
+  function applyWorkspaceData(workspaceId: string, data: ProjectsDataState) {
+    projects.value = data.projects.filter((p) => p.workspaceId === workspaceId)
+    const projectIds = new Set(projects.value.map((p) => p.id))
+    tasks.value = data.tasks.filter((t) => projectIds.has(t.projectId))
+    milestones.value = data.milestones.filter((m) => projectIds.has(m.projectId))
+    costs.value = data.costs.filter((c) => projectIds.has(c.projectId))
+    risks.value = data.risks.filter((r) => projectIds.has(r.projectId))
+    deliverables.value = data.deliverables.filter((d) => projectIds.has(d.projectId))
+    documents.value = data.documents.filter((d) => projectIds.has(d.projectId))
+    folders.value = (data.folders ?? []).filter((f) => projectIds.has(f.projectId))
+    invites.value = (data.invites ?? []).filter((i) => projectIds.has(i.projectId))
+    members.value = data.members.filter((m) => projectIds.has(m.projectId))
+    activities.value = data.activities.filter((a) => projectIds.has(a.projectId))
+    timeEntries.value = (data.timeEntries ?? []).filter((e) => projectIds.has(e.projectId))
+    loadedWorkspaceId = workspaceId
+  }
+
+  async function waitForQuinListReady() {
+    if (!isMatuConfigured()) return
+    const quinlist = useQuinListStore()
+    if (quinlist.isReady) return
+    await new Promise<void>((resolve) => {
+      const stop = watch(
+        () => quinlist.isReady,
+        (ready) => {
+          if (ready) {
+            stop()
+            resolve()
+          }
+        },
+        { immediate: true },
+      )
+    })
+  }
+
+  function ensureWorkspaceWatcher() {
+    if (workspaceWatchStop) return
+    const quinlist = useQuinListStore()
+    workspaceWatchStop = watch(
+      () => quinlist.currentWorkspaceId,
+      (wsId) => {
+        if (!wsId || wsId === loadedWorkspaceId) return
+        void reloadForWorkspace(wsId)
+      },
+    )
+  }
+
+  function startRealtime(workspaceId: string) {
+    unsubscribeRealtime?.()
+    unsubscribeRealtime = subscribeProjectsRealtime(() => {
+      scheduleRealtimeReload(workspaceId)
     })
   }
 
@@ -178,44 +269,37 @@ export const useProjectsStore = defineStore('projects', () => {
   }
 
   async function init() {
+    await waitForQuinListReady()
     const quinlist = useQuinListStore()
     const wsId = quinlist.currentWorkspaceId
     if (!wsId) {
       isReady.value = true
+      ensureWorkspaceWatcher()
       return
     }
-    const data = await loadProjectsData(wsId)
-    projects.value = data.projects
-    tasks.value = data.tasks
-    milestones.value = data.milestones
-    costs.value = data.costs
-    risks.value = data.risks
-    deliverables.value = data.deliverables
-    documents.value = data.documents
-    folders.value = data.folders ?? []
-    invites.value = data.invites ?? []
-    members.value = data.members
-    activities.value = data.activities
+    if (isReady.value && loadedWorkspaceId === wsId) {
+      ensureWorkspaceWatcher()
+      return
+    }
+    await reloadForWorkspace(wsId)
     isReady.value = true
+    ensureWorkspaceWatcher()
   }
 
   async function reloadForWorkspace(workspaceId: string) {
+    if (!workspaceId) return
     const data = await loadProjectsData(workspaceId)
-    projects.value = data.projects.filter((p) => p.workspaceId === workspaceId)
-    const projectIds = new Set(projects.value.map((p) => p.id))
-    tasks.value = data.tasks.filter((t) => projectIds.has(t.projectId))
-    milestones.value = data.milestones.filter((m) => projectIds.has(m.projectId))
-    costs.value = data.costs.filter((c) => projectIds.has(c.projectId))
-    risks.value = data.risks.filter((r) => projectIds.has(r.projectId))
-    deliverables.value = data.deliverables.filter((d) => projectIds.has(d.projectId))
-    documents.value = data.documents.filter((d) => projectIds.has(d.projectId))
-    folders.value = (data.folders ?? []).filter((f) => projectIds.has(f.projectId))
-    invites.value = (data.invites ?? []).filter((i) => projectIds.has(i.projectId))
-    members.value = data.members.filter((m) => projectIds.has(m.projectId))
-    activities.value = data.activities.filter((a) => projectIds.has(a.projectId))
+    applyWorkspaceData(workspaceId, data)
+    startRealtime(workspaceId)
   }
 
   function destroy() {
+    workspaceWatchStop?.()
+    workspaceWatchStop = null
+    loadedWorkspaceId = null
+    unsubscribeRealtime?.()
+    unsubscribeRealtime = null
+    if (reloadTimer) clearTimeout(reloadTimer)
     projects.value = []
     tasks.value = []
     milestones.value = []
@@ -227,6 +311,7 @@ export const useProjectsStore = defineStore('projects', () => {
     invites.value = []
     members.value = []
     activities.value = []
+    timeEntries.value = []
     currentProjectId.value = null
     isReady.value = false
   }
@@ -286,7 +371,9 @@ export const useProjectsStore = defineStore('projects', () => {
     logActivity(
       project.id,
       'Proyecto creado',
-      `«${project.name}» con presupuesto de ${formatMoney(project.budget, project.currency)}`,
+      project.budget > 0
+        ? `«${project.name}» con presupuesto de ${formatMoney(project.budget, project.currency)}`
+        : `«${project.name}»`,
     )
     await save()
     return project
@@ -340,6 +427,8 @@ export const useProjectsStore = defineStore('projects', () => {
       boardCardId: null,
       boardId: null,
       attachments: [],
+      estimateHours: null,
+      loggedMinutes: 0,
       createdBy: auth.currentUserId,
       createdAt: now,
       updatedAt: now,
@@ -859,6 +948,43 @@ export const useProjectsStore = defineStore('projects', () => {
     return doc
   }
 
+  async function logTimeEntry(
+    projectId: string,
+    minutes: number,
+    description: string,
+    taskId: string | null = null,
+  ) {
+    const auth = useAuthStore()
+    if (!auth.currentUserId || minutes <= 0) return null
+
+    const entry: ProjectTimeEntry = {
+      id: generateId(),
+      projectId,
+      taskId,
+      userId: auth.currentUserId,
+      description: description.trim(),
+      minutes,
+      entryDate: new Date().toISOString().split('T')[0]!,
+      createdAt: new Date().toISOString(),
+    }
+    timeEntries.value.unshift(entry)
+
+    if (taskId) {
+      const idx = tasks.value.findIndex((t) => t.id === taskId)
+      if (idx !== -1) {
+        tasks.value[idx] = {
+          ...tasks.value[idx]!,
+          loggedMinutes: (tasks.value[idx]!.loggedMinutes ?? 0) + minutes,
+          updatedAt: new Date().toISOString(),
+        }
+      }
+    }
+
+    logActivity(projectId, 'Tiempo registrado', `${minutes} min — ${description.trim() || 'Sin descripción'}`)
+    await save()
+    return entry
+  }
+
   function setCurrentProject(id: string | null) {
     currentProjectId.value = id
     activeTab.value = 'dashboard'
@@ -880,6 +1006,7 @@ export const useProjectsStore = defineStore('projects', () => {
     folders,
     invites,
     activities,
+    timeEntries,
     isReady,
     currentProjectId,
     currentProject,
@@ -897,6 +1024,9 @@ export const useProjectsStore = defineStore('projects', () => {
     getProjectInvites,
     getProjectMembers,
     getProjectActivities,
+    getProjectTimeEntries,
+    getTaskTimeEntries,
+    getProjectLoggedMinutes,
     getProjectDashboard,
     getProjectFiles,
     init,
@@ -936,6 +1066,7 @@ export const useProjectsStore = defineStore('projects', () => {
     addProjectMember,
     updateProjectMember,
     removeProjectMember,
+    logTimeEntry,
     setCurrentProject,
     setActiveTab,
     save,

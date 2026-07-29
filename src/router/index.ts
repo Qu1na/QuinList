@@ -30,6 +30,12 @@ const router = createRouter({
       meta: { guest: true },
     },
     {
+      path: '/share/project/:token',
+      name: 'share-project',
+      component: () => import('../views/SharedProjectView.vue'),
+      meta: { publicShare: true },
+    },
+    {
       path: '/join/:boardSlug/:token',
       name: 'join',
       component: () => import('../views/JoinView.vue'),
@@ -78,6 +84,10 @@ router.beforeEach(async (to) => {
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
     sessionStorage.setItem(REDIRECT_KEY, to.fullPath)
     return { name: 'login' }
+  }
+
+  if (to.meta.publicShare) {
+    return true
   }
 
   if ((to.meta.guest || to.meta.guestLanding) && auth.isAuthenticated) {

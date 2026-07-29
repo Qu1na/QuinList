@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { BarChart3, PieChart, Wallet } from '@lucide/vue'
 import { useProjectsStore } from '@/stores/projects'
-import DonutChart from '@/components/charts/DonutChart.vue'
+import ProjectDonutChart from '@/components/projects/shared/ProjectDonutChart.vue'
 import BarChart from '@/components/charts/BarChart.vue'
-import { TASK_STATUS_LABELS } from '@/utils/projectStats'
-import { calcFinanceSummary } from '@/utils/projectStats'
+import { TASK_STATUS_LABELS, calcFinanceSummary } from '@/utils/projectStats'
 import { DEFAULT_CURRENCY, formatMoney } from '@/utils/currency'
 
 const props = defineProps<{ projectId: string }>()
@@ -15,8 +15,8 @@ const currency = computed(() => project.value?.currency ?? DEFAULT_CURRENCY)
 const tasks = computed(() => projectsStore.getProjectTasks(props.projectId))
 const costs = computed(() => projectsStore.getProjectCosts(props.projectId))
 
-const STATUS_COLORS = ['#0c66e4', '#6554c0', '#44546f', '#626f86', '#091e42']
-const PRIORITY_COLORS = { alta: '#44546f', media: '#0c66e4', baja: '#626f86' }
+const STATUS_COLORS = ['#2d7eb8', '#5bbce4', '#f4845f', '#626f86', '#172b4d']
+const PRIORITY_COLORS = { alta: '#f4845f', media: '#2d7eb8', baja: '#5bbce4' }
 
 const statusData = computed(() => {
   const counts = new Map<string, number>()
@@ -47,38 +47,53 @@ const finance = computed(() =>
 </script>
 
 <template>
-  <div class="space-y-6">
-    <h2 class="text-lg font-semibold text-[#172b4d]">Reportes y estadísticas</h2>
-    <div class="grid gap-4 lg:grid-cols-2">
-      <div class="rounded-xl border border-[#091e4214] bg-white p-5">
-        <h3 class="mb-4 text-sm font-medium text-[#626f86]">Tareas por estado</h3>
-        <DonutChart v-if="statusData.length" :segments="statusData" />
-        <p v-else class="text-sm text-[#626f86]">Sin datos.</p>
+  <div class="space-y-7">
+    <div>
+      <h2 class="project-page-title">Reportes</h2>
+      <p class="project-page-sub">Estadísticas de tareas y resumen financiero del proyecto</p>
+    </div>
+
+    <div class="grid gap-5 lg:grid-cols-2">
+      <div class="project-card project-card--lg">
+        <h3 class="mb-5 flex items-center gap-2 text-base font-semibold text-[#172b4d]">
+          <PieChart :size="20" class="text-[#5bbce4]" />
+          Tareas por estado
+        </h3>
+        <ProjectDonutChart v-if="statusData.length" :segments="statusData" :size="180" />
+        <p v-else class="py-8 text-center text-sm text-[#626f86]">Sin datos de tareas.</p>
       </div>
-      <div class="rounded-xl border border-[#091e4214] bg-white p-5">
-        <h3 class="mb-4 text-sm font-medium text-[#626f86]">Tareas por prioridad</h3>
+
+      <div class="project-card project-card--lg">
+        <h3 class="mb-5 flex items-center gap-2 text-base font-semibold text-[#172b4d]">
+          <BarChart3 :size="20" class="text-[#2d7eb8]" />
+          Tareas por prioridad
+        </h3>
         <BarChart v-if="tasks.length" :items="priorityData" />
-        <p v-else class="text-sm text-[#626f86]">Sin datos.</p>
+        <p v-else class="py-8 text-center text-sm text-[#626f86]">Sin datos de tareas.</p>
       </div>
     </div>
-    <div v-if="finance" class="rounded-xl border border-[#091e4214] bg-white p-5">
-      <h3 class="mb-4 text-sm font-medium text-[#626f86]">Resumen financiero</h3>
-      <div class="grid gap-4 sm:grid-cols-4 text-sm">
-        <div>
-          <p class="text-[#626f86]">Presupuesto base</p>
-          <p class="text-xl font-bold text-[#172b4d]">{{ formatMoney(finance.budget, currency) }}</p>
+
+    <div v-if="finance" class="project-card project-card--lg">
+      <h3 class="mb-5 flex items-center gap-2 text-base font-semibold text-[#172b4d]">
+        <Wallet :size="20" class="text-[#f4845f]" />
+        Resumen financiero
+      </h3>
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="project-card project-kpi">
+          <p class="project-kpi__label">Presupuesto base</p>
+          <p class="project-kpi__value text-xl">{{ formatMoney(finance.budget, currency) }}</p>
         </div>
-        <div>
-          <p class="text-[#626f86]">Ingresos</p>
-          <p class="text-xl font-bold text-[#172b4d]">{{ formatMoney(finance.income, currency) }}</p>
+        <div class="project-card project-kpi">
+          <p class="project-kpi__label">Ingresos</p>
+          <p class="project-kpi__value text-xl text-[#2d7eb8]">{{ formatMoney(finance.income, currency) }}</p>
         </div>
-        <div>
-          <p class="text-[#626f86]">Egresos</p>
-          <p class="text-xl font-bold text-[#172b4d]">{{ formatMoney(finance.expenses, currency) }}</p>
+        <div class="project-card project-kpi">
+          <p class="project-kpi__label">Egresos</p>
+          <p class="project-kpi__value text-xl text-[#f4845f]">{{ formatMoney(finance.expenses, currency) }}</p>
         </div>
-        <div>
-          <p class="text-[#626f86]">Saldo disponible</p>
-          <p class="text-xl font-bold text-[#172b4d]">{{ formatMoney(finance.balance, currency) }}</p>
+        <div class="project-card project-kpi">
+          <p class="project-kpi__label">Saldo disponible</p>
+          <p class="project-kpi__value text-xl">{{ formatMoney(finance.balance, currency) }}</p>
         </div>
       </div>
     </div>

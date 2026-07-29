@@ -46,8 +46,7 @@ const sections = [
   { id: 'etiquetas' as const, label: 'Etiquetas', icon: Tag },
 ]
 
-const inputClass =
-  'w-full rounded-lg border border-[#091e4229] px-3 py-2 text-sm outline-none focus:border-[#0c66e4]'
+const inputClass = 'ql-input'
 
 const workspaceMembers = computed(() => {
   const ws = quinlist.currentWorkspace
@@ -111,40 +110,35 @@ async function save() {
 </script>
 
 <template>
-  <div v-if="project" class="rounded-xl border border-[#091e4214] bg-white">
-    <!-- Barra superior con guardar -->
-    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-[#091e4214] px-5 py-3">
+  <div v-if="project" class="project-card overflow-hidden">
+    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-[#ebebed] px-6 py-4">
       <div>
-        <h2 class="font-semibold text-[#172b4d]">Información del proyecto</h2>
-        <p class="text-xs text-[#626f86]">Edita los datos por sección</p>
+        <h2 class="project-page-title text-xl">Información del proyecto</h2>
+        <p class="project-page-sub">Edita los datos por sección</p>
       </div>
       <div class="flex items-center gap-2">
-        <span v-if="saved" class="text-xs text-[#0c66e4]">Guardado correctamente</span>
-        <span v-else-if="dirty" class="text-xs text-[#626f86]">Cambios sin guardar</span>
+        <span v-if="saved" class="text-sm text-[#2d7eb8]">Guardado correctamente</span>
+        <span v-else-if="dirty" class="text-sm text-[#626f86]">Cambios sin guardar</span>
         <button
           type="button"
-          class="flex items-center gap-1.5 rounded-lg bg-[#0c66e4] px-4 py-2 text-sm font-medium text-white hover:bg-[#0055cc] disabled:opacity-50"
+          class="ql-btn ql-btn--primary"
           :disabled="saving || !dirty"
           @click="save"
         >
-          <Save :size="15" />
+          <Save :size="18" />
           {{ saving ? 'Guardando...' : 'Guardar' }}
         </button>
       </div>
     </div>
 
     <div class="flex min-h-[420px] flex-col md:flex-row">
-      <!-- Sub-pestañas -->
-      <nav class="flex shrink-0 gap-1 overflow-x-auto border-b border-[#091e4214] p-2 md:w-44 md:flex-col md:border-b-0 md:border-r">
+      <nav class="flex shrink-0 gap-1 overflow-x-auto border-b border-[#ebebed] p-3 md:w-52 md:flex-col md:border-b-0 md:border-r">
         <button
           v-for="s in sections"
           :key="s.id"
-          class="flex items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors"
-          :class="
-            section === s.id
-              ? 'bg-[#091e420f] font-medium text-[#172b4d]'
-              : 'text-[#626f86] hover:bg-[#091e420a]'
-          "
+          type="button"
+          class="project-nav-item"
+          :class="{ 'project-nav-item--active': section === s.id }"
           @click="section = s.id"
         >
           <component :is="s.icon" :size="15" />
@@ -153,7 +147,7 @@ async function save() {
       </nav>
 
       <!-- Contenido -->
-      <form class="flex-1 p-5" @submit.prevent="save">
+      <form class="flex-1 p-6" @submit.prevent="save">
         <div v-if="section === 'general'" class="grid gap-4 sm:grid-cols-2">
           <div class="sm:col-span-2">
             <label class="mb-1 block text-sm text-[#44546f]">Nombre</label>

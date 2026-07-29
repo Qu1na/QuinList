@@ -21,7 +21,7 @@ const editingId = ref<string | null>(null)
 const formError = ref('')
 const form = ref({ title: '', description: '', startDate: todayISO(), dueDate: todayISO() })
 
-const inputClass = 'w-full rounded-lg border border-[#091e4229] px-3 py-2 text-sm outline-none focus:border-[#0c66e4]'
+const inputClass = 'ql-input'
 
 function openCreate() {
   editingId.value = null
@@ -77,41 +77,41 @@ async function save() {
 </script>
 
 <template>
-  <div class="space-y-5">
-    <div class="grid gap-3 sm:grid-cols-3">
-      <div class="rounded-xl border border-[#091e4214] bg-white p-4">
-        <Flag :size="16" class="text-[#0c66e4]" />
-        <p class="mt-2 text-2xl font-bold text-[#172b4d]">{{ milestones.length }}</p>
-        <p class="text-xs text-[#626f86]">Total hitos</p>
+  <div class="space-y-7">
+    <div class="flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <h2 class="project-page-title">Hitos</h2>
+        <p class="project-page-sub">Objetivos clave y fechas del proyecto</p>
       </div>
-      <div class="rounded-xl border border-[#091e4214] bg-white p-4">
-        <p class="text-2xl font-bold text-[#172b4d]">{{ milestones.filter((m) => m.completed).length }}</p>
-        <p class="text-xs text-[#626f86]">Completados</p>
+      <button type="button" class="ql-btn ql-btn--primary" @click="openCreate">
+        <Plus :size="18" />
+        Nuevo hito
+      </button>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-3">
+      <div class="project-card project-kpi">
+        <Flag :size="20" class="mb-2 text-[#5bbce4]" />
+        <p class="project-kpi__value">{{ milestones.length }}</p>
+        <p class="project-kpi__label">Total hitos</p>
       </div>
-      <div class="rounded-xl border border-[#091e4214] bg-white p-4">
-        <p class="text-2xl font-bold text-[#0c66e4]">{{ progress }}%</p>
-        <p class="text-xs text-[#626f86]">Progreso</p>
+      <div class="project-card project-kpi">
+        <p class="project-kpi__value">{{ milestones.filter((m) => m.completed).length }}</p>
+        <p class="project-kpi__label">Completados</p>
+      </div>
+      <div class="project-card project-kpi">
+        <p class="project-kpi__value text-[#2d7eb8]">{{ progress }}%</p>
+        <p class="project-kpi__label">Progreso</p>
       </div>
     </div>
 
-    <div class="rounded-xl border border-[#091e4214] bg-white p-5">
-      <div class="mb-5 flex items-center justify-between">
-        <h2 class="font-semibold text-[#172b4d]">Hitos del proyecto</h2>
-        <button
-          class="flex items-center gap-1.5 rounded-lg bg-[#0c66e4] px-3 py-2 text-sm text-white hover:bg-[#0055cc]"
-          @click="openCreate"
-        >
-          <Plus :size="15" />
-          Nuevo hito
-        </button>
-      </div>
-
+    <div class="project-card project-card--lg">
       <div class="relative space-y-0">
         <div class="absolute top-0 bottom-0 left-[19px] w-0.5 bg-[#091e4214]" />
         <div v-for="(ms, i) in milestones" :key="ms.id" class="relative flex gap-4 pb-5">
           <button
             class="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 bg-white transition-colors"
-            :class="ms.completed ? 'border-[#0c66e4] bg-[#0c66e4] text-white' : 'border-[#091e4229]'"
+            :class="ms.completed ? 'border-[#5bbce4] bg-[#5bbce4] text-white' : 'border-[#c7c7cc]'"
             @click="projectsStore.toggleMilestone(ms.id)"
           >
             <Check v-if="ms.completed" :size="16" />
@@ -161,8 +161,8 @@ async function save() {
         <p v-if="formError" class="text-xs text-[#44546f]">{{ formError }}</p>
       </div>
       <template #footer>
-        <button class="px-3 py-1.5 text-sm text-[#626f86]" @click="showModal = false">Cancelar</button>
-        <button class="rounded-lg bg-[#0c66e4] px-4 py-1.5 text-sm text-white" @click="save">
+        <button type="button" class="ql-btn ql-btn--ghost" @click="showModal = false">Cancelar</button>
+        <button type="button" class="ql-btn ql-btn--primary" @click="save">
           {{ editingId ? 'Guardar' : 'Crear hito' }}
         </button>
       </template>

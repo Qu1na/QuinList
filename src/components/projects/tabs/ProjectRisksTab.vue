@@ -5,6 +5,7 @@ import { useProjectsStore } from '@/stores/projects'
 import { useAuthStore } from '@/stores/auth'
 import type { RiskSeverity, RiskType, RiskStatus, RiskProbability } from '@/types/projects'
 import ProjectModal from '@/components/projects/shared/ProjectModal.vue'
+import UserAvatar from '@/components/projects/shared/UserAvatar.vue'
 
 const props = defineProps<{ projectId: string }>()
 
@@ -25,13 +26,18 @@ const form = ref({
   ownerId: '',
 })
 
-const inputClass = 'w-full rounded-lg border border-[#091e4229] px-3 py-2 text-sm outline-none focus:border-[#0c66e4]'
-
 const severityLabels: Record<RiskSeverity, string> = {
   low: 'Baja',
   medium: 'Media',
   high: 'Alta',
   critical: 'Crítica',
+}
+
+const severityClass: Record<RiskSeverity, string> = {
+  low: 'bg-[#eef6fc] text-[#2d7eb8]',
+  medium: 'bg-[#eef6fc] text-[#5bbce4]',
+  high: 'bg-[#fef3ef] text-[#f4845f]',
+  critical: 'bg-[#fef0ec] text-[#e8754f]',
 }
 
 const statusLabels: Record<RiskStatus, string> = {
@@ -98,85 +104,99 @@ function userName(id: string | null) {
 </script>
 
 <template>
-  <div class="space-y-5">
-    <div class="grid gap-3 sm:grid-cols-3">
-      <div class="rounded-xl border border-[#091e4214] bg-white p-4">
-        <AlertTriangle :size="16" class="text-[#0c66e4]" />
-        <p class="mt-2 text-2xl font-bold text-[#172b4d]">{{ matrixScore.open }}</p>
-        <p class="text-xs text-[#626f86]">Abiertos</p>
+  <div class="space-y-7">
+    <div class="flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <h2 class="project-page-title">Riesgos</h2>
+        <p class="project-page-sub">Matriz de riesgos e incidencias del proyecto</p>
       </div>
-      <div class="rounded-xl border border-[#091e4214] bg-white p-4">
-        <ShieldAlert :size="16" class="text-[#44546f]" />
-        <p class="mt-2 text-2xl font-bold text-[#172b4d]">{{ matrixScore.critical }}</p>
-        <p class="text-xs text-[#626f86]">Alta / Crítica</p>
+      <button type="button" class="ql-btn ql-btn--primary" @click="openCreate">
+        <Plus :size="18" />
+        Registrar riesgo
+      </button>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-3">
+      <div class="project-card project-kpi">
+        <AlertTriangle :size="20" class="mb-2 text-[#f4845f]" />
+        <p class="project-kpi__value">{{ matrixScore.open }}</p>
+        <p class="project-kpi__label">Abiertos</p>
       </div>
-      <div class="rounded-xl border border-[#091e4214] bg-white p-4">
-        <p class="text-2xl font-bold text-[#172b4d]">{{ matrixScore.total }}</p>
-        <p class="text-xs text-[#626f86]">Total registrados</p>
+      <div class="project-card project-kpi">
+        <ShieldAlert :size="20" class="mb-2 text-[#e8754f]" />
+        <p class="project-kpi__value">{{ matrixScore.critical }}</p>
+        <p class="project-kpi__label">Alta / Crítica</p>
+      </div>
+      <div class="project-card project-kpi">
+        <p class="project-kpi__value">{{ matrixScore.total }}</p>
+        <p class="project-kpi__label">Total registrados</p>
       </div>
     </div>
 
-    <div class="rounded-xl border border-[#091e4214] bg-white p-5">
-      <div class="mb-4 flex items-center justify-between">
-        <h2 class="font-semibold text-[#172b4d]">Matriz de riesgos</h2>
-        <button
-          class="flex items-center gap-1.5 rounded-lg bg-[#0c66e4] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#0055cc]"
-          @click="openCreate"
-        >
-          <Plus :size="15" />
-          Registrar riesgo
-        </button>
-      </div>
-
-      <div class="grid gap-3 sm:grid-cols-2">
-        <div
-          v-for="risk in risks"
-          :key="risk.id"
-          class="rounded-lg border border-[#091e4214] p-4 transition hover:border-[#0c66e4]/20"
-        >
-          <div class="mb-2 flex items-start justify-between gap-2">
-            <div class="flex items-center gap-2">
-              <AlertTriangle :size="16" class="shrink-0 text-[#0c66e4]" />
-              <p class="font-medium text-[#172b4d]">{{ risk.title }}</p>
-            </div>
-            <div class="flex gap-1">
-              <button class="rounded p-1 text-[#626f86] hover:bg-[#091e420a]" @click="openEdit(risk)">
-                <Pencil :size="13" />
-              </button>
-              <button class="rounded p-1 text-[#626f86] hover:bg-[#091e420a]" @click="projectsStore.deleteRisk(risk.id)">
-                <Trash2 :size="13" />
-              </button>
-            </div>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div
+        v-for="risk in risks"
+        :key="risk.id"
+        class="project-card project-card--lg transition hover:shadow-md"
+      >
+        <div class="mb-3 flex items-start justify-between gap-2">
+          <div class="flex min-w-0 items-start gap-2">
+            <AlertTriangle :size="18" class="mt-0.5 shrink-0 text-[#f4845f]" />
+            <p class="font-semibold text-[#172b4d]">{{ risk.title }}</p>
           </div>
-          <div class="mb-2 flex flex-wrap gap-1.5">
-            <span class="rounded-full bg-[#091e420f] px-2 py-0.5 text-[10px] text-[#44546f]">
-              {{ severityLabels[risk.severity] }}
-            </span>
-            <span class="rounded-full bg-[#091e420f] px-2 py-0.5 text-[10px] text-[#44546f]">
-              {{ risk.type === 'risk' ? 'Riesgo' : 'Incidencia' }}
-            </span>
-            <span class="rounded-full bg-[#091e420f] px-2 py-0.5 text-[10px] text-[#44546f]">
-              Prob. {{ risk.probability }}
-            </span>
-          </div>
-          <p v-if="risk.description" class="text-sm text-[#626f86]">{{ risk.description }}</p>
-          <p v-if="risk.mitigationPlan" class="mt-2 text-xs text-[#44546f]">
-            Mitigación: {{ risk.mitigationPlan }}
-          </p>
-          <div class="mt-3 flex items-center justify-between">
-            <span class="text-xs text-[#626f86]">{{ userName(risk.ownerId) }}</span>
-            <select
-              :value="risk.status"
-              class="rounded-lg border border-[#091e4229] px-2 py-1 text-xs"
-              @change="projectsStore.updateRisk(risk.id, { status: ($event.target as HTMLSelectElement).value as RiskStatus })"
+          <div class="flex shrink-0 gap-1">
+            <button
+              type="button"
+              class="rounded-lg p-2 text-[#626f86] hover:bg-[#f5f5f7]"
+              @click="openEdit(risk)"
             >
-              <option v-for="(label, key) in statusLabels" :key="key" :value="key">{{ label }}</option>
-            </select>
+              <Pencil :size="16" />
+            </button>
+            <button
+              type="button"
+              class="rounded-lg p-2 text-[#626f86] hover:bg-[#f5f5f7] hover:text-red-600"
+              @click="projectsStore.deleteRisk(risk.id)"
+            >
+              <Trash2 :size="16" />
+            </button>
           </div>
         </div>
+
+        <div class="mb-3 flex flex-wrap gap-2">
+          <span class="rounded-full px-2.5 py-0.5 text-xs font-medium" :class="severityClass[risk.severity]">
+            {{ severityLabels[risk.severity] }}
+          </span>
+          <span class="rounded-full bg-[#f5f5f7] px-2.5 py-0.5 text-xs font-medium text-[#44546f]">
+            {{ risk.type === 'risk' ? 'Riesgo' : 'Incidencia' }}
+          </span>
+          <span class="rounded-full bg-[#f5f5f7] px-2.5 py-0.5 text-xs font-medium text-[#44546f]">
+            Prob. {{ risk.probability }}
+          </span>
+        </div>
+
+        <p v-if="risk.description" class="text-sm text-[#626f86]">{{ risk.description }}</p>
+        <p v-if="risk.mitigationPlan" class="mt-2 rounded-lg bg-[#fafafa] px-3 py-2 text-xs text-[#44546f]">
+          <span class="font-medium">Mitigación:</span> {{ risk.mitigationPlan }}
+        </p>
+
+        <div class="mt-4 flex items-center justify-between gap-3 border-t border-[#ebebed] pt-4">
+          <div v-if="risk.ownerId" class="flex items-center gap-2">
+            <UserAvatar :user-id="risk.ownerId" size="sm" />
+            <span class="text-sm text-[#626f86]">{{ userName(risk.ownerId) }}</span>
+          </div>
+          <span v-else class="text-sm text-[#626f86]">Sin responsable</span>
+          <select
+            :value="risk.status"
+            class="ql-input w-auto py-1.5 text-sm"
+            @change="projectsStore.updateRisk(risk.id, { status: ($event.target as HTMLSelectElement).value as RiskStatus })"
+          >
+            <option v-for="(label, key) in statusLabels" :key="key" :value="key">{{ label }}</option>
+          </select>
+        </div>
       </div>
-      <p v-if="!risks.length" class="text-sm text-[#626f86]">Sin riesgos registrados.</p>
     </div>
+
+    <p v-if="!risks.length" class="py-12 text-center text-sm text-[#626f86]">Sin riesgos registrados.</p>
 
     <ProjectModal
       v-if="showModal"
@@ -185,31 +205,31 @@ function userName(id: string | null) {
       @close="showModal = false"
     >
       <div class="grid gap-3 sm:grid-cols-2">
-        <input v-model="form.title" placeholder="Título *" :class="inputClass + ' sm:col-span-2'" />
-        <textarea v-model="form.description" rows="2" placeholder="Descripción" :class="inputClass + ' sm:col-span-2'" />
-        <select v-model="form.type" :class="inputClass">
+        <input v-model="form.title" placeholder="Título *" class="ql-input sm:col-span-2" />
+        <textarea v-model="form.description" rows="2" placeholder="Descripción" class="ql-input sm:col-span-2" />
+        <select v-model="form.type" class="ql-input">
           <option value="risk">Riesgo</option>
           <option value="incident">Incidencia</option>
         </select>
-        <select v-model="form.severity" :class="inputClass">
+        <select v-model="form.severity" class="ql-input">
           <option v-for="(label, key) in severityLabels" :key="key" :value="key">{{ label }}</option>
         </select>
-        <select v-model="form.probability" :class="inputClass">
+        <select v-model="form.probability" class="ql-input">
           <option value="low">Probabilidad baja</option>
           <option value="medium">Probabilidad media</option>
           <option value="high">Probabilidad alta</option>
         </select>
-        <select v-model="form.ownerId" :class="inputClass">
+        <select v-model="form.ownerId" class="ql-input">
           <option value="">Sin responsable</option>
           <option v-for="m in members" :key="m.id" :value="m.userId">
             {{ auth.getUserById(m.userId)?.name }}
           </option>
         </select>
-        <textarea v-model="form.mitigationPlan" rows="2" placeholder="Plan de mitigación" :class="inputClass + ' sm:col-span-2'" />
+        <textarea v-model="form.mitigationPlan" rows="2" placeholder="Plan de mitigación" class="ql-input sm:col-span-2" />
       </div>
       <template #footer>
-        <button class="px-3 py-1.5 text-sm" @click="showModal = false">Cancelar</button>
-        <button class="rounded-lg bg-[#0c66e4] px-4 py-1.5 text-sm text-white" @click="save">Guardar</button>
+        <button type="button" class="ql-btn ql-btn--ghost" @click="showModal = false">Cancelar</button>
+        <button type="button" class="ql-btn ql-btn--primary" @click="save">Guardar</button>
       </template>
     </ProjectModal>
   </div>

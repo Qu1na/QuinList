@@ -29,7 +29,7 @@ if (!props.modelValue && props.defaultToday) {
 
 <template>
   <div>
-    <label v-if="label" class="mb-1 block text-sm text-[#44546f]">
+    <label v-if="label" class="mb-1 block text-xs font-medium text-[#626f86]">
       {{ label }}
       <span v-if="required" class="text-[#0c66e4]">*</span>
     </label>
@@ -42,7 +42,7 @@ if (!props.modelValue && props.defaultToday) {
         :disabled="disabled"
         :min="min"
         :max="max"
-        class="w-full rounded-lg border border-[#091e4229] py-2 pr-3 pl-9 text-sm outline-none focus:border-[#0c66e4] disabled:bg-[#091e420a] [color-scheme:light]"
+        class="w-full rounded-lg border border-[#091e4229] bg-white py-2.5 pr-3 pl-9 text-sm shadow-sm outline-none transition-shadow hover:border-[#091e421f] focus:border-[#0c66e4] focus:ring-2 focus:ring-[#0c66e4]/15 disabled:bg-[#091e420a] [color-scheme:light]"
         @input="onInput"
       />
     </div>

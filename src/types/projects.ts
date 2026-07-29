@@ -60,9 +60,33 @@ export interface ProjectTask {
   boardCardId: string | null
   boardId: string | null
   attachments: Attachment[]
+  estimateHours: number | null
+  loggedMinutes: number
   createdBy: string | null
   createdAt: string
   updatedAt: string
+}
+
+export interface ProjectTimeEntry {
+  id: string
+  projectId: string
+  taskId: string | null
+  userId: string
+  description: string
+  minutes: number
+  entryDate: string
+  createdAt: string
+}
+
+export interface ProjectShareLink {
+  id: string
+  projectId: string
+  token: string
+  role: 'viewer' | 'commenter'
+  expiresAt: string | null
+  enabled: boolean
+  createdBy: string | null
+  createdAt: string
 }
 
 export interface ProjectMilestone {
@@ -201,6 +225,7 @@ export interface ProjectsDataState {
   invites: ProjectInvite[]
   members: ProjectMember[]
   activities: ProjectActivity[]
+  timeEntries: ProjectTimeEntry[]
 }
 
 export type ProjectDetailTab =

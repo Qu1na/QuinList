@@ -51,8 +51,8 @@ const areaPath = computed(() => {
     >
       <defs>
         <linearGradient id="lineFill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#0c66e4" stop-opacity="0.25" />
-          <stop offset="100%" stop-color="#0c66e4" stop-opacity="0" />
+          <stop offset="0%" stop-color="#5bbce4" stop-opacity="0.2" />
+          <stop offset="100%" stop-color="#5bbce4" stop-opacity="0" />
         </linearGradient>
       </defs>
       <path v-if="areaPath" :d="areaPath" fill="url(#lineFill)" />
@@ -60,7 +60,7 @@ const areaPath = computed(() => {
         v-if="linePath"
         :d="linePath"
         fill="none"
-        stroke="#0c66e4"
+        stroke="#5bbce4"
         stroke-width="2.5"
         stroke-linecap="round"
         stroke-linejoin="round"
@@ -71,7 +71,7 @@ const areaPath = computed(() => {
         :cx="c.x"
         :cy="c.y"
         r="4"
-        fill="#0c66e4"
+        fill="#5bbce4"
         stroke="white"
         stroke-width="2"
       />

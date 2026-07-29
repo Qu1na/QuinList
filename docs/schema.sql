@@ -336,3 +336,63 @@
   CREATE INDEX IF NOT EXISTS idx_project_activities_project ON project_activities(project_id);
 
   ALTER TABLE projects ADD COLUMN IF NOT EXISTS currency TEXT NOT NULL DEFAULT 'COP';
+
+  ALTER TABLE project_milestones ADD COLUMN IF NOT EXISTS start_date DATE;
+
+  ALTER TABLE project_tasks ADD COLUMN IF NOT EXISTS estimate_hours NUMERIC;
+  ALTER TABLE project_tasks ADD COLUMN IF NOT EXISTS logged_minutes INT DEFAULT 0;
+
+  ALTER TABLE project_deliverables ADD COLUMN IF NOT EXISTS attachments JSONB DEFAULT '[]';
+  ALTER TABLE project_deliverables ADD COLUMN IF NOT EXISTS log JSONB DEFAULT '[]';
+
+  ALTER TABLE project_documents ADD COLUMN IF NOT EXISTS folder_id TEXT;
+
+  CREATE TABLE IF NOT EXISTS project_folders (
+    id TEXT PRIMARY KEY,
+    project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    parent_id TEXT,
+    name TEXT NOT NULL,
+    created_by TEXT REFERENCES profiles(id),
+    created_at TIMESTAMPTZ DEFAULT NOW()
+  );
+
+  CREATE TABLE IF NOT EXISTS project_invites (
+    id TEXT PRIMARY KEY,
+    project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    email TEXT NOT NULL,
+    role TEXT NOT NULL DEFAULT 'member',
+    can_view_finance BOOLEAN DEFAULT FALSE,
+    can_manage_tasks BOOLEAN DEFAULT TRUE,
+    can_manage_team BOOLEAN DEFAULT FALSE,
+    status TEXT NOT NULL DEFAULT 'pending',
+    invited_by TEXT REFERENCES profiles(id),
+    created_at TIMESTAMPTZ DEFAULT NOW()
+  );
+
+  CREATE TABLE IF NOT EXISTS project_share_links (
+    id TEXT PRIMARY KEY,
+    project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    token TEXT NOT NULL UNIQUE,
+    role TEXT NOT NULL DEFAULT 'viewer',
+    expires_at TIMESTAMPTZ,
+    enabled BOOLEAN DEFAULT TRUE,
+    created_by TEXT REFERENCES profiles(id),
+    created_at TIMESTAMPTZ DEFAULT NOW()
+  );
+
+  CREATE TABLE IF NOT EXISTS project_time_entries (
+    id TEXT PRIMARY KEY,
+    project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    task_id TEXT REFERENCES project_tasks(id) ON DELETE SET NULL,
+    user_id TEXT NOT NULL REFERENCES profiles(id),
+    description TEXT DEFAULT '',
+    minutes INT NOT NULL DEFAULT 0,
+    entry_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_project_folders_project ON project_folders(project_id);
+  CREATE INDEX IF NOT EXISTS idx_project_invites_project ON project_invites(project_id);
+  CREATE INDEX IF NOT EXISTS idx_project_share_links_project ON project_share_links(project_id);
+  CREATE INDEX IF NOT EXISTS idx_project_share_links_token ON project_share_links(token);
+  CREATE INDEX IF NOT EXISTS idx_project_time_entries_project ON project_time_entries(project_id);

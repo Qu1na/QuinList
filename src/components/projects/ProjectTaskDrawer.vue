@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { X, Trash2, Paperclip } from '@lucide/vue'
+import { Trash2, Paperclip } from '@lucide/vue'
 import { useProjectsStore } from '@/stores/projects'
 import type { ProjectTaskStatus } from '@/types/projects'
 import type { Priority } from '@/types'
-import TaskStatusBadge from './shared/TaskStatusBadge.vue'
-import PriorityBadge from './shared/PriorityBadge.vue'
+import AppWindow from '@/components/ui/AppWindow.vue'
 import DateInput from './shared/DateInput.vue'
 import { TASK_STATUS_LABELS } from '@/utils/projectStats'
 import { openAttachment } from '@/services/storage'
@@ -61,6 +60,7 @@ async function save() {
       startDate: form.value.startDate || null,
       dueDate: form.value.dueDate || null,
     })
+    emit('close')
   } finally {
     saving.value = false
   }
@@ -83,110 +83,153 @@ async function onFileUpload(e: Event) {
     ;(e.target as HTMLInputElement).value = ''
   }
 }
+
+const timeMinutes = ref(30)
+const timeNote = ref('')
+const loggingTime = ref(false)
+
+async function logTime() {
+  if (!task.value || timeMinutes.value <= 0) return
+  loggingTime.value = true
+  try {
+    await projectsStore.logTimeEntry(
+      task.value.projectId,
+      timeMinutes.value,
+      timeNote.value,
+      task.value.id,
+    )
+    timeNote.value = ''
+  } finally {
+    loggingTime.value = false
+  }
+}
 </script>
 
 <template>
   <Teleport to="body">
     <div
       v-if="task"
-      class="fixed inset-0 z-[2000] flex justify-end bg-black/40"
+      class="app-window-overlay fixed inset-0 z-[2000] flex items-center justify-center p-4"
       @click.self="emit('close')"
     >
-      <aside class="flex h-full w-full max-w-md flex-col bg-white shadow-2xl">
-        <header class="flex items-center justify-between border-b border-[#091e4214] px-5 py-4">
-          <h2 class="font-semibold text-[#172b4d]">Detalle de tarea</h2>
-          <button class="rounded p-1.5 text-[#626f86] hover:bg-[#091e420a]" @click="emit('close')">
-            <X :size="20" />
-          </button>
-        </header>
-
-        <div class="flex-1 overflow-y-auto px-5 py-4">
-          <div class="mb-4 flex flex-wrap gap-2">
-            <TaskStatusBadge :status="form.status" />
-            <PriorityBadge :priority="form.priority" />
+      <AppWindow
+        :title="form.title.trim() || 'Tarea'"
+        subtitle="Detalle y edición"
+        class="app-window--wide"
+        @close="emit('close')"
+      >
+        <div class="app-window-form-row app-window-form-row--2">
+          <div class="app-window-form-span-full">
+            <label class="project-create-modal__label">Título</label>
+            <input v-model="form.title" type="text" class="project-create-modal__input" />
           </div>
 
-          <div class="space-y-4">
-            <div>
-              <label class="mb-1 block text-xs font-medium text-[#626f86] uppercase">Título</label>
-              <input
-                v-model="form.title"
-                type="text"
-                class="w-full rounded-lg border border-[#091e4229] px-3 py-2 text-sm outline-none focus:border-[#0c66e4]"
-              />
-            </div>
-            <div>
-              <label class="mb-1 block text-xs font-medium text-[#626f86] uppercase">Descripción</label>
-              <textarea
-                v-model="form.description"
-                rows="4"
-                class="w-full rounded-lg border border-[#091e4229] px-3 py-2 text-sm outline-none focus:border-[#0c66e4]"
-              />
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="mb-1 block text-xs font-medium text-[#626f86] uppercase">Estado</label>
-                <select v-model="form.status" class="w-full rounded-lg border border-[#091e4229] px-3 py-2 text-sm">
-                  <option v-for="(label, key) in TASK_STATUS_LABELS" :key="key" :value="key">{{ label }}</option>
-                </select>
-              </div>
-              <div>
-                <label class="mb-1 block text-xs font-medium text-[#626f86] uppercase">Prioridad</label>
-                <select v-model="form.priority" class="w-full rounded-lg border border-[#091e4229] px-3 py-2 text-sm">
-                  <option value="baja">Baja</option>
-                  <option value="media">Media</option>
-                  <option value="alta">Alta</option>
-                </select>
-              </div>
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-              <DateInput v-model="form.startDate" label="Inicio" :default-today="false" />
-              <DateInput v-model="form.dueDate" label="Vence" :default-today="false" />
-            </div>
+          <div class="app-window-form-span-full">
+            <label class="project-create-modal__label">Descripción</label>
+            <textarea
+              v-model="form.description"
+              rows="3"
+              class="project-create-modal__input resize-none"
+              placeholder="Opcional"
+            />
+          </div>
 
-            <div>
-              <div class="mb-2 flex items-center justify-between">
-                <label class="text-xs font-medium text-[#626f86] uppercase">Adjuntos</label>
-                <label class="flex cursor-pointer items-center gap-1 text-xs text-[#0c66e4]">
-                  <Paperclip :size="12" />
-                  Añadir
-                  <input type="file" class="hidden" :disabled="uploading" @change="onFileUpload" />
-                </label>
-              </div>
-              <ul v-if="task.attachments?.length" class="space-y-1">
-                <li
-                  v-for="att in task.attachments"
-                  :key="att.id"
-                  class="flex items-center justify-between rounded-lg bg-[#091e420a] px-3 py-2 text-sm"
-                >
-                  <span class="truncate text-[#172b4d]">{{ att.name }}</span>
-                  <button class="text-xs text-[#0c66e4] hover:underline" @click="openAttachment(att)">Ver</button>
-                </li>
-              </ul>
-              <p v-else class="text-xs text-[#626f86]">Sin archivos adjuntos.</p>
+          <div>
+            <label class="project-create-modal__label">Estado</label>
+            <select v-model="form.status" class="project-create-modal__input">
+              <option v-for="(label, key) in TASK_STATUS_LABELS" :key="key" :value="key">
+                {{ label }}
+              </option>
+            </select>
+          </div>
+
+          <div>
+            <label class="project-create-modal__label">Prioridad</label>
+            <select v-model="form.priority" class="project-create-modal__input">
+              <option value="baja">Baja</option>
+              <option value="media">Media</option>
+              <option value="alta">Alta</option>
+            </select>
+          </div>
+
+          <DateInput v-model="form.startDate" label="Inicio" :default-today="false" />
+          <DateInput v-model="form.dueDate" label="Vence" :default-today="false" />
+
+          <div class="app-window-form-span-full rounded-xl border border-[#ebebed] bg-white p-4">
+            <p class="mb-2 text-sm font-medium text-[#44546f]">Tiempo registrado</p>
+            <p v-if="task.loggedMinutes" class="mb-3 text-sm text-[#172b4d]">
+              <strong>{{ task.loggedMinutes }} min</strong> en esta tarea
+            </p>
+            <div class="flex flex-wrap gap-2">
+              <input
+                v-model.number="timeMinutes"
+                type="number"
+                min="1"
+                class="project-create-modal__input w-24"
+                placeholder="Min"
+              />
+              <input
+                v-model="timeNote"
+                type="text"
+                class="project-create-modal__input min-w-0 flex-1"
+                placeholder="¿En qué trabajaste?"
+              />
+              <button
+                type="button"
+                class="btn-brand"
+                :disabled="loggingTime"
+                @click="logTime"
+              >
+                Registrar
+              </button>
             </div>
+          </div>
+
+          <div class="app-window-form-span-full">
+            <div class="mb-2 flex items-center justify-between">
+              <label class="project-create-modal__label mb-0">Adjuntos</label>
+              <label class="flex cursor-pointer items-center gap-1 text-sm text-[#2d7eb8]">
+                <Paperclip :size="14" />
+                Añadir
+                <input type="file" class="hidden" :disabled="uploading" @change="onFileUpload" />
+              </label>
+            </div>
+            <ul v-if="task.attachments?.length" class="space-y-1.5">
+              <li
+                v-for="att in task.attachments"
+                :key="att.id"
+                class="flex items-center justify-between rounded-lg bg-[#f5f5f7] px-3 py-2 text-sm"
+              >
+                <span class="truncate text-[#172b4d]">{{ att.name }}</span>
+                <button type="button" class="project-link-btn text-xs" @click="openAttachment(att)">
+                  Ver
+                </button>
+              </li>
+            </ul>
+            <p v-else class="text-sm text-[#626f86]">Sin archivos adjuntos.</p>
           </div>
         </div>
 
-        <footer class="border-t border-[#091e4214] px-5 py-4">
-          <div class="flex gap-2">
-            <button
-              class="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-[#091e4229] py-2.5 text-sm text-[#626f86] hover:bg-[#091e420a]"
-              @click="remove"
-            >
-              <Trash2 :size="14" />
+        <template #footer>
+          <div class="flex w-full justify-between">
+            <button type="button" class="btn-brand-ghost text-red-600 hover:bg-red-50" @click="remove">
+              <Trash2 :size="16" />
               Eliminar
             </button>
-            <button
-              class="flex-[2] rounded-lg bg-[#0c66e4] py-2.5 text-sm font-medium text-white hover:bg-[#0055cc] disabled:opacity-50"
-              :disabled="saving || !form.title.trim()"
-              @click="save"
-            >
-              Guardar
-            </button>
+            <div class="flex gap-2">
+              <button type="button" class="btn-brand-ghost" @click="emit('close')">Cancelar</button>
+              <button
+                type="button"
+                class="btn-brand"
+                :disabled="saving || !form.title.trim()"
+                @click="save"
+              >
+                Guardar
+              </button>
+            </div>
           </div>
-        </footer>
-      </aside>
+        </template>
+      </AppWindow>
     </div>
   </Teleport>
 </template>

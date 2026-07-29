@@ -1,6 +1,11 @@
 import type { ProjectsDataState, ProjectCost } from '@/types/projects'
 import { DEFAULT_CURRENCY } from '@/utils/currency'
 import { PROJECT_SEED } from '@/utils/projectSeed'
+import {
+  isProjectsMatuEnabled,
+  loadProjectsFromMatu,
+  syncProjectsToMatu,
+} from '@/services/projectMatuData'
 
 const STORAGE_KEY = 'quinlist_projects_data_v2'
 
@@ -28,7 +33,11 @@ export function normalizeProjectsState(raw: Partial<ProjectsDataState>): Project
       ...p,
       currency: p.currency ?? DEFAULT_CURRENCY,
     })),
-    tasks: raw.tasks ?? [],
+    tasks: (raw.tasks ?? []).map((t) => ({
+      ...t,
+      estimateHours: t.estimateHours ?? null,
+      loggedMinutes: t.loggedMinutes ?? 0,
+    })),
     milestones: (raw.milestones ?? []).map((m) => ({
       ...m,
       startDate: m.startDate ?? null,
@@ -56,6 +65,7 @@ export function normalizeProjectsState(raw: Partial<ProjectsDataState>): Project
     invites: raw.invites ?? [],
     members: raw.members ?? [],
     activities: raw.activities ?? [],
+    timeEntries: raw.timeEntries ?? [],
   }
 }
 
@@ -87,10 +97,20 @@ export function saveProjectsLocal(data: ProjectsDataState): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
 }
 
-export async function loadProjectsData(_workspaceId: string): Promise<ProjectsDataState> {
+export async function loadProjectsData(workspaceId: string): Promise<ProjectsDataState> {
+  if (isProjectsMatuEnabled()) {
+    return loadProjectsFromMatu(workspaceId)
+  }
   return loadProjectsLocal()
 }
 
-export async function persistProjectsData(data: ProjectsDataState): Promise<void> {
+export async function persistProjectsData(
+  workspaceId: string,
+  data: ProjectsDataState,
+): Promise<void> {
+  if (isProjectsMatuEnabled()) {
+    await syncProjectsToMatu(workspaceId, data)
+    return
+  }
   saveProjectsLocal(data)
 }

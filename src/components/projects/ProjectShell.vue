@@ -16,18 +16,17 @@ import {
   History,
   BarChart3,
   Settings,
-  ArrowLeft,
-  Calendar,
-  User,
+  ChevronRight,
+  Menu,
+  X,
 } from '@lucide/vue'
 import type { ProjectDetailTab } from '@/types/projects'
 import { useProjectsStore } from '@/stores/projects'
 import { useAuthStore } from '@/stores/auth'
 import ProjectStatusBadge from './shared/ProjectStatusBadge.vue'
-import PriorityBadge from './shared/PriorityBadge.vue'
 import ProjectProgressRing from './shared/ProjectProgressRing.vue'
-import { calcProjectProgress, daysUntil, isProjectOverdue } from '@/utils/projectStats'
-import { formatDate } from '@/utils/permissions'
+import UserAvatar from './shared/UserAvatar.vue'
+import { calcProjectProgress } from '@/utils/projectStats'
 
 const props = defineProps<{
   projectId: string
@@ -38,15 +37,13 @@ const router = useRouter()
 const projectsStore = useProjectsStore()
 const auth = useAuthStore()
 
+const mobileNavOpen = ref(false)
+
 const project = computed(() => projectsStore.getProject(props.projectId))
 const progress = computed(() =>
   calcProjectProgress(projectsStore.getProjectTasks(props.projectId)),
 )
-const responsible = computed(() =>
-  project.value?.responsibleId ? auth.getUserById(project.value.responsibleId) : null,
-)
-const daysLeft = computed(() => (project.value ? daysUntil(project.value.dueDate) : null))
-const overdue = computed(() => (project.value ? isProjectOverdue(project.value) : false))
+const userId = computed(() => auth.currentUser?.id ?? '')
 
 const tabGroups: { label: string; tabs: { id: ProjectDetailTab; label: string; icon: typeof LayoutDashboard }[] }[] = [
   {
@@ -85,122 +82,111 @@ const tabGroups: { label: string; tabs: { id: ProjectDetailTab; label: string; i
   },
 ]
 
-const allTabs = computed(() => tabGroups.flatMap((g) => g.tabs))
 const activeTab = computed(() => (route.query.tab as ProjectDetailTab) || 'dashboard')
-const heroCollapsed = ref(false)
+const activeTabLabel = computed(
+  () => tabGroups.flatMap((g) => g.tabs).find((t) => t.id === activeTab.value)?.label ?? 'Dashboard',
+)
 
 function setTab(tab: ProjectDetailTab) {
+  mobileNavOpen.value = false
   router.replace({ query: { ...route.query, tab } })
 }
 </script>
 
 <template>
-  <div v-if="project" class="flex h-full min-h-0 flex-col">
-    <!-- Sub-header fijo del proyecto -->
-    <div class="shrink-0 border-b border-[#091e4214] bg-white">
-      <div class="mx-auto max-w-7xl px-4 py-3 md:px-6">
+  <div v-if="project" class="project-detail flex h-full min-h-0 flex-col overflow-hidden">
+    <header class="project-chrome project-chrome--light">
+      <div class="project-chrome__bar">
         <button
-          class="mb-2 flex items-center gap-1.5 text-xs text-[#626f86] hover:text-[#172b4d]"
-          @click="router.push('/app/projects')"
+          type="button"
+          class="project-chrome__menu-btn md:hidden"
+          aria-label="Menú"
+          @click="mobileNavOpen = !mobileNavOpen"
         >
-          <ArrowLeft :size="14" />
-          Proyectos
+          <Menu v-if="!mobileNavOpen" :size="20" />
+          <X v-else :size="20" />
         </button>
 
-        <div class="flex flex-wrap items-center justify-between gap-3">
-          <div class="min-w-0 flex-1">
-            <div class="flex flex-wrap items-center gap-2">
-              <h1 class="truncate text-xl font-semibold text-[#172b4d]">{{ project.name }}</h1>
-              <ProjectStatusBadge :status="project.status" />
-              <PriorityBadge :priority="project.priority" />
-              <span
-                v-if="overdue"
-                class="rounded-full bg-[#091e420f] px-2 py-0.5 text-xs font-medium text-[#44546f]"
-              >
-                Vencido
-              </span>
-            </div>
-            <div v-if="!heroCollapsed" class="mt-1.5 flex flex-wrap gap-3 text-xs text-[#626f86]">
-              <span v-if="project.client" class="flex items-center gap-1">
-                <User :size="12" />
-                {{ project.client }}
-              </span>
-              <span v-if="responsible">Responsable: {{ responsible.name }}</span>
-              <span v-if="project.startDate || project.dueDate" class="flex items-center gap-1">
-                <Calendar :size="12" />
-                {{ formatDate(project.startDate) }} — {{ formatDate(project.dueDate) }}
-                <span v-if="daysLeft != null && !overdue && daysLeft <= 14">({{ daysLeft }}d)</span>
-              </span>
-            </div>
-          </div>
-          <div class="flex items-center gap-3">
-            <ProjectProgressRing :percent="progress" :size="52" :stroke="5" />
-            <button
-              class="hidden text-xs text-[#626f86] hover:text-[#172b4d] md:block"
-              @click="heroCollapsed = !heroCollapsed"
-            >
-              {{ heroCollapsed ? 'Más info' : 'Menos' }}
-            </button>
-          </div>
-        </div>
-
-        <!-- Tabs móvil -->
-        <nav class="mt-3 flex gap-1 overflow-x-auto border-t border-[#091e4214] pt-2 md:hidden">
-          <button
-            v-for="tab in allTabs"
-            :key="tab.id"
-            class="shrink-0 rounded-md px-2.5 py-1.5 text-xs transition-colors"
-            :class="
-              activeTab === tab.id
-                ? 'bg-[#091e420f] font-medium text-[#172b4d]'
-                : 'text-[#626f86]'
-            "
-            @click="setTab(tab.id)"
-          >
-            {{ tab.label }}
+        <nav class="project-breadcrumb hidden items-center gap-1.5 text-sm md:flex">
+          <button type="button" class="project-breadcrumb__link" @click="router.push('/app/projects')">
+            Proyectos
           </button>
+          <ChevronRight :size="14" class="text-[#c7c7cc]" />
+          <span class="font-medium text-[#172b4d]">{{ project.name }}</span>
         </nav>
-      </div>
-    </div>
 
-    <!-- Cuerpo con scroll -->
-    <div class="flex min-h-0 flex-1">
-      <aside class="hidden w-52 shrink-0 overflow-y-auto border-r border-[#091e4214] bg-[#f9fafc] md:block">
-        <nav v-for="group in tabGroups" :key="group.label" class="px-2 py-3">
-          <p class="mb-1 px-2 text-[10px] font-semibold tracking-wide text-[#626f86] uppercase">
-            {{ group.label }}
-          </p>
-          <div class="space-y-0.5">
-            <button
-              v-for="tab in group.tabs"
-              :key="tab.id"
-              class="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm transition-colors"
-              :class="
-                activeTab === tab.id
-                  ? 'bg-white font-medium text-[#172b4d] shadow-sm'
-                  : 'text-[#44546f] hover:bg-white/60'
-              "
-              @click="setTab(tab.id)"
-            >
-              <component :is="tab.icon" :size="15" />
-              {{ tab.label }}
-            </button>
+        <h1 class="project-chrome__title md:hidden">{{ project.name }}</h1>
+
+        <div class="project-chrome__actions">
+          <ProjectStatusBadge :status="project.status" />
+          <ProjectProgressRing :percent="progress" :size="44" :stroke="4" />
+          <button type="button" class="shrink-0" title="Ir al inicio" @click="router.push('/app')">
+            <UserAvatar v-if="userId" :user-id="userId" size="md" />
+          </button>
+        </div>
+      </div>
+
+      <div
+        v-if="activeTab !== 'tasks'"
+        class="project-chrome__sub hidden border-t border-[#0000000a] px-6 py-2 md:block"
+      >
+        <p class="text-sm text-[#626f86]">
+          Sección actual: <span class="font-medium text-[#172b4d]">{{ activeTabLabel }}</span>
+        </p>
+      </div>
+    </header>
+
+    <div class="flex min-h-0 flex-1 overflow-hidden">
+      <div
+        v-if="mobileNavOpen"
+        class="fixed inset-0 z-40 bg-black/30 md:hidden"
+        @click="mobileNavOpen = false"
+      />
+
+      <aside
+        class="project-sidebar"
+        :class="{ 'project-sidebar--open': mobileNavOpen }"
+      >
+        <nav class="project-sidebar__nav scroll-thin">
+          <div v-for="group in tabGroups" :key="group.label" class="mb-4">
+            <p class="project-sidebar__group-label">{{ group.label }}</p>
+            <div class="space-y-1">
+              <button
+                v-for="tab in group.tabs"
+                :key="tab.id"
+                type="button"
+                class="project-nav-item"
+                :class="{ 'project-nav-item--active': activeTab === tab.id }"
+                @click="setTab(tab.id)"
+              >
+                <component :is="tab.icon" :size="18" />
+                {{ tab.label }}
+              </button>
+            </div>
           </div>
         </nav>
       </aside>
 
-      <div class="min-h-0 flex-1 overflow-y-auto">
-        <div class="mx-auto max-w-7xl px-4 py-5 md:px-6">
+      <div
+        class="project-content scroll-thin"
+        :class="{ 'project-content--board': activeTab === 'tasks' }"
+      >
+        <div
+          class="project-content__inner"
+          :class="{ 'project-content__inner--board': activeTab === 'tasks' }"
+        >
           <slot />
         </div>
       </div>
     </div>
   </div>
 
-  <div v-else class="mx-auto max-w-6xl px-6 py-12 text-center">
-    <p class="text-[#626f86]">Proyecto no encontrado.</p>
-    <button class="mt-4 text-sm text-[#0c66e4] hover:underline" @click="router.push('/app/projects')">
-      Volver a proyectos
-    </button>
+  <div v-else class="flex h-full items-center justify-center px-6">
+    <div class="text-center">
+      <p class="text-base text-[#626f86]">Proyecto no encontrado.</p>
+      <button type="button" class="ql-btn ql-btn--ghost mt-4" @click="router.push('/app/projects')">
+        Volver a proyectos
+      </button>
+    </div>
   </div>
 </template>

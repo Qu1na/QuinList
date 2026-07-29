@@ -9,7 +9,6 @@ import {
   TrendingDown,
   PiggyBank,
   Receipt,
-  Filter,
 } from '@lucide/vue'
 import { useProjectsStore } from '@/stores/projects'
 import { useAuthStore } from '@/stores/auth'
@@ -67,7 +66,23 @@ const txForm = ref({
   date: new Date().toISOString().split('T')[0]!,
 })
 
-const inputClass = 'w-full rounded-lg border border-[#091e4229] px-3 py-2 text-sm outline-none focus:border-[#0c66e4]'
+const inputClass = 'ql-input'
+
+const cashFlowChart = computed(() =>
+  cashFlow.value.map((m) => ({
+    label: m.label,
+    value: m.net,
+    color: m.net >= 0 ? '#5bbce4' : '#f4845f',
+  })),
+)
+
+const expenseDonut = computed(() =>
+  expenseCategories.value.slice(0, 5).map((c, i) => ({
+    label: c.category,
+    value: c.amount,
+    color: ['#5bbce4', '#6554c0', '#f4845f', '#10b981', '#2d7eb8'][i % 5]!,
+  })),
+)
 
 const filteredLedger = computed(() => {
   const q = search.value.trim().toLowerCase()
@@ -81,22 +96,6 @@ const filteredLedger = computed(() => {
     )
   })
 })
-
-const cashFlowChart = computed(() =>
-  cashFlow.value.map((m) => ({
-    label: m.label,
-    value: m.net,
-    color: m.net >= 0 ? '#0c66e4' : '#626f86',
-  })),
-)
-
-const expenseDonut = computed(() =>
-  expenseCategories.value.slice(0, 5).map((c, i) => ({
-    label: c.category,
-    value: c.amount,
-    color: ['#0c66e4', '#6554c0', '#e56910', '#61bd4f', '#cd5a91'][i % 5]!,
-  })),
-)
 
 function openAdd(type: TransactionType) {
   txType.value = type
@@ -143,126 +142,108 @@ function userName(id: string | null) {
 </script>
 
 <template>
-  <div v-if="project && finance" class="space-y-6">
-    <!-- Cuenta del proyecto -->
-    <div class="overflow-hidden rounded-2xl bg-gradient-to-br from-[#0c66e4] to-[#0747a6] p-6 text-white shadow-lg">
+  <div v-if="project && finance" class="space-y-7">
+    <div>
+      <h2 class="project-page-title">Finanzas</h2>
+      <p class="project-page-sub">Cuenta del proyecto, flujo de caja y libro mayor</p>
+    </div>
+
+    <div class="finance-hero">
       <div class="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p class="text-sm text-white/70">Cuenta del proyecto</p>
-          <h2 class="mt-1 text-2xl font-bold">{{ project.name }}</h2>
+          <p class="finance-hero__label">Cuenta del proyecto</p>
+          <h3 class="mt-1 text-2xl font-bold">{{ project.name }}</h3>
           <p class="mt-1 text-sm text-white/80">{{ project.client || 'Sin cliente' }}</p>
         </div>
-        <Wallet :size="40" class="opacity-30" />
+        <Wallet :size="44" class="opacity-30" />
       </div>
-      <div class="mt-6 grid gap-4 sm:grid-cols-3">
+      <div class="mt-6 grid gap-6 sm:grid-cols-3">
         <div>
-          <p class="text-xs text-white/70 uppercase">Saldo disponible</p>
-          <p class="text-3xl font-bold">{{ fmt(finance.balance) }}</p>
+          <p class="finance-hero__label">Saldo disponible</p>
+          <p class="finance-hero__value">{{ fmt(finance.balance) }}</p>
         </div>
         <div>
-          <p class="text-xs text-white/70 uppercase">Presupuesto base</p>
+          <p class="finance-hero__label">Presupuesto base</p>
           <p class="text-xl font-semibold">{{ fmt(finance.budget) }}</p>
         </div>
         <div>
-          <p class="text-xs text-white/70 uppercase">Flujo neto</p>
-          <p class="text-xl font-semibold text-white/90">
+          <p class="finance-hero__label">Flujo neto</p>
+          <p class="text-xl font-semibold">
             {{ finance.netFlow >= 0 ? '+' : '' }}{{ fmt(finance.netFlow) }}
           </p>
         </div>
       </div>
     </div>
 
-    <!-- KPIs -->
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <div class="rounded-xl border border-[#091e4214] bg-white p-4">
-        <div class="flex items-center gap-2 text-[#0c66e4]">
-          <ArrowDownLeft :size="18" />
-          <span class="text-xs font-medium uppercase">Ingresos</span>
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div class="project-card project-kpi">
+        <div class="mb-2 flex items-center gap-2 text-[#5bbce4]">
+          <ArrowDownLeft :size="20" />
+          <span class="project-kpi__label">Ingresos</span>
         </div>
-        <p class="mt-2 text-2xl font-bold text-[#172b4d]">{{ fmt(finance.income) }}</p>
-        <p class="text-xs text-[#626f86]">{{ transactions.filter((t) => t.type === 'income').length }} movimientos</p>
+        <p class="project-kpi__value">{{ fmt(finance.income) }}</p>
+        <p class="text-sm text-[#626f86]">{{ transactions.filter((t) => t.type === 'income').length }} movimientos</p>
       </div>
-      <div class="rounded-xl border border-[#091e4214] bg-white p-4">
-        <div class="flex items-center gap-2 text-[#44546f]">
-          <ArrowUpRight :size="18" />
-          <span class="text-xs font-medium uppercase">Egresos</span>
+      <div class="project-card project-kpi">
+        <div class="mb-2 flex items-center gap-2 text-[#f4845f]">
+          <ArrowUpRight :size="20" />
+          <span class="project-kpi__label">Egresos</span>
         </div>
-        <p class="mt-2 text-2xl font-bold text-[#172b4d]">{{ fmt(finance.expenses) }}</p>
-        <p class="text-xs text-[#626f86]">{{ transactions.filter((t) => t.type === 'expense').length }} movimientos</p>
+        <p class="project-kpi__value">{{ fmt(finance.expenses) }}</p>
+        <p class="text-sm text-[#626f86]">{{ transactions.filter((t) => t.type === 'expense').length }} movimientos</p>
       </div>
-      <div class="rounded-xl border border-[#091e4214] bg-white p-4">
-        <div class="flex items-center gap-2 text-[#0c66e4]">
-          <PiggyBank :size="18" />
-          <span class="text-xs font-medium uppercase">Consumo presupuesto</span>
+      <div class="project-card project-kpi">
+        <div class="mb-2 flex items-center gap-2 text-[#2d7eb8]">
+          <PiggyBank :size="20" />
+          <span class="project-kpi__label">Consumo presupuesto</span>
         </div>
-        <p class="mt-2 text-2xl font-bold text-[#172b4d]">{{ finance.usagePercent }}%</p>
-        <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-[#091e4214]">
+        <p class="project-kpi__value">{{ finance.usagePercent }}%</p>
+        <div class="mt-2 h-2 overflow-hidden rounded-full bg-[#ebebed]">
           <div
             class="h-full rounded-full"
-            :class="finance.usagePercent >= 90 ? 'bg-[#44546f]' : 'bg-[#0c66e4]'"
+            :class="finance.usagePercent >= 90 ? 'bg-[#f4845f]' : 'bg-[#5bbce4]'"
             :style="{ width: `${Math.min(100, finance.usagePercent)}%` }"
           />
         </div>
       </div>
-      <div class="rounded-xl border border-[#091e4214] bg-white p-4">
-        <div class="flex items-center gap-2 text-[#6554c0]">
-          <TrendingUp :size="18" />
-          <span class="text-xs font-medium uppercase">Rentabilidad</span>
+      <div class="project-card project-kpi">
+        <div class="mb-2 flex items-center gap-2 text-[#6554c0]">
+          <TrendingUp :size="20" />
+          <span class="project-kpi__label">Rentabilidad</span>
         </div>
-        <p class="mt-2 text-2xl font-bold text-[#172b4d]">
-          {{ finance.profitability != null ? `${finance.profitability}%` : '—' }}
-        </p>
-        <p v-if="project.profitabilityTarget" class="text-xs text-[#626f86]">
-          Meta: {{ project.profitabilityTarget }}%
-        </p>
+        <p class="project-kpi__value">{{ finance.profitability != null ? `${finance.profitability}%` : '—' }}</p>
+        <p v-if="project.profitabilityTarget" class="text-sm text-[#626f86]">Meta: {{ project.profitabilityTarget }}%</p>
       </div>
     </div>
 
-    <!-- Acciones + presupuesto -->
     <div class="flex flex-wrap items-center justify-between gap-3">
-      <div class="flex gap-2">
-        <button
-          class="flex items-center gap-1.5 rounded-lg border border-[#091e4229] bg-white px-4 py-2 text-sm font-medium text-[#172b4d] hover:bg-[#091e420a]"
-          @click="openAdd('income')"
-        >
-          <ArrowDownLeft :size="16" />
+      <div class="flex flex-wrap gap-2">
+        <button type="button" class="ql-btn ql-btn--ghost" @click="openAdd('income')">
+          <ArrowDownLeft :size="18" />
           Registrar ingreso
         </button>
-        <button
-          class="flex items-center gap-1.5 rounded-lg border border-[#091e4229] bg-white px-4 py-2 text-sm font-medium text-[#172b4d] hover:bg-[#091e420a]"
-          @click="openAdd('expense')"
-        >
-          <ArrowUpRight :size="16" />
+        <button type="button" class="ql-btn ql-btn--ghost" @click="openAdd('expense')">
+          <ArrowUpRight :size="18" />
           Registrar egreso
         </button>
       </div>
-      <button
-        class="text-sm text-[#0c66e4] hover:underline"
-        @click="startEditBudget"
-      >
-        Ajustar presupuesto base
-      </button>
+      <button type="button" class="project-link-btn" @click="startEditBudget">Ajustar presupuesto base</button>
     </div>
 
-    <!-- Gráficos -->
-    <div class="grid gap-4 lg:grid-cols-2">
-      <div class="rounded-xl border border-[#091e4214] bg-white p-5">
-        <h3 class="mb-4 flex items-center gap-2 font-semibold text-[#172b4d]">
-          <TrendingDown :size="18" />
+    <div class="grid gap-5 lg:grid-cols-2">
+      <div class="project-card project-card--lg">
+        <h3 class="mb-4 flex items-center gap-2 text-base font-semibold text-[#172b4d]">
+          <TrendingDown :size="20" class="text-[#5bbce4]" />
           Flujo de caja mensual
         </h3>
         <BarChart v-if="cashFlowChart.length" :items="cashFlowChart" unit="" />
         <p v-else class="text-sm text-[#626f86]">Sin movimientos para graficar.</p>
       </div>
-      <div class="rounded-xl border border-[#091e4214] bg-white p-5">
-        <h3 class="mb-4 font-semibold text-[#172b4d]">Egresos por categoría</h3>
-        <DonutChart v-if="expenseDonut.length" :segments="expenseDonut" :size="140" />
-        <ul v-if="expenseCategories.length" class="mt-4 space-y-1.5">
-          <li
-            v-for="cat in expenseCategories.slice(0, 5)"
-            :key="cat.category"
-            class="flex justify-between text-sm"
-          >
+      <div class="project-card project-card--lg">
+        <h3 class="mb-4 text-base font-semibold text-[#172b4d]">Egresos por categoría</h3>
+        <DonutChart v-if="expenseDonut.length" :segments="expenseDonut" :size="160" />
+        <ul v-if="expenseCategories.length" class="mt-4 space-y-2">
+          <li v-for="cat in expenseCategories.slice(0, 5)" :key="cat.category" class="flex justify-between text-sm">
             <span class="text-[#44546f]">{{ cat.category }}</span>
             <span class="font-medium text-[#172b4d]">{{ fmt(cat.amount) }} ({{ cat.percent }}%)</span>
           </li>
@@ -271,56 +252,40 @@ function userName(id: string | null) {
       </div>
     </div>
 
-    <!-- Libro mayor -->
-    <div class="rounded-xl border border-[#091e4214] bg-white p-5">
+    <div class="project-card project-card--lg">
       <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h3 class="flex items-center gap-2 font-semibold text-[#172b4d]">
-          <Receipt :size="18" />
-          Libro mayor — Movimientos
+        <h3 class="flex items-center gap-2 text-base font-semibold text-[#172b4d]">
+          <Receipt :size="20" />
+          Libro mayor
         </h3>
         <div class="flex flex-wrap gap-2">
-          <div class="relative">
-            <Filter :size="14" class="absolute top-2.5 left-2.5 text-[#626f86]" />
-            <select
-              v-model="typeFilter"
-              class="rounded-lg border border-[#091e4229] py-1.5 pr-3 pl-8 text-sm"
-            >
-              <option value="all">Todos</option>
-              <option value="income">Ingresos</option>
-              <option value="expense">Egresos</option>
-            </select>
-          </div>
-          <input
-            v-model="search"
-            type="text"
-            placeholder="Buscar..."
-            class="rounded-lg border border-[#091e4229] px-3 py-1.5 text-sm"
-          />
+          <select v-model="typeFilter" class="ql-input w-auto min-w-[140px] py-2">
+            <option value="all">Todos</option>
+            <option value="income">Ingresos</option>
+            <option value="expense">Egresos</option>
+          </select>
+          <input v-model="search" type="text" placeholder="Buscar..." class="ql-input w-auto min-w-[180px] py-2" />
         </div>
       </div>
 
-      <div class="overflow-x-auto">
-        <table class="w-full min-w-[700px] text-sm">
+      <div class="ql-table-wrap overflow-x-auto">
+        <table class="ql-table min-w-[700px]">
           <thead>
-            <tr class="border-b border-[#091e4214] text-left text-xs text-[#626f86]">
-              <th class="pb-2 pr-4">Fecha</th>
-              <th class="pb-2 pr-4">Concepto</th>
-              <th class="pb-2 pr-4">Categoría</th>
-              <th class="pb-2 pr-4">Método</th>
-              <th class="pb-2 pr-4">Referencia</th>
-              <th class="pb-2 pr-4 text-right">Monto</th>
-              <th class="pb-2 text-right">Saldo</th>
-              <th class="pb-2 w-8" />
+            <tr>
+              <th>Fecha</th>
+              <th>Concepto</th>
+              <th>Categoría</th>
+              <th>Método</th>
+              <th>Referencia</th>
+              <th class="text-right">Monto</th>
+              <th class="text-right">Saldo</th>
+              <th />
             </tr>
           </thead>
           <tbody>
-            <tr
-              v-for="tx in filteredLedger"
-              :key="tx.id"
-              class="border-b border-[#091e4214] last:border-0 hover:bg-[#091e420a]"
-            >
-              <td class="py-2.5 pr-4 text-[#626f86]">{{ formatDate(tx.date) }}</td>
-              <td class="py-2.5 pr-4">
+            <tr v-for="tx in filteredLedger" :key="tx.id">
+              <td class="text-[#626f86]">{{ formatDate(tx.date) }}</td>
+              <td>
                 <div class="flex items-center gap-2">
                   <span
                     class="flex h-6 w-6 items-center justify-center rounded-full bg-[#091e420f] text-[#44546f]"
@@ -334,25 +299,15 @@ function userName(id: string | null) {
                   </div>
                 </div>
               </td>
-              <td class="py-2.5 pr-4 text-[#626f86]">{{ tx.category }}</td>
-              <td class="py-2.5 pr-4 text-[#626f86]">{{ PAYMENT_METHOD_LABELS[tx.paymentMethod] }}</td>
-              <td class="py-2.5 pr-4 font-mono text-xs text-[#626f86]">{{ tx.reference || '—' }}</td>
-              <td
-                class="py-2.5 pr-4 text-right font-semibold text-[#172b4d]"
-              >
+              <td class="text-[#626f86]">{{ tx.category }}</td>
+              <td class="text-[#626f86]">{{ PAYMENT_METHOD_LABELS[tx.paymentMethod] }}</td>
+              <td class="font-mono text-xs text-[#626f86]">{{ tx.reference || '—' }}</td>
+              <td class="text-right font-semibold text-[#172b4d]">
                 {{ tx.type === 'income' ? '+' : '-' }}{{ fmt(tx.amount) }}
               </td>
-              <td class="py-2.5 text-right font-medium text-[#172b4d]">
-                {{ fmt(tx.runningBalance) }}
-              </td>
-              <td class="py-2.5">
-                <button
-                  class="text-xs text-red-500 hover:underline"
-                  title="Eliminar"
-                  @click="projectsStore.deleteTransaction(tx.id)"
-                >
-                  ×
-                </button>
+              <td class="text-right font-medium text-[#172b4d]">{{ fmt(tx.runningBalance) }}</td>
+              <td>
+                <button type="button" class="text-sm text-red-500 hover:underline" @click="projectsStore.deleteTransaction(tx.id)">×</button>
               </td>
             </tr>
           </tbody>
@@ -367,10 +322,10 @@ function userName(id: string | null) {
     <Teleport to="body">
       <div
         v-if="showAdd"
-        class="fixed inset-0 z-[2000] flex items-center justify-center bg-black/50 p-4"
+        class="app-window-overlay fixed inset-0 z-[2000] flex items-center justify-center p-4"
         @click.self="showAdd = false"
       >
-        <div class="w-full max-w-lg rounded-xl bg-white p-6 shadow-2xl">
+        <div class="project-card w-full max-w-lg p-6 shadow-2xl">
           <h3 class="font-semibold text-[#172b4d]">
             {{ txType === 'income' ? 'Registrar ingreso' : 'Registrar egreso' }}
           </h3>
@@ -409,11 +364,8 @@ function userName(id: string | null) {
             </div>
           </div>
           <div class="mt-5 flex justify-end gap-2">
-            <button class="rounded-lg px-4 py-2 text-sm text-[#626f86]" @click="showAdd = false">Cancelar</button>
-            <button
-              class="rounded-lg bg-[#0c66e4] px-4 py-2 text-sm font-medium text-white hover:bg-[#0055cc]"
-              @click="saveTransaction"
-            >
+            <button type="button" class="ql-btn ql-btn--ghost" @click="showAdd = false">Cancelar</button>
+            <button type="button" class="ql-btn ql-btn--primary" @click="saveTransaction">
               Registrar {{ txType === 'income' ? 'ingreso' : 'egreso' }}
             </button>
           </div>
@@ -422,10 +374,10 @@ function userName(id: string | null) {
 
       <div
         v-if="editingBudget"
-        class="fixed inset-0 z-[2000] flex items-center justify-center bg-black/50 p-4"
+        class="app-window-overlay fixed inset-0 z-[2000] flex items-center justify-center p-4"
         @click.self="editingBudget = false"
       >
-        <div class="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
+        <div class="project-card w-full max-w-md p-6 shadow-2xl">
           <h3 class="font-semibold text-[#172b4d]">Ajustar presupuesto base</h3>
           <p class="mt-1 text-sm text-[#626f86]">
             El presupuesto base es el monto inicial asignado al proyecto. Los ingresos y egresos modifican el saldo disponible.
@@ -441,8 +393,8 @@ function userName(id: string | null) {
             </div>
           </div>
           <div class="mt-5 flex justify-end gap-2">
-            <button class="px-4 py-2 text-sm" @click="editingBudget = false">Cancelar</button>
-            <button class="rounded-lg bg-[#0c66e4] px-4 py-2 text-sm text-white" @click="saveBudget">Guardar</button>
+            <button type="button" class="ql-btn ql-btn--ghost" @click="editingBudget = false">Cancelar</button>
+            <button type="button" class="ql-btn ql-btn--primary" @click="saveBudget">Guardar</button>
           </div>
         </div>
       </div>

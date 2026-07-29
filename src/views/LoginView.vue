@@ -5,10 +5,12 @@ import { Eye, EyeOff, Loader2, Mail, Lock } from '@lucide/vue'
 import AuthLayout from '@/components/auth/AuthLayout.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useQuinListStore } from '@/stores/quinlist'
+import { useProjectsStore } from '@/stores/projects'
 import { REDIRECT_KEY } from '@/router'
 
 const auth = useAuthStore()
 const store = useQuinListStore()
+const projectsStore = useProjectsStore()
 const router = useRouter()
 
 const email = ref('')
@@ -50,6 +52,7 @@ async function submit() {
     }
 
     await store.init()
+    await projectsStore.init()
 
     const redirect = sessionStorage.getItem(REDIRECT_KEY)
     if (redirect) {

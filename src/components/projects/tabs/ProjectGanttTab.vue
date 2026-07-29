@@ -68,11 +68,11 @@ function barStyle(startDate: string | null, dueDate: string | null) {
 }
 
 function barColor(status: string) {
-  if (status === 'done') return 'bg-[#44546f]'
-  if (status === 'blocked') return 'bg-[#626f86]'
-  if (status === 'in_progress') return 'bg-[#0c66e4]'
+  if (status === 'done') return 'bg-[#10b981]'
+  if (status === 'blocked') return 'bg-[#f4845f]'
+  if (status === 'in_progress') return 'bg-[#5bbce4]'
   if (status === 'review') return 'bg-[#6554c0]'
-  return 'bg-[#091e4240]'
+  return 'bg-[#c7c7cc]'
 }
 
 async function quickAdd() {
@@ -90,113 +90,104 @@ async function quickAdd() {
 </script>
 
 <template>
-  <div class="space-y-4">
-    <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#091e4214] bg-white p-4">
+  <div class="space-y-6">
+    <div class="flex flex-wrap items-start justify-between gap-4">
       <div>
-        <h2 class="font-semibold text-[#172b4d]">Cronograma</h2>
-        <p v-if="project?.startDate && project?.dueDate" class="text-xs text-[#626f86]">
-          Proyecto: {{ formatDate(project.startDate) }} — {{ formatDate(project.dueDate) }}
+        <h2 class="project-page-title">Cronograma</h2>
+        <p v-if="project?.startDate && project?.dueDate" class="project-page-sub">
+          {{ formatDate(project.startDate) }} — {{ formatDate(project.dueDate) }}
         </p>
+        <p v-else class="project-page-sub">Vista temporal de tareas e hitos del proyecto</p>
       </div>
-      <button
-        class="flex items-center gap-1 rounded-lg bg-[#0c66e4] px-3 py-2 text-sm text-white"
-        @click="showQuickAdd = !showQuickAdd"
-      >
-        <Plus :size="14" />
+      <button type="button" class="ql-btn ql-btn--primary" @click="showQuickAdd = !showQuickAdd">
+        <Plus :size="18" />
         Añadir al cronograma
       </button>
     </div>
 
-    <div v-if="showQuickAdd" class="rounded-xl border border-[#091e4214] bg-white p-4">
-      <div class="grid gap-3 sm:grid-cols-3">
+    <div v-if="showQuickAdd" class="project-card project-card--lg">
+      <div class="grid gap-4 sm:grid-cols-3">
         <input
           v-model="quickForm.title"
           placeholder="Nombre de la tarea *"
-          class="rounded-lg border border-[#091e4229] px-3 py-2 text-sm"
+          class="ql-input"
         />
         <DateInput v-model="quickForm.startDate" label="Inicio" />
         <DateInput v-model="quickForm.dueDate" label="Fin" />
       </div>
-      <button class="mt-3 rounded-lg bg-[#0c66e4] px-4 py-2 text-sm text-white" @click="quickAdd">
-        Crear en cronograma
-      </button>
+      <button type="button" class="ql-btn ql-btn--accent mt-4" @click="quickAdd">Crear en cronograma</button>
     </div>
 
-    <div v-if="range" class="rounded-xl border border-[#091e4214] bg-white p-5">
-      <div class="relative mb-3 h-6 border-b border-[#091e4214]">
+    <div v-if="range" class="project-card project-card--lg gantt-chart">
+      <div class="gantt-chart__header">
         <span
           v-for="label in monthLabels"
           :key="label.left"
-          class="absolute bottom-0 text-[10px] text-[#626f86]"
+          class="gantt-chart__month"
           :style="{ left: label.left }"
         >
           {{ label.text }}
         </span>
         <div
           v-if="todayPercent != null"
-          class="absolute top-0 bottom-0 w-px bg-[#0c66e4]/50"
+          class="gantt-chart__today"
           :style="{ left: `${todayPercent}%` }"
           title="Hoy"
         />
       </div>
 
-      <!-- Hitos -->
-      <div v-for="ms in milestones" :key="ms.id" class="mb-2 flex items-center gap-3">
-        <div class="w-40 shrink-0">
-          <p class="truncate text-xs font-medium text-[#6554c0]">◆ {{ ms.title }}</p>
+      <div v-for="ms in milestones" :key="ms.id" class="gantt-row">
+        <div class="gantt-row__label">
+          <p class="truncate font-medium text-[#6554c0]">◆ {{ ms.title }}</p>
         </div>
-        <div class="relative h-6 flex-1 rounded bg-[#6554c0]/5">
-          <div
-            class="absolute top-1 h-4 rounded border border-[#6554c0]/30 bg-[#6554c0]/20"
-            :style="barStyle(ms.startDate, ms.dueDate)"
-          />
+        <div class="gantt-row__track gantt-row__track--milestone">
+          <div class="gantt-bar gantt-bar--milestone" :style="barStyle(ms.startDate, ms.dueDate)" />
         </div>
       </div>
 
-      <!-- Tareas -->
       <div
         v-for="task in scheduledTasks"
         :key="task.id"
-        class="mb-2 flex cursor-pointer items-center gap-3 rounded-lg p-1 hover:bg-[#091e420a]"
+        class="gantt-row gantt-row--clickable"
         @click="selectedTaskId = task.id"
       >
-        <div class="w-40 shrink-0">
-          <p class="truncate text-sm font-medium text-[#172b4d]">{{ task.title }}</p>
+        <div class="gantt-row__label">
+          <p class="truncate text-base font-medium text-[#172b4d]">{{ task.title }}</p>
           <TaskStatusBadge :status="task.status" compact />
         </div>
-        <div class="relative h-8 flex-1 rounded bg-[#091e420a]">
+        <div class="gantt-row__track">
           <div
             v-if="todayPercent != null"
-            class="absolute top-0 bottom-0 w-px bg-[#0c66e4]/30"
+            class="gantt-chart__today gantt-chart__today--inner"
             :style="{ left: `${todayPercent}%` }"
           />
-          <div
-            class="absolute top-1.5 h-5 rounded shadow-sm"
-            :class="barColor(task.status)"
-            :style="barStyle(task.startDate, task.dueDate)"
-          />
+          <div class="gantt-bar" :class="barColor(task.status)" :style="barStyle(task.startDate, task.dueDate)" />
         </div>
-        <div class="hidden w-28 shrink-0 text-[10px] text-[#626f86] sm:block">
-          <Calendar :size="10" class="inline" />
+        <div class="gantt-row__dates hidden lg:block">
+          <Calendar :size="14" class="inline text-[#8e8e93]" />
           {{ formatDate(task.startDate) }} — {{ formatDate(task.dueDate) }}
         </div>
       </div>
 
-      <div class="mt-4 flex flex-wrap gap-3 text-xs text-[#626f86]">
-        <span v-for="col in ['todo', 'in_progress', 'review', 'done', 'blocked']" :key="col" class="flex items-center gap-1">
-          <span class="h-2 w-2 rounded-full" :class="barColor(col)" />
+      <div class="mt-6 flex flex-wrap gap-4 text-sm text-[#626f86]">
+        <span v-for="col in ['todo', 'in_progress', 'review', 'done', 'blocked']" :key="col" class="flex items-center gap-2">
+          <span class="h-2.5 w-2.5 rounded-full" :class="barColor(col)" />
           {{ TASK_STATUS_LABELS[col as keyof typeof TASK_STATUS_LABELS] }}
         </span>
-        <span class="flex items-center gap-1">
-          <span class="h-2 w-2 rounded-full bg-[#6554c0]/40" />
+        <span class="flex items-center gap-2">
+          <span class="h-2.5 w-2.5 rounded-full bg-[#6554c0]/50" />
           Hitos
         </span>
       </div>
     </div>
 
-    <p v-else class="rounded-xl border border-dashed border-[#091e4229] p-8 text-center text-sm text-[#626f86]">
-      Añade tareas con fechas o crea hitos para visualizar el cronograma.
-    </p>
+    <div v-else class="project-card flex flex-col items-center justify-center py-16 text-center">
+      <Calendar :size="48" class="mb-4 text-[#c7c7cc]" />
+      <p class="text-base font-medium text-[#172b4d]">Sin fechas programadas</p>
+      <p class="mt-1 max-w-md text-sm text-[#626f86]">
+        Añade tareas con fechas o crea hitos para visualizar el cronograma.
+      </p>
+    </div>
 
     <ProjectTaskDrawer :task-id="selectedTaskId" @close="selectedTaskId = null" />
   </div>

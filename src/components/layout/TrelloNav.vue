@@ -130,7 +130,7 @@ onUnmounted(() => {
 <template>
   <header
     class="relative z-30 flex h-12 shrink-0 items-center gap-3 px-4"
-    :class="isBoard ? 'bg-black/15 text-white backdrop-blur-sm' : 'bg-[#0052cc] text-white'"
+    :class="isBoard ? 'bg-black/15 text-white backdrop-blur-sm' : 'app-header text-white'"
   >
     <button
       class="flex items-center gap-2 rounded px-2 py-1.5 transition-colors hover:bg-white/20"
@@ -191,7 +191,7 @@ onUnmounted(() => {
     <div class="ml-auto flex items-center gap-2">
       <button
         v-if="!isBoard"
-        class="flex items-center gap-1.5 rounded bg-white/20 px-3 py-1.5 text-sm font-medium hover:bg-white/30"
+        class="flex items-center gap-1.5 rounded-full bg-white/25 px-3 py-1.5 text-sm font-medium shadow-sm hover:bg-white/35"
         @click="ui.openCreateBoard()"
       >
         <Plus :size="16" />

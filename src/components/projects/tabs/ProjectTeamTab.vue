@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useQuinListStore } from '@/stores/quinlist'
 import { roleLabel } from '@/utils/permissions'
 import type { UserRole } from '@/types'
+import UserAvatar from '@/components/projects/shared/UserAvatar.vue'
 
 const props = defineProps<{ projectId: string }>()
 
@@ -84,114 +85,104 @@ async function sendInvite() {
 </script>
 
 <template>
-  <div class="space-y-5">
-    <div class="grid gap-3 sm:grid-cols-3">
-      <div class="rounded-xl border border-[#091e4214] bg-white p-4">
-        <p class="text-xs text-[#626f86] uppercase">Integrantes</p>
-        <p class="text-2xl font-bold text-[#172b4d]">{{ members.length }}</p>
+  <div class="space-y-7">
+    <div>
+      <h2 class="project-page-title">Equipo</h2>
+      <p class="project-page-sub">Integrantes, permisos e invitaciones del proyecto</p>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-3">
+      <div class="project-card project-kpi">
+        <p class="project-kpi__label">Integrantes</p>
+        <p class="project-kpi__value">{{ members.length }}</p>
       </div>
-      <div class="rounded-xl border border-[#091e4214] bg-white p-4">
-        <p class="text-xs text-[#626f86] uppercase">Invitaciones pendientes</p>
-        <p class="text-2xl font-bold text-[#172b4d]">{{ pendingInvites.length }}</p>
+      <div class="project-card project-kpi">
+        <p class="project-kpi__label">Invitaciones pendientes</p>
+        <p class="project-kpi__value">{{ pendingInvites.length }}</p>
       </div>
-      <div class="rounded-xl border border-[#091e4214] bg-white p-4">
-        <p class="text-xs text-[#626f86] uppercase">Con acceso finanzas</p>
-        <p class="text-2xl font-bold text-[#172b4d]">{{ members.filter((m) => m.canViewFinance).length }}</p>
+      <div class="project-card project-kpi">
+        <p class="project-kpi__label">Con acceso finanzas</p>
+        <p class="project-kpi__value">{{ members.filter((m) => m.canViewFinance).length }}</p>
       </div>
     </div>
 
-    <!-- Invitar por correo -->
-    <div class="rounded-xl border border-[#091e4214] bg-white p-5">
-      <h2 class="mb-1 flex items-center gap-2 font-semibold text-[#172b4d]">
-        <Mail :size="16" class="text-[#0c66e4]" />
-        Invitar al equipo del proyecto
-      </h2>
-      <p class="mb-4 text-xs text-[#626f86]">
+    <div class="project-card project-card--lg">
+      <h3 class="mb-1 flex items-center gap-2 text-base font-semibold text-[#172b4d]">
+        <Mail :size="20" class="text-[#5bbce4]" />
+        Invitar al equipo
+      </h3>
+      <p class="mb-4 text-sm text-[#626f86]">
         Invita por correo. Si ya pertenece al workspace, se añade de inmediato.
       </p>
       <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
         <label class="flex-1 text-sm">
-          <span class="mb-1 block text-[#44546f]">Correo electrónico</span>
-          <input
-            v-model="inviteEmail"
-            type="email"
-            placeholder="colaborador@empresa.com"
-            class="w-full rounded-lg border border-[#091e4229] px-3 py-2 text-sm outline-none focus:border-[#0c66e4]"
-          />
+          <span class="mb-1.5 block font-medium text-[#44546f]">Correo electrónico</span>
+          <input v-model="inviteEmail" type="email" placeholder="colaborador@empresa.com" class="ql-input" />
         </label>
-        <select v-model="addRole" class="rounded-lg border border-[#091e4229] px-3 py-2 text-sm">
+        <select v-model="addRole" class="ql-input w-auto min-w-[160px]">
           <option value="admin">Administrador</option>
           <option value="member">Miembro</option>
           <option value="viewer">Observador</option>
         </select>
-        <button
-          class="flex items-center justify-center gap-1 rounded-lg bg-[#0c66e4] px-4 py-2 text-sm text-white disabled:opacity-50"
-          :disabled="inviting"
-          @click="sendInvite"
-        >
-          <Loader2 v-if="inviting" :size="14" class="animate-spin" />
-          <UserPlus v-else :size="14" />
+        <button type="button" class="ql-btn ql-btn--primary" :disabled="inviting" @click="sendInvite">
+          <Loader2 v-if="inviting" :size="18" class="animate-spin" />
+          <UserPlus v-else :size="18" />
           Invitar
         </button>
       </div>
-      <div class="mt-3 flex flex-wrap gap-3 text-xs">
-        <label class="flex items-center gap-1"><input v-model="canTasks" type="checkbox" /> Tareas</label>
-        <label class="flex items-center gap-1"><input v-model="canFinance" type="checkbox" /> Finanzas</label>
-        <label class="flex items-center gap-1"><input v-model="canTeam" type="checkbox" /> Equipo</label>
+      <div class="mt-4 flex flex-wrap gap-4 text-sm text-[#44546f]">
+        <label class="flex items-center gap-2"><input v-model="canTasks" type="checkbox" class="rounded" /> Tareas</label>
+        <label class="flex items-center gap-2"><input v-model="canFinance" type="checkbox" class="rounded" /> Finanzas</label>
+        <label class="flex items-center gap-2"><input v-model="canTeam" type="checkbox" class="rounded" /> Equipo</label>
       </div>
-      <p v-if="inviteError" class="mt-2 text-xs text-[#44546f]">{{ inviteError }}</p>
-      <p v-if="inviteSuccess" class="mt-2 text-xs text-[#0c66e4]">{{ inviteSuccess }}</p>
+      <p v-if="inviteError" class="mt-2 text-sm text-red-600">{{ inviteError }}</p>
+      <p v-if="inviteSuccess" class="mt-2 text-sm text-[#2d7eb8]">{{ inviteSuccess }}</p>
 
-      <ul v-if="pendingInvites.length" class="mt-4 space-y-1 border-t border-[#091e4214] pt-3">
-        <li v-for="inv in pendingInvites" :key="inv.id" class="text-xs text-[#626f86]">
+      <ul v-if="pendingInvites.length" class="mt-4 space-y-2 border-t border-[#ebebed] pt-4">
+        <li v-for="inv in pendingInvites" :key="inv.id" class="text-sm text-[#626f86]">
           {{ inv.email }} — pendiente ({{ roleLabel(inv.role) }})
         </li>
       </ul>
     </div>
 
-    <!-- Añadir del workspace -->
-    <div v-if="availableUsers.length" class="rounded-xl border border-dashed border-[#091e4229] bg-white p-4">
-      <h3 class="mb-3 text-sm font-medium text-[#172b4d]">Añadir del workspace</h3>
+    <div v-if="availableUsers.length" class="project-card project-card--lg border-dashed">
+      <h3 class="mb-3 text-base font-semibold text-[#172b4d]">Añadir del workspace</h3>
       <div class="flex flex-wrap gap-2">
-        <select v-model="addUserId" class="rounded-lg border border-[#091e4229] px-3 py-2 text-sm">
+        <select v-model="addUserId" class="ql-input w-auto min-w-[200px]">
           <option value="">Seleccionar...</option>
           <option v-for="u in availableUsers" :key="u.userId" :value="u.userId">
             {{ u.user?.name ?? u.userId }}
           </option>
         </select>
-        <button class="rounded-lg bg-[#091e420f] px-3 py-2 text-sm text-[#172b4d]" :disabled="!addUserId" @click="addMember">
-          Añadir
-        </button>
+        <button type="button" class="ql-btn ql-btn--ghost" :disabled="!addUserId" @click="addMember">Añadir</button>
       </div>
     </div>
 
-    <div class="rounded-xl border border-[#091e4214] bg-white p-5">
-      <table class="w-full text-sm">
+    <div class="ql-table-wrap">
+      <table class="ql-table">
         <thead>
-          <tr class="border-b text-left text-xs text-[#626f86]">
-            <th class="pb-2">Integrante</th>
-            <th class="pb-2">Rol</th>
-            <th class="pb-2">Permisos</th>
+          <tr>
+            <th>Integrante</th>
+            <th>Rol</th>
+            <th>Permisos</th>
             <th />
           </tr>
         </thead>
         <tbody>
-          <tr v-for="m in members" :key="m.id" class="border-b border-[#091e4214] last:border-0">
-            <td class="py-3">
-              <div class="flex items-center gap-2">
-                <span class="flex h-9 w-9 items-center justify-center rounded-full bg-[#6554c0] text-xs font-bold text-white">
-                  {{ m.user?.initials ?? '?' }}
-                </span>
+          <tr v-for="m in members" :key="m.id">
+            <td>
+              <div class="flex items-center gap-3">
+                <UserAvatar :user-id="m.userId" />
                 <div>
                   <p class="font-medium text-[#172b4d]">{{ m.user?.name ?? 'Usuario' }}</p>
-                  <p class="text-xs text-[#626f86]">{{ m.user?.email }}</p>
+                  <p class="text-sm text-[#626f86]">{{ m.user?.email }}</p>
                 </div>
               </div>
             </td>
-            <td class="py-3">
+            <td>
               <select
                 :value="m.role"
-                class="rounded border border-[#091e4229] px-2 py-1 text-xs"
+                class="ql-input w-auto py-1.5 text-sm"
                 :disabled="m.role === 'owner'"
                 @change="projectsStore.updateProjectMember(m.id, { role: ($event.target as HTMLSelectElement).value as UserRole })"
               >
@@ -201,29 +192,30 @@ async function sendInvite() {
                 <option value="viewer">Observador</option>
               </select>
             </td>
-            <td class="py-3">
-              <div class="flex flex-wrap gap-2 text-xs">
-                <label class="flex items-center gap-1">
+            <td>
+              <div class="flex flex-wrap gap-3 text-sm">
+                <label class="flex items-center gap-1.5">
                   <input type="checkbox" :checked="m.canManageTasks" @change="projectsStore.updateProjectMember(m.id, { canManageTasks: ($event.target as HTMLInputElement).checked })" />
                   Tareas
                 </label>
-                <label class="flex items-center gap-1">
+                <label class="flex items-center gap-1.5">
                   <input type="checkbox" :checked="m.canViewFinance" @change="projectsStore.updateProjectMember(m.id, { canViewFinance: ($event.target as HTMLInputElement).checked })" />
-                  <Shield :size="10" /> Finanzas
+                  <Shield :size="14" /> Finanzas
                 </label>
-                <label class="flex items-center gap-1">
+                <label class="flex items-center gap-1.5">
                   <input type="checkbox" :checked="m.canManageTeam" @change="projectsStore.updateProjectMember(m.id, { canManageTeam: ($event.target as HTMLInputElement).checked })" />
                   Equipo
                 </label>
               </div>
             </td>
-            <td class="py-3">
+            <td>
               <button
                 v-if="m.role !== 'owner'"
-                class="text-[#626f86] hover:text-[#172b4d]"
+                type="button"
+                class="rounded-lg p-2 text-[#626f86] hover:bg-[#f5f5f7] hover:text-red-600"
                 @click="projectsStore.removeProjectMember(m.id)"
               >
-                <Trash2 :size="14" />
+                <Trash2 :size="18" />
               </button>
             </td>
           </tr>

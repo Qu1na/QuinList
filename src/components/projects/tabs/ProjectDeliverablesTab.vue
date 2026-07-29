@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { Plus, Package, Trash2, Paperclip, MessageSquare } from '@lucide/vue'
+import { Plus, Package, Trash2, Paperclip, MessageSquare, CheckCircle2 } from '@lucide/vue'
 import { useProjectsStore } from '@/stores/projects'
 import { useAuthStore } from '@/stores/auth'
 import { formatDate, formatDateTime } from '@/utils/permissions'
@@ -8,6 +8,7 @@ import { todayISO } from '@/utils/dates'
 import type { DeliverableStatus } from '@/types/projects'
 import DateInput from '@/components/projects/shared/DateInput.vue'
 import ProjectModal from '@/components/projects/shared/ProjectModal.vue'
+import UserAvatar from '@/components/projects/shared/UserAvatar.vue'
 import { openAttachment } from '@/services/storage'
 
 const props = defineProps<{ projectId: string }>()
@@ -23,7 +24,6 @@ const detailId = ref<string | null>(null)
 const logText = ref('')
 const uploading = ref(false)
 const form = ref({ title: '', description: '', dueDate: todayISO(), assigneeId: '', milestoneId: '' })
-const inputClass = 'w-full rounded-lg border border-[#091e4229] px-3 py-2 text-sm outline-none focus:border-[#0c66e4]'
 
 const statusLabels: Record<DeliverableStatus, string> = {
   pending: 'Pendiente',
@@ -32,7 +32,19 @@ const statusLabels: Record<DeliverableStatus, string> = {
   approved: 'Aprobado',
 }
 
+const statusClass: Record<DeliverableStatus, string> = {
+  pending: 'text-[#626f86]',
+  in_progress: 'text-[#2d7eb8]',
+  delivered: 'text-[#5bbce4]',
+  approved: 'text-[#2d7eb8]',
+}
+
 const detail = computed(() => deliverables.value.find((d) => d.id === detailId.value) ?? null)
+
+const approvedCount = computed(() => deliverables.value.filter((d) => d.status === 'approved').length)
+const pendingCount = computed(() =>
+  deliverables.value.filter((d) => d.status === 'pending' || d.status === 'in_progress').length,
+)
 
 async function add() {
   if (!form.value.title.trim()) return
@@ -74,45 +86,43 @@ async function addLogEntry() {
 </script>
 
 <template>
-  <div class="space-y-5">
-    <div class="grid gap-3 sm:grid-cols-3">
-      <div class="rounded-xl border border-[#091e4214] bg-white p-4">
-        <Package :size="16" class="text-[#0c66e4]" />
-        <p class="mt-2 text-2xl font-bold text-[#172b4d]">{{ deliverables.length }}</p>
-        <p class="text-xs text-[#626f86]">Total entregables</p>
+  <div class="space-y-7">
+    <div class="flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <h2 class="project-page-title">Entregables</h2>
+        <p class="project-page-sub">Seguimiento de entregas, bitácora y archivos</p>
       </div>
-      <div class="rounded-xl border border-[#091e4214] bg-white p-4">
-        <p class="text-2xl font-bold text-[#172b4d]">
-          {{ deliverables.filter((d) => d.status === 'approved').length }}
-        </p>
-        <p class="text-xs text-[#626f86]">Aprobados</p>
+      <button type="button" class="ql-btn ql-btn--primary" @click="showAdd = true">
+        <Plus :size="18" />
+        Nuevo entregable
+      </button>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-3">
+      <div class="project-card project-kpi">
+        <Package :size="20" class="mb-2 text-[#5bbce4]" />
+        <p class="project-kpi__value">{{ deliverables.length }}</p>
+        <p class="project-kpi__label">Total entregables</p>
       </div>
-      <div class="rounded-xl border border-[#091e4214] bg-white p-4">
-        <p class="text-2xl font-bold text-[#172b4d]">
-          {{ deliverables.filter((d) => d.status === 'pending' || d.status === 'in_progress').length }}
-        </p>
-        <p class="text-xs text-[#626f86]">Pendientes</p>
+      <div class="project-card project-kpi">
+        <CheckCircle2 :size="20" class="mb-2 text-[#2d7eb8]" />
+        <p class="project-kpi__value">{{ approvedCount }}</p>
+        <p class="project-kpi__label">Aprobados</p>
+      </div>
+      <div class="project-card project-kpi">
+        <p class="project-kpi__value">{{ pendingCount }}</p>
+        <p class="project-kpi__label">Pendientes</p>
       </div>
     </div>
 
-    <div class="rounded-xl border border-[#091e4214] bg-white p-5">
-      <div class="mb-4 flex items-center justify-between">
-        <h2 class="font-semibold text-[#172b4d]">Entregables</h2>
-        <button
-          class="flex items-center gap-1 rounded-lg bg-[#0c66e4] px-3 py-2 text-sm text-white"
-          @click="showAdd = true"
-        >
-          <Plus :size="14" /> Nuevo entregable
-        </button>
-      </div>
-
-      <table class="w-full text-sm">
+    <div class="ql-table-wrap">
+      <table class="ql-table">
         <thead>
-          <tr class="border-b text-left text-xs text-[#626f86]">
-            <th class="pb-2">Entregable</th>
-            <th class="pb-2">Responsable</th>
-            <th class="pb-2">Vence</th>
-            <th class="pb-2">Estado</th>
+          <tr>
+            <th>Entregable</th>
+            <th>Responsable</th>
+            <th>Vence</th>
+            <th>Estado</th>
             <th />
           </tr>
         </thead>
@@ -120,35 +130,48 @@ async function addLogEntry() {
           <tr
             v-for="d in deliverables"
             :key="d.id"
-            class="cursor-pointer border-b border-[#091e4214] last:border-0 hover:bg-[#091e420a]"
+            class="cursor-pointer"
             @click="detailId = d.id"
           >
-            <td class="py-3">
+            <td>
               <p class="font-medium text-[#172b4d]">{{ d.title }}</p>
-              <p v-if="d.description" class="text-xs text-[#626f86]">{{ d.description }}</p>
+              <p v-if="d.description" class="mt-0.5 text-sm text-[#626f86]">{{ d.description }}</p>
             </td>
-            <td class="py-3 text-[#626f86]">{{ userName(d.assigneeId) }}</td>
-            <td class="py-3 text-[#626f86]">{{ formatDate(d.dueDate) }}</td>
-            <td class="py-3" @click.stop>
+            <td>
+              <div v-if="d.assigneeId" class="flex items-center gap-2">
+                <UserAvatar :user-id="d.assigneeId" size="sm" />
+                <span class="text-sm text-[#626f86]">{{ userName(d.assigneeId) }}</span>
+              </div>
+              <span v-else class="text-sm text-[#626f86]">—</span>
+            </td>
+            <td class="text-sm text-[#626f86]">{{ formatDate(d.dueDate) }}</td>
+            <td @click.stop>
               <select
                 :value="d.status"
-                class="rounded-lg border border-[#091e4229] px-2 py-1 text-xs"
+                class="ql-input w-auto py-1.5 text-sm"
+                :class="statusClass[d.status]"
                 @change="projectsStore.updateDeliverable(d.id, { status: ($event.target as HTMLSelectElement).value as DeliverableStatus })"
               >
                 <option v-for="(label, key) in statusLabels" :key="key" :value="key">{{ label }}</option>
               </select>
             </td>
-            <td class="py-3" @click.stop>
-              <button class="text-[#626f86]" @click="projectsStore.deleteDeliverable(d.id)">
-                <Trash2 :size="14" />
+            <td @click.stop>
+              <button
+                type="button"
+                class="rounded-lg p-2 text-[#626f86] hover:bg-[#f5f5f7] hover:text-red-600"
+                @click="projectsStore.deleteDeliverable(d.id)"
+              >
+                <Trash2 :size="18" />
               </button>
             </td>
           </tr>
         </tbody>
       </table>
+      <p v-if="!deliverables.length" class="px-5 py-10 text-center text-sm text-[#626f86]">
+        Sin entregables registrados.
+      </p>
     </div>
 
-    <!-- Panel bitácora -->
     <ProjectModal
       v-if="detail"
       :title="detail.title"
@@ -158,28 +181,34 @@ async function addLogEntry() {
     >
       <div class="space-y-4">
         <div class="flex gap-2">
-          <input v-model="logText" placeholder="Añadir nota a la bitácora..." :class="inputClass" @keyup.enter="addLogEntry" />
-          <button class="shrink-0 rounded-lg bg-[#0c66e4] px-3 py-2 text-sm text-white" @click="addLogEntry">
-            <MessageSquare :size="14" />
+          <input
+            v-model="logText"
+            placeholder="Añadir nota a la bitácora..."
+            class="ql-input"
+            @keyup.enter="addLogEntry"
+          />
+          <button type="button" class="ql-btn ql-btn--primary shrink-0" @click="addLogEntry">
+            <MessageSquare :size="18" />
           </button>
-          <label class="flex shrink-0 cursor-pointer items-center gap-1 rounded-lg border border-[#091e4229] px-3 py-2 text-sm text-[#626f86]">
-            <Paperclip :size="14" />
+          <label class="ql-btn ql-btn--ghost shrink-0 cursor-pointer">
+            <Paperclip :size="18" />
             <input type="file" class="hidden" :disabled="uploading" @change="onFileUpload" />
           </label>
         </div>
-        <ul class="max-h-64 space-y-2 overflow-y-auto">
+        <ul class="max-h-72 space-y-2 overflow-y-auto scroll-thin">
           <li
             v-for="entry in detail.log ?? []"
             :key="entry.id"
-            class="rounded-lg bg-[#091e420a] px-3 py-2 text-sm"
+            class="rounded-xl bg-[#f5f5f7] px-4 py-3 text-sm"
           >
             <p class="text-[#172b4d]">{{ entry.text }}</p>
-            <p class="mt-1 text-[10px] text-[#626f86]">
+            <p class="mt-1.5 text-xs text-[#626f86]">
               {{ userName(entry.uploadedBy) }} · {{ formatDateTime(entry.createdAt) }}
             </p>
             <button
               v-if="entry.attachment"
-              class="mt-1 text-xs text-[#0c66e4] hover:underline"
+              type="button"
+              class="project-link-btn mt-1 text-xs"
               @click="openAttachment(entry.attachment!)"
             >
               Ver {{ entry.attachment.name }}
@@ -192,23 +221,23 @@ async function addLogEntry() {
 
     <ProjectModal v-if="showAdd" title="Nuevo entregable" @close="showAdd = false">
       <div class="space-y-3">
-        <input v-model="form.title" placeholder="Título *" :class="inputClass" />
-        <textarea v-model="form.description" rows="2" placeholder="Descripción" :class="inputClass" />
+        <input v-model="form.title" placeholder="Título *" class="ql-input" />
+        <textarea v-model="form.description" rows="2" placeholder="Descripción" class="ql-input" />
         <DateInput v-model="form.dueDate" label="Fecha de entrega" required />
-        <select v-model="form.assigneeId" :class="inputClass">
+        <select v-model="form.assigneeId" class="ql-input">
           <option value="">Sin responsable</option>
           <option v-for="m in members" :key="m.id" :value="m.userId">
             {{ auth.getUserById(m.userId)?.name }}
           </option>
         </select>
-        <select v-model="form.milestoneId" :class="inputClass">
+        <select v-model="form.milestoneId" class="ql-input">
           <option value="">Sin hito vinculado</option>
           <option v-for="m in milestones" :key="m.id" :value="m.id">{{ m.title }}</option>
         </select>
       </div>
       <template #footer>
-        <button class="px-3 py-1.5 text-sm" @click="showAdd = false">Cancelar</button>
-        <button class="rounded-lg bg-[#0c66e4] px-4 py-1.5 text-sm text-white" @click="add">Crear</button>
+        <button type="button" class="ql-btn ql-btn--ghost" @click="showAdd = false">Cancelar</button>
+        <button type="button" class="ql-btn ql-btn--primary" @click="add">Crear</button>
       </template>
     </ProjectModal>
   </div>

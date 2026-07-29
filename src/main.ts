@@ -24,7 +24,8 @@ async function bootstrap() {
     const store = useQuinListStore()
     const notif = useNotificationStore()
     const projects = useProjectsStore()
-    await Promise.all([store.init(), notif.init(), projects.init()])
+    await store.init()
+    await Promise.all([notif.init(), projects.init()])
   }
 
   app.mount('#app')
