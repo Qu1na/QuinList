@@ -18,11 +18,9 @@ import ProjectReportsTab from '@/components/projects/tabs/ProjectReportsTab.vue'
 import ProjectSettingsTab from '@/components/projects/tabs/ProjectSettingsTab.vue'
 import type { ProjectDetailTab } from '@/types/projects'
 import { useProjectsStore } from '@/stores/projects'
-import { useQuinListStore } from '@/stores/quinlist'
 
 const route = useRoute()
 const projectsStore = useProjectsStore()
-const quinlist = useQuinListStore()
 
 const projectId = computed(() => route.params.projectId as string)
 const activeTab = computed(() => (route.query.tab as ProjectDetailTab) || 'dashboard')
@@ -53,13 +51,6 @@ onMounted(async () => {
 watch(projectId, (id) => {
   projectsStore.setCurrentProject(id)
 })
-
-watch(
-  () => quinlist.currentWorkspaceId,
-  (wsId) => {
-    void projectsStore.reloadForWorkspace(wsId)
-  },
-)
 </script>
 
 <template>

@@ -42,11 +42,17 @@ export function provideProjectUsers(projectId: Ref<string> | ComputedRef<string>
     await ensureProjectUserProfiles(id)
   }
 
-  async function syncProject() {
+  async function ensureProjectInStore() {
     const id = projectId.value
     if (!id) return
-    await projectsStore.reloadProject(id)
+    if (!projectsStore.getProject(id)) {
+      await projectsStore.ensureProjectLoaded(id)
+    }
     await refreshProfiles()
+  }
+
+  async function syncProject() {
+    await ensureProjectInStore()
   }
 
   function scheduleProjectSync() {
@@ -98,7 +104,7 @@ export function provideProjectUsers(projectId: Ref<string> | ComputedRef<string>
       if (!id) return
 
       projectsStore.setCurrentProject(id)
-      void syncProject()
+      void ensureProjectInStore()
       void presenceStore.mount(id)
 
       if (isMatuConfigured()) {

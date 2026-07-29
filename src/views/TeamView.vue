@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { UserPlus, Loader2 } from '@lucide/vue'
 import { useQuinListStore } from '@/stores/quinlist'
 import { useAuthStore } from '@/stores/auth'
 import { roleLabel, canManageMembers } from '@/utils/permissions'
 import type { UserRole } from '@/types'
 import AccountShell from '@/components/layout/AccountShell.vue'
+import { loadProfilesByIds } from '@/services/boardShare'
+import { isMatuConfigured } from '@/lib/matu'
 
 const store = useQuinListStore()
 const auth = useAuthStore()
@@ -34,6 +36,27 @@ const roles: { value: UserRole; label: string }[] = [
   { value: 'member', label: 'Miembro' },
   { value: 'viewer', label: 'Observador' },
 ]
+
+async function ensureWorkspaceMemberProfiles() {
+  const ws = store.currentWorkspace
+  if (!ws) return
+
+  const missing = ws.members.map((m) => m.userId).filter((id) => !auth.getUserById(id))
+  if (!missing.length) return
+
+  if (!isMatuConfigured()) return
+
+  try {
+    const profiles = await loadProfilesByIds(missing)
+    for (const user of profiles) auth.addUser(user)
+  } catch (err) {
+    console.error('[TeamView] Error loading member profiles:', err)
+  }
+}
+
+onMounted(() => {
+  void ensureWorkspaceMemberProfiles()
+})
 
 async function sendInvite() {
   inviteError.value = ''

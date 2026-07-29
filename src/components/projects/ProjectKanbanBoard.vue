@@ -67,6 +67,11 @@ function syncColumns() {
 
 syncColumns()
 watch(() => props.tasks, syncColumns, { deep: true })
+watch(isDragging, (dragging) => {
+  if (!dragging) syncColumns()
+})
+
+let pendingMove: Promise<void> | null = null
 
 function onDragStart() {
   isDragging.value = true
@@ -75,14 +80,29 @@ function onDragStart() {
 }
 
 function onDragEnd() {
-  isDragging.value = false
   endKanbanDrag()
-  syncColumns()
-  void setPresenceActivity('online')
+  void (pendingMove ?? Promise.resolve()).finally(() => {
+    isDragging.value = false
+    void setPresenceActivity('online')
+  })
 }
 
-function onChange(col: ProjectTaskStatus, evt: { added?: { element: ProjectTask } }) {
-  if (evt.added) emit('move', evt.added.element.id, col)
+function onChange(
+  col: ProjectTaskStatus,
+  evt: {
+    added?: { element: ProjectTask }
+    moved?: { element: ProjectTask; newIndex: number }
+  },
+) {
+  if (evt.added) {
+    pendingMove = projectsStore.moveTaskToColumn(evt.added.element.id, col)
+    return
+  }
+  if (evt.moved) {
+    pendingMove = projectsStore
+      .updateTask(evt.moved.element.id, { position: evt.moved.newIndex })
+      .then(() => undefined)
+  }
 }
 
 function startAdding(col: ProjectTaskStatus) {

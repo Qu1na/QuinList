@@ -713,6 +713,7 @@ export async function loadProjectsFromMatu(workspaceId: string): Promise<Project
 export async function syncProjectToMatu(
   projectId: string,
   data: ProjectsDataState,
+  options?: { prune?: boolean },
 ): Promise<void> {
   const project = data.projects.find((p) => p.id === projectId)
   if (project) {
@@ -750,6 +751,9 @@ export async function syncProjectToMatu(
     ...timeEntries.map((e) => saveRecord('project_time_entries', e.id, timeEntryToDb(e))),
     ...taskComments.map((c) => saveRecordSafe('project_task_comments', c.id, taskCommentToDb(c))),
   ])
+
+  // Never prune on routine upsert — incomplete in-memory state was deleting DB rows.
+  if (!options?.prune) return
 
   await Promise.all([
     deleteOrphans('project_tasks', projectIds, tasks.map((t) => t.id)),
@@ -792,25 +796,8 @@ export async function syncProjectsToMatu(
   const projectIds = collectProjectIdsFromState(data)
   await Promise.all(projectIds.map((id) => syncProjectToMatu(id, data)))
 
-  const localWsProjectIds = new Set(
-    data.projects.filter((p) => p.workspaceId === workspaceId).map((p) => p.id),
-  )
-  if (localWsProjectIds.size === 0) return
-
-  const db = getMatuClient()
-  const { data: existingRows, error: exErr } = await db
-    .from('projects')
-    .select('id')
-    .eq('workspace_id', workspaceId)
-
-  if (exErr) throw new Error(exErr.message)
-
-  for (const row of (existingRows as { id: string }[] | null) ?? []) {
-    if (!localWsProjectIds.has(row.id)) {
-      const { error } = await db.from('projects').eq('id', row.id).delete()
-      if (error) throw new Error(error.message)
-    }
-  }
+  // Do not auto-delete projects from MatuDB based on local workspace view —
+  // invited users and partial loads could wipe other teams' data.
 }
 
 const PROJECT_TABLES = [
@@ -907,6 +894,7 @@ export async function loadSingleProject(projectId: string): Promise<ProjectsData
     deliverableRows,
     documentRows,
     folderRows,
+    inviteRows,
     memberRows,
     activityRows,
     timeRows,
@@ -919,6 +907,7 @@ export async function loadSingleProject(projectId: string): Promise<ProjectsData
     queryRowsByProjectId(projectId, 'project_deliverables'),
     queryRowsByProjectId(projectId, 'project_documents'),
     queryRowsByProjectId(projectId, 'project_folders'),
+    queryRowsByProjectId(projectId, 'project_invites'),
     queryRowsByProjectId(projectId, 'project_members'),
     queryRowsByProjectId(projectId, 'project_activities'),
     queryRowsByProjectId(projectId, 'project_time_entries'),
@@ -934,12 +923,35 @@ export async function loadSingleProject(projectId: string): Promise<ProjectsData
     deliverables: deliverableRows.map(toDeliverable),
     documents: documentRows.map(toDocument),
     folders: folderRows.map(toFolder),
-    invites: [],
+    invites: inviteRows.map(toInvite),
     members: memberRows.map(toMember),
     activities: activityRows.map(toActivity),
     timeEntries: timeRows.map(toTimeEntry),
     taskComments: commentRows.map(toTaskComment),
   }
+}
+
+/** Delete one row — use from explicit delete actions only. */
+export async function deleteProjectEntity(table: string, id: string): Promise<void> {
+  if (!isMatuConfigured()) return
+  if (isTableMissing(table)) return
+
+  const db = getMatuClient()
+  const { error } = await db.from(table).eq('id', id).delete()
+  if (error) {
+    if (isCollaborationTable(table) && isMissingTableError(error.message)) {
+      markTableMissing(table)
+      return
+    }
+    throw new Error(error.message)
+  }
+}
+
+export async function deleteProjectRecord(projectId: string): Promise<void> {
+  if (!isMatuConfigured()) return
+  const db = getMatuClient()
+  const { error } = await db.from('projects').eq('id', projectId).delete()
+  if (error) throw new Error(error.message)
 }
 
 export {

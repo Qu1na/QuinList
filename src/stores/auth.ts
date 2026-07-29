@@ -170,7 +170,9 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function setUsers(list: User[]) {
-    users.value = list
+    for (const user of list) {
+      addUser(user)
+    }
   }
 
   function addUser(user: User) {

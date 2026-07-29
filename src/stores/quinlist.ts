@@ -36,7 +36,6 @@ import {
   deleteListFromDb,
   deleteBoardFromDb,
   subscribeRealtime,
-  loadWorkspaceUsers,
   reloadListsAndCards,
 } from '@/services/matuData'
 import { loadBoardAccessForUser } from '@/services/boardShare'
@@ -1022,8 +1021,6 @@ export const useQuinListStore = defineStore('quinlist', () => {
     if (isMatuConfigured()) {
       const { inviteMember } = await import('@/services/matuData')
       await inviteMember(ws.id, email, role, auth.currentUserId)
-      const users = await loadWorkspaceUsers(ws)
-      auth.setUsers(users)
       await reloadFromDb()
       return
     }

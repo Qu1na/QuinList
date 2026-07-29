@@ -280,19 +280,64 @@ export async function loadUserData(userId: string): Promise<LoadedData> {
 
   if (allMemErr) throw new Error(allMemErr.message)
 
-  const memberUserIds = [...new Set((allMembers as DbMember[]).map((m) => m.user_id))]
+  const memberById = new Map<string, DbMember>()
+  for (const m of (allMembers as DbMember[]) ?? []) {
+    memberById.set(m.id, m)
+  }
 
-  const { data: profiles, error: profErr } = await db
-    .from('profiles')
-    .select('*')
-    .in('id', memberUserIds)
+  // Fallback: per-workspace queries in case bulk .in() is limited by RLS
+  for (const wsId of workspaceIds) {
+    const { data: wsMembers, error: wsMemErr } = await db
+      .from('workspace_members')
+      .select('*')
+      .eq('workspace_id', wsId)
 
-  if (profErr) throw new Error(profErr.message)
+    if (wsMemErr) {
+      console.warn('[matuData] workspace_members fallback failed for', wsId, wsMemErr.message)
+      continue
+    }
 
-  const users = ((profiles as DbProfile[]) ?? []).map(toUser)
+    for (const m of (wsMembers as DbMember[]) ?? []) {
+      memberById.set(m.id, m)
+    }
+  }
+
+  const allMemberRows = [...memberById.values()]
+  const memberUserIds = [...new Set(allMemberRows.map((m) => m.user_id))]
+
+  const profileById = new Map<string, User>()
+  if (memberUserIds.length > 0) {
+    const { data: profiles, error: profErr } = await db
+      .from('profiles')
+      .select('*')
+      .in('id', memberUserIds)
+
+    if (profErr) throw new Error(profErr.message)
+
+    for (const row of (profiles as DbProfile[]) ?? []) {
+      profileById.set(row.id, toUser(row))
+    }
+
+    const missingProfileIds = memberUserIds.filter((id) => !profileById.has(id))
+    for (const userId of missingProfileIds) {
+      const { data: profile, error: singleErr } = await db
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle()
+
+      if (singleErr) {
+        console.warn('[matuData] profile fallback failed for', userId, singleErr.message)
+        continue
+      }
+      if (profile) profileById.set(userId, toUser(profile as DbProfile))
+    }
+  }
+
+  const users = [...profileById.values()]
 
   const membersByWs = new Map<string, WorkspaceMember[]>()
-  for (const m of (allMembers as DbMember[]) ?? []) {
+  for (const m of allMemberRows) {
     const list = membersByWs.get(m.workspace_id) ?? []
     list.push({
       userId: m.user_id,

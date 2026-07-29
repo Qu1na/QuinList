@@ -130,6 +130,8 @@ export function applyRealtimePayload(
       const exists = state.activities.value.some((a) => a.id === activity.id)
       if (!exists) state.activities.value.unshift(activity)
       else upsert(state.activities, activity)
+      // Solo notificar en INSERT — los UPDATE duplicaban toasts.
+      if (payload.event !== 'INSERT') return null
       return activity
     }
     case 'project_time_entries': {

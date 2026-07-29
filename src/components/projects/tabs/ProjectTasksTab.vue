@@ -24,12 +24,11 @@ const tasks = computed(() => {
 })
 
 async function createInColumn(title: string, status: ProjectTaskStatus) {
-  const task = await projectsStore.createTask(props.projectId, title)
-  if (task && status !== 'todo') await projectsStore.moveTaskToColumn(task.id, status)
+  await projectsStore.createTask(props.projectId, title, { status })
 }
 
-function moveTask(taskId: string, status: ProjectTaskStatus) {
-  projectsStore.moveTaskToColumn(taskId, status)
+async function moveTask(taskId: string, status: ProjectTaskStatus) {
+  await projectsStore.moveTaskToColumn(taskId, status)
 }
 </script>
 

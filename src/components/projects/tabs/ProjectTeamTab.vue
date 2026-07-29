@@ -82,8 +82,6 @@ onMounted(() => {
   void refreshInvites()
   unsubscribeRealtime = subscribeProjectTeamInvitesRealtime(props.projectId, () => {
     void refreshInvites()
-    const wsId = quinlist.currentWorkspaceId
-    if (wsId) void projectsStore.reloadForWorkspace(wsId)
   })
 })
 

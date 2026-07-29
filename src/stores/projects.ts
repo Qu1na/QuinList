@@ -22,7 +22,13 @@ import type {
 } from '@/types/projects'
 import type { Attachment, Priority, UserRole } from '@/types'
 import { loadProjectsData, persistProjectsData } from '@/services/projectData'
-import { loadProjectById, loadSingleProject, subscribeProjectsRealtime } from '@/services/projectMatuData'
+import { restoreProjectsFromBackup } from '@/utils/projectRecovery'
+import {
+  deleteProjectEntity,
+  deleteProjectRecord,
+  loadProjectById,
+  loadSingleProject,
+} from '@/services/projectMatuData'
 import { applyRealtimePayload } from '@/services/projectRealtime'
 import { ensureProjectUserProfiles } from '@/services/projectUsers'
 import type { ActivityActionType } from '@/types/collaboration'
@@ -71,12 +77,11 @@ export const useProjectsStore = defineStore('projects', () => {
   const isReady = ref(false)
   const currentProjectId = ref<string | null>(null)
   const activeTab = ref<ProjectDetailTab>('dashboard')
-  let unsubscribeRealtime: (() => void) | null = null
-  let reloadTimer: ReturnType<typeof setTimeout> | null = null
   let saveTimer: ReturnType<typeof setTimeout> | null = null
   let saveChain: Promise<void> = Promise.resolve()
   let saveWaiters: Array<{ resolve: () => void; reject: (err: unknown) => void }> = []
-  let suppressReloadUntil = 0
+  const suppressedRealtimeKeys = new Map<string, number>()
+  const REALTIME_SUPPRESS_MS = 4000
   let loadedWorkspaceId: string | null = null
   let workspaceWatchStop: (() => void) | null = null
 
@@ -229,6 +234,7 @@ export const useProjectsStore = defineStore('projects', () => {
         })
       }
     })
+    void purgeMatuEntity('project_task_comments', commentId)
   }
 
   function getProjectTimeEntries(projectId: string) {
@@ -297,7 +303,6 @@ export const useProjectsStore = defineStore('projects', () => {
     const wsId = quinlist.currentWorkspaceId
     if (!wsId) return
 
-    suppressReloadUntil = Date.now() + 3500
     await persistProjectsData(wsId, {
       projects: projects.value,
       tasks: tasks.value,
@@ -366,20 +371,64 @@ export const useProjectsStore = defineStore('projects', () => {
     })
   }
 
-  async function commitMutationAsync(mutate: () => void | Promise<void>) {
+  async function commitMutationAsync(mutate: () => void | Promise<void>, options?: { immediate?: boolean }) {
     const snapshot = captureSnapshot()
     try {
       await mutate()
-      await save()
+      await (options?.immediate ? saveNow() : save())
     } catch (err) {
       restoreSnapshot(snapshot)
       throw err
     }
   }
 
-  function save(): Promise<void> {
-    suppressReloadUntil = Date.now() + 3500
+  function suppressRealtime(table: string, id: string) {
+    suppressedRealtimeKeys.set(`${table}:${id}`, Date.now() + REALTIME_SUPPRESS_MS)
+  }
 
+  function isRealtimeSuppressed(table: string, id: string | undefined): boolean {
+    if (!id) return false
+    const key = `${table}:${id}`
+    const until = suppressedRealtimeKeys.get(key)
+    if (!until) return false
+    if (Date.now() > until) {
+      suppressedRealtimeKeys.delete(key)
+      return false
+    }
+    return true
+  }
+
+  function flushSaveWaiters(waiters: Array<{ resolve: () => void; reject: (err: unknown) => void }>, err?: unknown) {
+    if (err) waiters.forEach((w) => w.reject(err))
+    else waiters.forEach((w) => w.resolve())
+  }
+
+  function runSaveChain(waiters: Array<{ resolve: () => void; reject: (err: unknown) => void }>) {
+    saveChain = saveChain
+      .then(() => flushSave())
+      .then(() => {
+        flushSaveWaiters(waiters)
+      })
+      .catch((err) => {
+        flushSaveWaiters(waiters, err)
+      })
+  }
+
+  /** Guardado inmediato — tareas y otros cambios críticos (sin debounce). */
+  function saveNow(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      saveWaiters.push({ resolve, reject })
+      if (saveTimer) {
+        clearTimeout(saveTimer)
+        saveTimer = null
+      }
+      const waiters = saveWaiters
+      saveWaiters = []
+      runSaveChain(waiters)
+    })
+  }
+
+  function save(): Promise<void> {
     return new Promise((resolve, reject) => {
       saveWaiters.push({ resolve, reject })
       if (saveTimer) clearTimeout(saveTimer)
@@ -387,32 +436,19 @@ export const useProjectsStore = defineStore('projects', () => {
         saveTimer = null
         const waiters = saveWaiters
         saveWaiters = []
-
-        saveChain = saveChain
-          .then(() => flushSave())
-          .then(() => {
-            waiters.forEach((w) => w.resolve())
-          })
-          .catch((err) => {
-            waiters.forEach((w) => w.reject(err))
-          })
-
-        void saveChain
+        runSaveChain(waiters)
       }, 350)
     })
   }
 
-  function scheduleRealtimeReload(workspaceId: string) {
-    if (reloadTimer) clearTimeout(reloadTimer)
-    reloadTimer = setTimeout(() => {
-      const activeProjectId = currentProjectId.value
-      if (activeProjectId) {
-        void reloadProject(activeProjectId)
-        return
-      }
-      if (Date.now() < suppressReloadUntil) return
-      void reloadForWorkspace(workspaceId)
-    }, 400)
+  async function purgeMatuEntity(table: string, id: string) {
+    if (!isMatuConfigured()) return
+    try {
+      await deleteProjectEntity(table, id)
+    } catch (err) {
+      console.error(`[projects] No se pudo eliminar ${table}/${id}:`, err)
+      throw err
+    }
   }
 
   function mergeProjectState(data: ProjectsDataState) {
@@ -483,20 +519,31 @@ export const useProjectsStore = defineStore('projects', () => {
   }
 
   function applyWorkspaceData(workspaceId: string, data: ProjectsDataState) {
-    projects.value = data.projects
-    const projectIds = new Set(projects.value.map((p) => p.id))
-    tasks.value = data.tasks.filter((t) => projectIds.has(t.projectId))
-    milestones.value = data.milestones.filter((m) => projectIds.has(m.projectId))
-    costs.value = data.costs.filter((c) => projectIds.has(c.projectId))
-    risks.value = data.risks.filter((r) => projectIds.has(r.projectId))
-    deliverables.value = data.deliverables.filter((d) => projectIds.has(d.projectId))
-    documents.value = data.documents.filter((d) => projectIds.has(d.projectId))
-    folders.value = (data.folders ?? []).filter((f) => projectIds.has(f.projectId))
-    invites.value = (data.invites ?? []).filter((i) => projectIds.has(i.projectId))
-    members.value = data.members.filter((m) => projectIds.has(m.projectId))
-    activities.value = data.activities.filter((a) => projectIds.has(a.projectId))
-    timeEntries.value = (data.timeEntries ?? []).filter((e) => projectIds.has(e.projectId))
-    taskComments.value = (data.taskComments ?? []).filter((c) => projectIds.has(c.projectId))
+    const incomingIds = new Set(data.projects.map((p) => p.id))
+    const keptProjects = projects.value.filter((p) => !incomingIds.has(p.id))
+    projects.value = [...keptProjects, ...data.projects]
+
+    const replaceForIncoming = <T extends { id: string; projectId: string }>(
+      target: Ref<T[]>,
+      incoming: T[],
+    ) => {
+      target.value = target.value
+        .filter((item) => !incomingIds.has(item.projectId))
+        .concat(incoming.filter((item) => incomingIds.has(item.projectId)))
+    }
+
+    replaceForIncoming(tasks, data.tasks)
+    replaceForIncoming(milestones, data.milestones)
+    replaceForIncoming(costs, data.costs)
+    replaceForIncoming(risks, data.risks)
+    replaceForIncoming(deliverables, data.deliverables)
+    replaceForIncoming(documents, data.documents)
+    replaceForIncoming(folders, data.folders ?? [])
+    replaceForIncoming(invites, data.invites ?? [])
+    replaceForIncoming(members, data.members)
+    replaceForIncoming(activities, data.activities)
+    replaceForIncoming(timeEntries, data.timeEntries ?? [])
+    replaceForIncoming(taskComments, data.taskComments ?? [])
     loadedWorkspaceId = workspaceId
   }
 
@@ -530,13 +577,6 @@ export const useProjectsStore = defineStore('projects', () => {
     )
   }
 
-  function startRealtime(workspaceId: string) {
-    unsubscribeRealtime?.()
-    unsubscribeRealtime = subscribeProjectsRealtime(() => {
-      scheduleRealtimeReload(workspaceId)
-    })
-  }
-
   function logActivity(
     projectId: string,
     action: ActivityActionType | string,
@@ -561,6 +601,10 @@ export const useProjectsStore = defineStore('projects', () => {
   }
 
   function handleRealtimePayload(payload: RealtimeChangePayload) {
+    const row = payload.new ?? payload.old
+    const rowId = row?.id as string | undefined
+    if (isRealtimeSuppressed(payload.table, rowId)) return
+
     const activity = applyRealtimePayload(payload, {
       projects,
       tasks,
@@ -608,7 +652,13 @@ export const useProjectsStore = defineStore('projects', () => {
     const wsMember = isWorkspaceMember(workspaceId, userId)
     const data = await loadProjectsData(workspaceId, userId, wsMember)
     applyWorkspaceData(workspaceId, data)
-    startRealtime(workspaceId)
+  }
+
+  /** Restauración manual desde copia local — no se ejecuta automáticamente. */
+  async function restoreFromLocalBackup(workspaceId: string) {
+    const restored = await restoreProjectsFromBackup(workspaceId)
+    if (restored) await reloadForWorkspace(workspaceId)
+    return restored
   }
 
   function upsertProjectMember(member: ProjectMember) {
@@ -654,9 +704,6 @@ export const useProjectsStore = defineStore('projects', () => {
     workspaceWatchStop?.()
     workspaceWatchStop = null
     loadedWorkspaceId = null
-    unsubscribeRealtime?.()
-    unsubscribeRealtime = null
-    if (reloadTimer) clearTimeout(reloadTimer)
     if (saveTimer) clearTimeout(saveTimer)
     saveWaiters = []
     projects.value = []
@@ -768,6 +815,13 @@ export const useProjectsStore = defineStore('projects', () => {
     timeEntries.value = timeEntries.value.filter((e) => e.projectId !== id)
     taskComments.value = taskComments.value.filter((c) => c.projectId !== id)
     if (currentProjectId.value === id) currentProjectId.value = null
+    if (isMatuConfigured()) {
+      try {
+        await deleteProjectRecord(id)
+      } catch (err) {
+        console.error('[projects] Error eliminando proyecto en MatuDB:', err)
+      }
+    }
     await save()
   }
 
@@ -802,13 +856,23 @@ export const useProjectsStore = defineStore('projects', () => {
       createdAt: now,
       updatedAt: now,
     }
+
+    suppressRealtime('project_tasks', task.id)
     tasks.value.push(task)
     logActivity(projectId, 'task_created', `«${task.title}»`, {
       entityType: 'task',
       entityId: task.id,
       entityTitle: task.title,
     })
-    await save()
+    try {
+      await saveNow()
+    } catch (err) {
+      tasks.value = tasks.value.filter((t) => t.id !== task.id)
+      activities.value = activities.value.filter(
+        (a) => !(a.entityType === 'task' && a.entityId === task.id && a.action === 'task_created'),
+      )
+      throw err
+    }
     return task
   }
 
@@ -845,36 +909,54 @@ export const useProjectsStore = defineStore('projects', () => {
     if (options?.optimistic) {
       const snapshot = captureSnapshot()
       const next = apply()
-      if (!next) return
-      void save().catch((err) => {
+      if (!next) return null
+      suppressRealtime('project_tasks', taskId)
+      try {
+        await saveNow()
+        return next
+      } catch (err) {
         console.error('[projects] Error moviendo tarea, revirtiendo:', err)
         restoreSnapshot(snapshot)
-      })
-      return next
+        throw err
+      }
     }
 
     const next = apply()
     if (!next) return null
-    await save()
+    suppressRealtime('project_tasks', taskId)
+    await saveNow()
     return next
   }
 
-  function moveTaskToColumn(taskId: string, status: ProjectTask['status']) {
-    void updateTask(taskId, { status, kanbanColumn: status }, { optimistic: true })
+  async function moveTaskToColumn(taskId: string, status: ProjectTask['status']) {
+    await updateTask(taskId, { status, kanbanColumn: status }, { optimistic: true })
   }
 
   async function deleteTask(taskId: string) {
     const task = tasks.value.find((t) => t.id === taskId)
-    tasks.value = tasks.value.filter((t) => t.id !== taskId)
-    taskComments.value = taskComments.value.filter((c) => c.taskId !== taskId)
-    if (task) {
-      logActivity(task.projectId, 'task_deleted', task.title, {
-        entityType: 'task',
-        entityId: task.id,
-        entityTitle: task.title,
-      })
-    }
-    await save()
+    if (!task) return
+    const commentIds = taskComments.value
+      .filter((c) => c.taskId === taskId)
+      .map((c) => c.id)
+
+    suppressRealtime('project_tasks', taskId)
+    for (const cid of commentIds) suppressRealtime('project_task_comments', cid)
+
+    await commitMutationAsync(
+      () => {
+        tasks.value = tasks.value.filter((t) => t.id !== taskId)
+        taskComments.value = taskComments.value.filter((c) => c.taskId !== taskId)
+        logActivity(task.projectId, 'task_deleted', task.title, {
+          entityType: 'task',
+          entityId: task.id,
+          entityTitle: task.title,
+        })
+      },
+      { immediate: true },
+    )
+
+    await Promise.all(commentIds.map((cid) => purgeMatuEntity('project_task_comments', cid)))
+    await purgeMatuEntity('project_tasks', taskId)
   }
 
   async function openTaskInBoard(taskId: string) {
@@ -966,6 +1048,7 @@ export const useProjectsStore = defineStore('projects', () => {
         entityTitle: tx.title,
       })
     }
+    await purgeMatuEntity('project_costs', id)
     await save()
   }
 
@@ -997,6 +1080,7 @@ export const useProjectsStore = defineStore('projects', () => {
         entityTitle: ms.title,
       })
     }
+    await purgeMatuEntity('project_milestones', id)
     await save()
   }
 
@@ -1054,6 +1138,7 @@ export const useProjectsStore = defineStore('projects', () => {
         entityTitle: d.title,
       })
     }
+    await purgeMatuEntity('project_deliverables', id)
     await save()
   }
 
@@ -1074,6 +1159,7 @@ export const useProjectsStore = defineStore('projects', () => {
         entityTitle: doc.title,
       })
     }
+    await purgeMatuEntity('project_documents', id)
     await save()
   }
 
@@ -1112,6 +1198,7 @@ export const useProjectsStore = defineStore('projects', () => {
 
   async function removeProjectMember(id: string) {
     members.value = members.value.filter((m) => m.id !== id)
+    await purgeMatuEntity('project_members', id)
     await save()
   }
 
@@ -1470,6 +1557,7 @@ export const useProjectsStore = defineStore('projects', () => {
       d.folderId && childIds.has(d.folderId) ? { ...d, folderId: null } : d,
     )
     logActivity(folder.projectId, 'Carpeta eliminada', folder.name)
+    await Promise.all([...childIds].map((fid) => purgeMatuEntity('project_folders', fid)))
     await save()
   }
 
@@ -1526,6 +1614,7 @@ export const useProjectsStore = defineStore('projects', () => {
         entityTitle: risk.title,
       })
     }
+    await purgeMatuEntity('project_risks', id)
     await save()
   }
 
@@ -1648,6 +1737,7 @@ export const useProjectsStore = defineStore('projects', () => {
     getProjectFiles,
     init,
     reloadForWorkspace,
+    restoreFromLocalBackup,
     reloadProject,
     mergeProjectState,
     handleRealtimePayload,

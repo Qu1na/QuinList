@@ -9,19 +9,28 @@ const { toasts } = storeToRefs(collab)
 </script>
 
 <template>
-  <div class="collab-toasts" aria-live="polite">
-    <TransitionGroup
-      name="collab-toast"
-      tag="div"
-      class="collab-toasts__stack"
+  <div
+    v-if="toasts.length"
+    class="collab-toasts"
+    aria-live="polite"
+    aria-label="Actividad del equipo"
+  >
+    <button
+      v-if="toasts.length > 1"
+      type="button"
+      class="collab-toasts__dismiss-all"
+      @click="collab.dismissAll()"
     >
+      Cerrar todo
+    </button>
+
+    <TransitionGroup name="collab-toast" tag="div" class="collab-toasts__stack">
       <article
         v-for="toast in toasts"
         :key="toast.id"
         class="collab-toast"
         :style="{ '--toast-accent': toast.accent }"
       >
-        <span class="collab-toast__emoji" aria-hidden="true">{{ toast.emoji }}</span>
         <UserAvatar :user-id="toast.userId" size="sm" class="collab-toast__avatar" />
         <p class="collab-toast__message">{{ toast.message }}</p>
         <button
@@ -30,7 +39,7 @@ const { toasts } = storeToRefs(collab)
           aria-label="Cerrar"
           @click="collab.dismissToast(toast.id)"
         >
-          <X :size="14" />
+          <X :size="13" />
         </button>
       </article>
     </TransitionGroup>
@@ -40,75 +49,88 @@ const { toasts } = storeToRefs(collab)
 <style scoped>
 .collab-toasts {
   position: fixed;
-  top: 1rem;
   right: 1rem;
-  z-index: 3000;
+  bottom: 1.25rem;
+  z-index: 120;
   pointer-events: none;
-  width: min(22rem, calc(100vw - 2rem));
+  width: min(18rem, calc(100vw - 2rem));
+}
+
+.collab-toasts__dismiss-all {
+  pointer-events: auto;
+  display: block;
+  margin: 0 0 0.375rem auto;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: #626f86;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 12px rgba(23, 43, 77, 0.08);
+}
+
+.collab-toasts__dismiss-all:hover {
+  color: #172b4d;
+  background: #fff;
 }
 
 .collab-toasts__stack {
   display: flex;
   flex-direction: column;
-  gap: 0.625rem;
+  gap: 0.375rem;
 }
 
 .collab-toast {
   pointer-events: auto;
   display: grid;
-  grid-template-columns: auto auto 1fr auto;
-  align-items: center;
-  gap: 0.625rem;
-  padding: 0.75rem 0.875rem;
-  border-radius: 0.875rem;
-  background: rgba(255, 255, 255, 0.96);
+  grid-template-columns: auto 1fr auto;
+  align-items: start;
+  gap: 0.5rem;
+  padding: 0.5rem 0.625rem;
+  border-radius: 0.625rem;
+  background: rgba(255, 255, 255, 0.94);
   border: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow:
-    0 12px 40px rgba(23, 43, 77, 0.14),
-    inset 3px 0 0 var(--toast-accent, #2d7eb8);
-  backdrop-filter: blur(12px);
-}
-
-.collab-toast__emoji {
-  font-size: 1rem;
-  line-height: 1;
+  box-shadow: 0 6px 20px rgba(23, 43, 77, 0.1);
+  border-left: 3px solid var(--toast-accent, #2d7eb8);
 }
 
 .collab-toast__message {
   margin: 0;
-  font-size: 0.8125rem;
-  line-height: 1.45;
-  color: #172b4d;
+  padding-top: 0.125rem;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: #44546f;
 }
 
 .collab-toast__close {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 1.5rem;
-  height: 1.5rem;
-  border-radius: 0.375rem;
-  color: #626f86;
-  transition: background 0.15s ease, color 0.15s ease;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 0.25rem;
+  color: #97a0af;
+  flex-shrink: 0;
 }
 
 .collab-toast__close:hover {
   background: #f1f2f4;
-  color: #172b4d;
+  color: #44546f;
 }
 
 .collab-toast-enter-active,
 .collab-toast-leave-active {
-  transition: all 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .collab-toast-enter-from,
 .collab-toast-leave-to {
   opacity: 0;
-  transform: translateX(1.25rem) scale(0.96);
+  transform: translateY(0.5rem);
 }
 
 .collab-toast-move {
-  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 0.2s ease;
 }
 </style>
