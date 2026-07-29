@@ -13,7 +13,7 @@ import { acceptPendingBoardInvites } from '@/services/boardShare'
 
 export const useAuthStore = defineStore('auth', () => {
   const currentUserId = ref<string | null>(null)
-  const users = ref<User[]>(SEED_DATA.users)
+  const users = ref<User[]>(isMatuConfigured() ? [] : SEED_DATA.users)
   const isReady = ref(false)
   const authError = ref<string | null>(null)
 

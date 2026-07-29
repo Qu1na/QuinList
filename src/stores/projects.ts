@@ -28,6 +28,7 @@ import {
   deleteProjectRecord,
   loadProjectById,
   loadSingleProject,
+  subscribeWorkspaceProjectsRealtime,
 } from '@/services/projectMatuData'
 import { applyRealtimePayload } from '@/services/projectRealtime'
 import { ensureProjectUserProfiles } from '@/services/projectUsers'
@@ -84,6 +85,7 @@ export const useProjectsStore = defineStore('projects', () => {
   const REALTIME_SUPPRESS_MS = 4000
   let loadedWorkspaceId: string | null = null
   let workspaceWatchStop: (() => void) | null = null
+  let workspaceRealtimeUnsub: (() => void) | null = null
 
   const currentProject = computed(() =>
     projects.value.find((p) => p.id === currentProjectId.value) ?? null,
@@ -627,6 +629,24 @@ export const useProjectsStore = defineStore('projects', () => {
     }
   }
 
+  function startWorkspaceRealtime(workspaceId: string) {
+    workspaceRealtimeUnsub?.()
+    if (!isMatuConfigured()) return
+
+    workspaceRealtimeUnsub = subscribeWorkspaceProjectsRealtime(
+      () =>
+        projects.value
+          .filter((p) => p.workspaceId === workspaceId)
+          .map((p) => p.id),
+      handleRealtimePayload,
+    )
+  }
+
+  function stopWorkspaceRealtime() {
+    workspaceRealtimeUnsub?.()
+    workspaceRealtimeUnsub = null
+  }
+
   async function init() {
     await waitForQuinListReady()
     const quinlist = useQuinListStore()
@@ -652,6 +672,7 @@ export const useProjectsStore = defineStore('projects', () => {
     const wsMember = isWorkspaceMember(workspaceId, userId)
     const data = await loadProjectsData(workspaceId, userId, wsMember)
     applyWorkspaceData(workspaceId, data)
+    startWorkspaceRealtime(workspaceId)
   }
 
   /** Restauración manual desde copia local — no se ejecuta automáticamente. */
@@ -680,23 +701,19 @@ export const useProjectsStore = defineStore('projects', () => {
   async function ensureProjectLoaded(projectId: string) {
     if (getProject(projectId)) return getProject(projectId)
 
-    const quinlist = useQuinListStore()
-    const wsId = quinlist.currentWorkspaceId
-    if (wsId) {
-      await reloadForWorkspace(wsId)
-      if (getProject(projectId)) return getProject(projectId)
-    }
-
     if (!isMatuConfigured()) return null
+
+    const data = await loadSingleProject(projectId)
+    if (data) {
+      mergeProjectState(data)
+      return getProject(projectId)
+    }
 
     const remote = await loadProjectById(projectId)
     if (!remote) return null
 
-    const auth = useAuthStore()
-    const projectWsId = remote.workspaceId
-    const wsMember = isWorkspaceMember(projectWsId, auth.currentUserId)
-    const data = await loadProjectsData(projectWsId, auth.currentUserId, wsMember)
-    applyWorkspaceData(projectWsId, data)
+    const single = await loadSingleProject(projectId)
+    if (single) mergeProjectState(single)
     return getProject(projectId)
   }
 
@@ -704,6 +721,7 @@ export const useProjectsStore = defineStore('projects', () => {
     workspaceWatchStop?.()
     workspaceWatchStop = null
     loadedWorkspaceId = null
+    stopWorkspaceRealtime()
     if (saveTimer) clearTimeout(saveTimer)
     saveWaiters = []
     projects.value = []

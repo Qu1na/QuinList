@@ -6,7 +6,6 @@ import {
   loadProjectsForUser,
   syncProjectsToMatu,
 } from '@/services/projectMatuData'
-import { shouldSaveProjectsBackup } from '@/utils/projectRecovery'
 
 const STORAGE_KEY = 'quinlist_projects_data_v2'
 export const PROJECTS_LOCAL_STORAGE_KEY = STORAGE_KEY
@@ -139,13 +138,9 @@ export async function loadProjectsData(
 export async function persistProjectsData(
   workspaceId: string,
   data: ProjectsDataState,
-  options?: { forceBackup?: boolean },
+  _options?: { forceBackup?: boolean },
 ): Promise<void> {
   if (isProjectsMatuEnabled()) {
-    // Copia local antes de sincronizar — permite recuperar si MatuDB falla o devuelve vacío.
-    if (options?.forceBackup || shouldSaveProjectsBackup(workspaceId, data)) {
-      saveProjectsLocal(data)
-    }
     await syncProjectsToMatu(workspaceId, data)
     return
   }

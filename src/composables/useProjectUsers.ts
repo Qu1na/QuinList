@@ -1,11 +1,10 @@
-import { computed, inject, onUnmounted, provide, ref, watch, type ComputedRef, type Ref } from 'vue'
+import { computed, inject, ref, watch, onUnmounted, provide, type ComputedRef, type Ref } from 'vue'
 import type { User } from '@/types'
 import { isMatuConfigured } from '@/lib/matu'
 import { useAuthStore } from '@/stores/auth'
 import { useProjectsStore } from '@/stores/projects'
 import { useProjectPresenceStore } from '@/stores/projectPresence'
 import { PROJECTS_LOCAL_STORAGE_KEY, PROJECTS_LOCAL_SYNC_EVENT } from '@/services/projectData'
-import { subscribeProjectIncrementalRealtime } from '@/services/projectMatuData'
 import {
   collectProjectUserIds,
   ensureProjectUserProfiles,
@@ -31,10 +30,8 @@ export function provideProjectUsers(projectId: Ref<string> | ComputedRef<string>
   const projectsStore = useProjectsStore()
   const presenceStore = useProjectPresenceStore()
 
-  let unsubscribe: (() => void) | null = null
   let unsubProfiles: (() => void) | null = null
   let localUnsubscribe: (() => void) | null = null
-  let syncTimer: ReturnType<typeof setTimeout> | null = null
 
   async function refreshProfiles() {
     const id = projectId.value
@@ -53,13 +50,6 @@ export function provideProjectUsers(projectId: Ref<string> | ComputedRef<string>
 
   async function syncProject() {
     await ensureProjectInStore()
-  }
-
-  function scheduleProjectSync() {
-    if (syncTimer) clearTimeout(syncTimer)
-    syncTimer = setTimeout(() => {
-      void syncProject()
-    }, 300)
   }
 
   function resolveUser(userId: string | null | undefined): User | undefined {
@@ -95,10 +85,8 @@ export function provideProjectUsers(projectId: Ref<string> | ComputedRef<string>
   watch(
     projectId,
     (id) => {
-      unsubscribe?.()
       unsubProfiles?.()
       localUnsubscribe?.()
-      if (syncTimer) clearTimeout(syncTimer)
       void presenceStore.unmount()
 
       if (!id) return
@@ -108,18 +96,13 @@ export function provideProjectUsers(projectId: Ref<string> | ComputedRef<string>
       void presenceStore.mount(id)
 
       if (isMatuConfigured()) {
-        unsubscribe = subscribeProjectIncrementalRealtime(id, (payload) => {
-          projectsStore.handleRealtimePayload(payload)
-          void refreshProfiles()
-        })
-
         unsubProfiles = subscribeProfilesRealtime((user) => {
           auth.addUser(user)
         })
       } else {
-        const onLocalChange = () => scheduleProjectSync()
+        const onLocalChange = () => void syncProject()
         const onStorage = (e: StorageEvent) => {
-          if (e.key === PROJECTS_LOCAL_STORAGE_KEY) scheduleProjectSync()
+          if (e.key === PROJECTS_LOCAL_STORAGE_KEY) void syncProject()
         }
         window.addEventListener(PROJECTS_LOCAL_SYNC_EVENT, onLocalChange)
         window.addEventListener('storage', onStorage)
@@ -140,10 +123,8 @@ export function provideProjectUsers(projectId: Ref<string> | ComputedRef<string>
   )
 
   onUnmounted(() => {
-    unsubscribe?.()
     unsubProfiles?.()
     localUnsubscribe?.()
-    if (syncTimer) clearTimeout(syncTimer)
     void presenceStore.unmount()
     if (projectsStore.currentProjectId === projectId.value) {
       projectsStore.setCurrentProject(null)

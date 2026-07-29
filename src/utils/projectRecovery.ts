@@ -120,7 +120,7 @@ export async function restoreProjectsFromBackup(workspaceId: string): Promise<bo
 
   const workspaceData = filterWorkspaceData(backup, workspaceId)
   try {
-    await persistProjectsData(workspaceId, workspaceData, { forceBackup: true })
+    await persistProjectsData(workspaceId, workspaceData)
     return true
   } catch (err) {
     console.error('[projectRecovery] Failed to restore backup to MatuDB:', err)

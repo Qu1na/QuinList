@@ -1012,3 +1012,42 @@ export function subscribeProjectIncrementalRealtime(
     channels.forEach((ch) => db.removeChannel(ch))
   }
 }
+
+function payloadBelongsToAnyProject(
+  payload: import('@/types/collaboration').RealtimeChangePayload,
+  projectIds: Set<string>,
+): boolean {
+  if (projectIds.size === 0) return false
+  for (const projectId of projectIds) {
+    if (payloadBelongsToProject(payload, projectId)) return true
+  }
+  return false
+}
+
+/** Realtime incremental para todos los proyectos visibles en un workspace. */
+export function subscribeWorkspaceProjectsRealtime(
+  getProjectIds: () => string[],
+  onPayload: (payload: import('@/types/collaboration').RealtimeChangePayload) => void,
+): () => void {
+  if (!isMatuConfigured()) return () => {}
+
+  const db = getMatuClient()
+  const tables = ['projects', ...realtimeEntityTables()]
+
+  const channels = tables.map((table) =>
+    db
+      .channel(matuRealtimeTableChannel(table))
+      .on('postgres_changes', { event: '*', schema: 'public', table }, (raw: unknown) => {
+        const payload = normalizeRealtimePayload(raw, table)
+        if (!payload) return
+        const ids = new Set(getProjectIds())
+        if (!payloadBelongsToAnyProject(payload, ids)) return
+        onPayload(payload)
+      })
+      .subscribe(),
+  )
+
+  return () => {
+    channels.forEach((ch) => db.removeChannel(ch))
+  }
+}

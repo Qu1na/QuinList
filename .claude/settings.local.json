@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(wc -l src/stores/*.ts src/services/*.ts src/lib/*.ts src/utils/*.ts)"
+    ]
+  }
+}

@@ -34,6 +34,8 @@ import { googleCalendarUrl } from '@/utils/calendar'
 import { useIntegrationsStore } from '@/stores/integrations'
 import { burstConfettiFromElement } from '@/utils/confetti'
 import AppWindow from '@/components/ui/AppWindow.vue'
+import { cloneCard } from '@/lib/cloneCard'
+import type { Card } from '@/types'
 
 const store = useQuinListStore()
 const auth = useAuthStore()
@@ -44,9 +46,18 @@ const newComment = ref('')
 const newChecklistItem = ref('')
 const fileInput = ref<HTMLInputElement | null>(null)
 
-const card = computed(() =>
-  ui.selectedCardId ? store.getCard(ui.selectedCardId) : null,
-)
+const frozenCard = ref<Card | null>(null)
+
+const card = computed(() => {
+  const id = ui.selectedCardId
+  if (!id) return null
+  const live = store.getCard(id)
+  if (live) {
+    frozenCard.value = cloneCard(live)
+    return live
+  }
+  return frozenCard.value
+})
 
 const board = computed(() =>
   card.value ? store.boards.find((b) => b.id === card.value!.boardId) : null,
@@ -188,7 +199,7 @@ async function deleteCard() {
 <template>
   <Teleport to="body">
     <div
-      v-if="card"
+      v-if="ui.selectedCardId && card"
       class="app-window-overlay fixed inset-0 z-[1000] flex items-start justify-center overflow-y-auto p-4 pt-12 pb-8 sm:p-8 sm:pt-16"
       @click.self="close"
     >

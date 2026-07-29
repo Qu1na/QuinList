@@ -869,18 +869,15 @@ export function subscribeRealtime(
   if (!isMatuConfigured()) return () => {}
 
   const db = getMatuClient()
+  // Solo tablas estructurales — presence, chat y notificaciones tienen stores dedicados.
   const tables = [
     'cards',
     'lists',
     'boards',
-    'workspace_members',
     'workspaces',
-    'board_invites',
+    'workspace_members',
     'board_members',
     'board_invite_uses',
-    'board_messages',
-    'board_presence',
-    'notifications',
   ]
 
   const channels = tables.map((table) =>

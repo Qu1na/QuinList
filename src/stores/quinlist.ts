@@ -44,6 +44,9 @@ import { ensureCardUserProfiles } from '@/composables/useBoardUsers'
 const STORAGE_KEY = 'quinlist_data'
 
 function loadLocalState() {
+  if (isMatuConfigured()) {
+    return { workspaces: [] as Workspace[], boards: [] as Board[], cards: [] as Card[] }
+  }
   const saved = localStorage.getItem(STORAGE_KEY)
   let data: typeof SEED_DATA
   if (saved) {
@@ -82,8 +85,8 @@ export const useQuinListStore = defineStore('quinlist', () => {
   const workspaces = ref<Workspace[]>(initial.workspaces)
   const boards = ref<Board[]>(initial.boards)
   const cards = ref<Card[]>(initial.cards)
-  const currentWorkspaceId = ref<string>('ws1')
-  const currentBoardId = ref<string>('b1')
+  const currentWorkspaceId = ref<string>(isMatuConfigured() ? '' : 'ws1')
+  const currentBoardId = ref<string>(isMatuConfigured() ? '' : 'b1')
   const isLoading = ref(false)
   const isReady = ref(false)
   const boardRoles = ref<Record<string, UserRole>>({})
@@ -99,6 +102,7 @@ export const useQuinListStore = defineStore('quinlist', () => {
   const pendingCardWrites = new Set<string>()
   let suppressCardsReloadUntil = 0
   let cardsReloadTimer: ReturnType<typeof setTimeout> | null = null
+  let reloadDebounceTimer: ReturnType<typeof setTimeout> | null = null
 
   function bumpCardsRevision() {
     cardsRevision.value++
@@ -238,6 +242,14 @@ export const useQuinListStore = defineStore('quinlist', () => {
   }
 
   async function scheduleReload() {
+    if (reloadDebounceTimer) clearTimeout(reloadDebounceTimer)
+    reloadDebounceTimer = setTimeout(() => {
+      reloadDebounceTimer = null
+      void runReload()
+    }, 500)
+  }
+
+  async function runReload() {
     if (reloading) {
       pendingReload = true
       return
@@ -251,7 +263,7 @@ export const useQuinListStore = defineStore('quinlist', () => {
       reloading = false
       if (pendingReload) {
         pendingReload = false
-        scheduleReload()
+        void runReload()
       }
     }
   }
@@ -370,6 +382,10 @@ export const useQuinListStore = defineStore('quinlist', () => {
     if (cardsReloadTimer) {
       clearTimeout(cardsReloadTimer)
       cardsReloadTimer = null
+    }
+    if (reloadDebounceTimer) {
+      clearTimeout(reloadDebounceTimer)
+      reloadDebounceTimer = null
     }
   }
 

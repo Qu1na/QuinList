@@ -30,6 +30,7 @@ import {
   toTaskComment,
   toTimeEntry,
 } from '@/services/projectMatuData'
+import { isServerRowNewer } from '@/lib/realtimeMerge'
 
 type EntityArrays = {
   projects: Ref<Project[]>
@@ -47,10 +48,19 @@ type EntityArrays = {
   taskComments: Ref<ProjectTaskComment[]>
 }
 
-function upsert<T extends { id: string }>(list: Ref<T[]>, item: T) {
+function upsertIfNewer<T extends { id: string; updatedAt?: string; createdAt?: string }>(
+  list: Ref<T[]>,
+  item: T,
+  incomingRow: Record<string, unknown>,
+) {
   const idx = list.value.findIndex((x) => x.id === item.id)
-  if (idx >= 0) list.value[idx] = item
-  else list.value.push(item)
+  if (idx >= 0) {
+    const existing = list.value[idx]!
+    if (!isServerRowNewer(incomingRow, existing)) return
+    list.value[idx] = item
+  } else {
+    list.value.push(item)
+  }
 }
 
 function removeById<T extends { id: string }>(list: Ref<T[]>, id: string) {
@@ -73,52 +83,52 @@ export function applyRealtimePayload(
         state.projects.value = state.projects.value.filter((p) => p.id !== (payload.old?.id as string))
         return null
       }
-      upsert(state.projects, toProject(payload.new!))
+      upsertIfNewer(state.projects, toProject(payload.new!), payload.new!)
       return null
     }
     case 'project_tasks': {
       if (payload.event === 'DELETE') removeById(state.tasks, id!)
-      else upsert(state.tasks, toTask(payload.new!))
+      else upsertIfNewer(state.tasks, toTask(payload.new!), payload.new!)
       return null
     }
     case 'project_milestones': {
       if (payload.event === 'DELETE') removeById(state.milestones, id!)
-      else upsert(state.milestones, toMilestone(payload.new!))
+      else upsertIfNewer(state.milestones, toMilestone(payload.new!), payload.new!)
       return null
     }
     case 'project_costs': {
       if (payload.event === 'DELETE') removeById(state.costs, id!)
-      else upsert(state.costs, toCost(payload.new!))
+      else upsertIfNewer(state.costs, toCost(payload.new!), payload.new!)
       return null
     }
     case 'project_risks': {
       if (payload.event === 'DELETE') removeById(state.risks, id!)
-      else upsert(state.risks, toRisk(payload.new!))
+      else upsertIfNewer(state.risks, toRisk(payload.new!), payload.new!)
       return null
     }
     case 'project_deliverables': {
       if (payload.event === 'DELETE') removeById(state.deliverables, id!)
-      else upsert(state.deliverables, toDeliverable(payload.new!))
+      else upsertIfNewer(state.deliverables, toDeliverable(payload.new!), payload.new!)
       return null
     }
     case 'project_documents': {
       if (payload.event === 'DELETE') removeById(state.documents, id!)
-      else upsert(state.documents, toDocument(payload.new!))
+      else upsertIfNewer(state.documents, toDocument(payload.new!), payload.new!)
       return null
     }
     case 'project_folders': {
       if (payload.event === 'DELETE') removeById(state.folders, id!)
-      else upsert(state.folders, toFolder(payload.new!))
+      else upsertIfNewer(state.folders, toFolder(payload.new!), payload.new!)
       return null
     }
     case 'project_invites': {
       if (payload.event === 'DELETE') removeById(state.invites, id!)
-      else upsert(state.invites, toInvite(payload.new!))
+      else upsertIfNewer(state.invites, toInvite(payload.new!), payload.new!)
       return null
     }
     case 'project_members': {
       if (payload.event === 'DELETE') removeById(state.members, id!)
-      else upsert(state.members, toMember(payload.new!))
+      else upsertIfNewer(state.members, toMember(payload.new!), payload.new!)
       return null
     }
     case 'project_activities': {
@@ -129,19 +139,18 @@ export function applyRealtimePayload(
       const activity = toActivity(payload.new!)
       const exists = state.activities.value.some((a) => a.id === activity.id)
       if (!exists) state.activities.value.unshift(activity)
-      else upsert(state.activities, activity)
-      // Solo notificar en INSERT — los UPDATE duplicaban toasts.
+      else upsertIfNewer(state.activities, activity, payload.new!)
       if (payload.event !== 'INSERT') return null
       return activity
     }
     case 'project_time_entries': {
       if (payload.event === 'DELETE') removeById(state.timeEntries, id!)
-      else upsert(state.timeEntries, toTimeEntry(payload.new!))
+      else upsertIfNewer(state.timeEntries, toTimeEntry(payload.new!), payload.new!)
       return null
     }
     case 'project_task_comments': {
       if (payload.event === 'DELETE') removeById(state.taskComments, id!)
-      else upsert(state.taskComments, toTaskComment(payload.new!))
+      else upsertIfNewer(state.taskComments, toTaskComment(payload.new!), payload.new!)
       return null
     }
     default:
