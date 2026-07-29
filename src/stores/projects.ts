@@ -40,6 +40,12 @@ import { useAuthStore } from './auth'
 import { isWorkspaceMember } from '@/utils/projectAccess'
 import { generateId } from '@/utils/permissions'
 import {
+  compareCalendarDates,
+  compareInstants,
+  nowInstantISO,
+  todayCalendarDate,
+} from '@/utils/datetime'
+import {
   calcFinanceSummary,
   calcProjectProgress,
   collectProjectFiles,
@@ -161,7 +167,7 @@ export const useProjectsStore = defineStore('projects', () => {
   function getProjectTransactions(projectId: string) {
     return costs.value
       .filter((c) => c.projectId === projectId)
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .sort((a, b) => compareCalendarDates(b.date, a.date))
   }
 
   function getProjectCosts(projectId: string) {
@@ -187,7 +193,7 @@ export const useProjectsStore = defineStore('projects', () => {
   function getTaskComments(taskId: string) {
     return taskComments.value
       .filter((c) => c.taskId === taskId)
-      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+      .sort((a, b) => compareInstants(a.createdAt, b.createdAt))
   }
 
   async function addTaskComment(taskId: string, content: string) {
@@ -199,7 +205,7 @@ export const useProjectsStore = defineStore('projects', () => {
     const trimmed = content.trim()
     if (!trimmed) return null
 
-    const now = new Date().toISOString()
+    const now = nowInstantISO()
     const comment: ProjectTaskComment = {
       id: generateId(),
       projectId: task.projectId,
@@ -242,7 +248,7 @@ export const useProjectsStore = defineStore('projects', () => {
   function getProjectTimeEntries(projectId: string) {
     return timeEntries.value
       .filter((e) => e.projectId === projectId)
-      .sort((a, b) => new Date(b.entryDate).getTime() - new Date(a.entryDate).getTime())
+      .sort((a, b) => compareCalendarDates(b.entryDate, a.entryDate))
   }
 
   function getTaskTimeEntries(taskId: string) {
@@ -256,7 +262,7 @@ export const useProjectsStore = defineStore('projects', () => {
   function getProjectActivities(projectId: string) {
     return activities.value
       .filter((a) => a.projectId === projectId)
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .sort((a, b) => compareInstants(b.createdAt, a.createdAt))
   }
 
   function getProjectDashboard(projectId: string) {
@@ -598,7 +604,7 @@ export const useProjectsStore = defineStore('projects', () => {
       entityType: meta?.entityType ?? null,
       entityId: meta?.entityId ?? null,
       entityTitle: meta?.entityTitle ?? details,
-      createdAt: new Date().toISOString(),
+      createdAt: nowInstantISO(),
     })
   }
 
@@ -755,7 +761,7 @@ export const useProjectsStore = defineStore('projects', () => {
     category?: string
   }) {
     const auth = useAuthStore()
-    const now = new Date().toISOString()
+    const now = nowInstantISO()
     const project: Project = {
       id: generateId(),
       workspaceId: input.workspaceId,
@@ -788,7 +794,7 @@ export const useProjectsStore = defineStore('projects', () => {
         canViewFinance: true,
         canManageTasks: true,
         canManageTeam: true,
-        joinedAt: now.split('T')[0]!,
+        joinedAt: todayCalendarDate(),
       })
     }
 
@@ -808,7 +814,7 @@ export const useProjectsStore = defineStore('projects', () => {
     projects.value[idx] = {
       ...projects.value[idx]!,
       ...updates,
-      updatedAt: new Date().toISOString(),
+      updatedAt: nowInstantISO(),
     }
     logActivity(id, 'project_updated', 'Se modificó la información del proyecto', {
       entityType: 'project',
@@ -850,7 +856,7 @@ export const useProjectsStore = defineStore('projects', () => {
   ) {
     const auth = useAuthStore()
     const projectTasks = getProjectTasks(projectId)
-    const now = new Date().toISOString()
+    const now = nowInstantISO()
     const status = options?.status ?? 'todo'
     const task: ProjectTask = {
       id: generateId(),
@@ -903,9 +909,9 @@ export const useProjectsStore = defineStore('projects', () => {
       const idx = tasks.value.findIndex((t) => t.id === taskId)
       if (idx === -1) return null
       const prev = tasks.value[idx]!
-      const next = { ...prev, ...updates, updatedAt: new Date().toISOString() }
+      const next = { ...prev, ...updates, updatedAt: nowInstantISO() }
       if (updates.status === 'done' && !next.completedAt) {
-        next.completedAt = new Date().toISOString()
+        next.completedAt = nowInstantISO()
       }
       if (updates.status && updates.status !== 'done') {
         next.completedAt = null
@@ -1044,7 +1050,7 @@ export const useProjectsStore = defineStore('projects', () => {
       notes: input.notes?.trim() ?? '',
       date: input.date,
       createdBy: auth.currentUserId,
-      createdAt: new Date().toISOString(),
+      createdAt: nowInstantISO(),
     }
     costs.value.push(tx)
     logActivity(projectId, 'finance_added', tx.title, {
@@ -1105,7 +1111,7 @@ export const useProjectsStore = defineStore('projects', () => {
   async function updateRisk(id: string, updates: Partial<ProjectRisk>) {
     const risk = risks.value.find((r) => r.id === id)
     if (!risk) return
-    Object.assign(risk, updates, { updatedAt: new Date().toISOString() })
+    Object.assign(risk, updates, { updatedAt: nowInstantISO() })
     await save()
   }
 
@@ -1118,7 +1124,7 @@ export const useProjectsStore = defineStore('projects', () => {
       const d = deliverables.value.find((x) => x.id === id)
       if (!d) return
       const prevStatus = d.status
-      Object.assign(d, updates, { updatedAt: new Date().toISOString() })
+      Object.assign(d, updates, { updatedAt: nowInstantISO() })
       if (updates.status === 'delivered' || updates.status === 'approved') d.completed = true
       if (updates.status && updates.status !== prevStatus) {
         const action =
@@ -1163,7 +1169,7 @@ export const useProjectsStore = defineStore('projects', () => {
   async function updateDocument(id: string, updates: Partial<ProjectDocument>) {
     const doc = documents.value.find((d) => d.id === id)
     if (!doc) return
-    Object.assign(doc, updates, { updatedAt: new Date().toISOString() })
+    Object.assign(doc, updates, { updatedAt: nowInstantISO() })
     await save()
   }
 
@@ -1196,7 +1202,7 @@ export const useProjectsStore = defineStore('projects', () => {
       canViewFinance: perms?.canViewFinance ?? false,
       canManageTasks: perms?.canManageTasks ?? true,
       canManageTeam: perms?.canManageTeam ?? false,
-      joinedAt: new Date().toISOString().split('T')[0]!,
+      joinedAt: todayCalendarDate(),
     }
     members.value.push(member)
     logActivity(projectId, 'member_joined', userId, {
@@ -1226,7 +1232,7 @@ export const useProjectsStore = defineStore('projects', () => {
   ) {
     if (!input.dueDate) throw new Error('La fecha de vencimiento es obligatoria')
     const auth = useAuthStore()
-    const now = new Date().toISOString()
+    const now = nowInstantISO()
     const ms: ProjectMilestone = {
       id: generateId(),
       projectId,
@@ -1256,7 +1262,7 @@ export const useProjectsStore = defineStore('projects', () => {
     if (!ms) return
     commitMutation(() => {
       ms.completed = !ms.completed
-      ms.updatedAt = new Date().toISOString()
+      ms.updatedAt = nowInstantISO()
       logActivity(
         ms.projectId,
         ms.completed ? 'milestone_completed' : 'custom',
@@ -1291,8 +1297,8 @@ export const useProjectsStore = defineStore('projects', () => {
       mitigationPlan: input.mitigationPlan?.trim() ?? '',
       ownerId: input.ownerId ?? auth.currentUserId,
       createdBy: auth.currentUserId,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: nowInstantISO(),
+      updatedAt: nowInstantISO(),
     }
     risks.value.push(risk)
     logActivity(projectId, 'risk_created', risk.title, {
@@ -1363,7 +1369,7 @@ export const useProjectsStore = defineStore('projects', () => {
 
   async function addDeliverable(projectId: string, title: string, dueDate?: string | null) {
     const auth = useAuthStore()
-    const now = new Date().toISOString()
+    const now = nowInstantISO()
     const d: ProjectDeliverable = {
       id: generateId(),
       projectId,
@@ -1402,7 +1408,7 @@ export const useProjectsStore = defineStore('projects', () => {
       id: generateId(),
       text: trimmed,
       uploadedBy: auth.currentUserId,
-      createdAt: new Date().toISOString(),
+      createdAt: nowInstantISO(),
     }
 
     commitMutation(() => {
@@ -1443,7 +1449,7 @@ export const useProjectsStore = defineStore('projects', () => {
       id: generateId(),
       text,
       uploadedBy: auth.currentUserId,
-      createdAt: new Date().toISOString(),
+      createdAt: nowInstantISO(),
       attachment,
     }
 
@@ -1477,7 +1483,7 @@ export const useProjectsStore = defineStore('projects', () => {
       type: file.type,
       size: file.size,
       storageFilename: uploaded.storageFilename,
-      uploadedAt: new Date().toISOString(),
+      uploadedAt: nowInstantISO(),
       uploadedBy: auth.currentUserId ?? '',
     }
     await addDeliverableLog(deliverableId, '', attachment)
@@ -1496,7 +1502,7 @@ export const useProjectsStore = defineStore('projects', () => {
       type: file.type,
       size: file.size,
       storageFilename: uploaded.storageFilename,
-      uploadedAt: new Date().toISOString(),
+      uploadedAt: nowInstantISO(),
       uploadedBy: auth.currentUserId ?? '',
     }
     if (!task.attachments) task.attachments = []
@@ -1526,11 +1532,11 @@ export const useProjectsStore = defineStore('projects', () => {
       type: file.type,
       size: file.size,
       storageFilename: uploaded.storageFilename,
-      uploadedAt: new Date().toISOString(),
+      uploadedAt: nowInstantISO(),
       uploadedBy: auth.currentUserId ?? '',
     }
     doc.attachments.push(attachment)
-    doc.updatedAt = new Date().toISOString()
+    doc.updatedAt = nowInstantISO()
     logActivity(projectId, 'file_uploaded', file.name, {
       entityType: 'document',
       entityId: doc.id,
@@ -1548,7 +1554,7 @@ export const useProjectsStore = defineStore('projects', () => {
       parentId,
       name: name.trim(),
       createdBy: auth.currentUserId,
-      createdAt: new Date().toISOString(),
+      createdAt: nowInstantISO(),
     }
     folders.value.push(folder)
     logActivity(projectId, 'Carpeta creada', folder.name)
@@ -1614,7 +1620,7 @@ export const useProjectsStore = defineStore('projects', () => {
       canManageTeam: perms?.canManageTeam ?? false,
       status: 'pending',
       invitedBy: auth.currentUserId,
-      createdAt: new Date().toISOString(),
+      createdAt: nowInstantISO(),
     }
     invites.value.push(invite)
     logActivity(projectId, 'Invitación enviada', normalized)
@@ -1643,7 +1649,7 @@ export const useProjectsStore = defineStore('projects', () => {
     folderId: string | null = null,
   ) {
     const auth = useAuthStore()
-    const now = new Date().toISOString()
+    const now = nowInstantISO()
     const doc: ProjectDocument = {
       id: generateId(),
       projectId,
@@ -1682,8 +1688,8 @@ export const useProjectsStore = defineStore('projects', () => {
       userId: auth.currentUserId,
       description: description.trim(),
       minutes,
-      entryDate: new Date().toISOString().split('T')[0]!,
-      createdAt: new Date().toISOString(),
+      entryDate: todayCalendarDate(),
+      createdAt: nowInstantISO(),
     }
     timeEntries.value.unshift(entry)
 
@@ -1693,7 +1699,7 @@ export const useProjectsStore = defineStore('projects', () => {
         tasks.value[idx] = {
           ...tasks.value[idx]!,
           loggedMinutes: (tasks.value[idx]!.loggedMinutes ?? 0) + minutes,
-          updatedAt: new Date().toISOString(),
+          updatedAt: nowInstantISO(),
         }
       }
     }

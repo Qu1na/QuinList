@@ -5,6 +5,13 @@ import type {
   ProjectsDataState,
 } from '@/types/projects'
 import { calcFinanceSummary as calcFullFinance } from '@/utils/projectFinance'
+import {
+  compareCalendarDates,
+  compareInstants,
+  daysUntilDue,
+  instantToCalendarDate,
+  isCalendarOverdue,
+} from '@/utils/datetime'
 
 export function calcProjectProgress(tasks: ProjectTask[]): number {
   if (!tasks.length) return 0
@@ -27,7 +34,7 @@ export function getCompletedTasks(tasks: ProjectTask[]): ProjectTask[] {
 export function getUpcomingTasks(tasks: ProjectTask[], limit = 5): ProjectTask[] {
   return getPendingTasks(tasks)
     .filter((t) => t.dueDate)
-    .sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime())
+    .sort((a, b) => compareCalendarDates(a.dueDate!, b.dueDate!))
     .slice(0, limit)
 }
 
@@ -66,7 +73,7 @@ export function collectProjectFiles(state: ProjectsDataState, projectId: string)
   }
 
   return items.sort(
-    (a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime(),
+    (a, b) => compareInstants(b.uploadedAt, a.uploadedAt),
   )
 }
 
@@ -124,18 +131,19 @@ export const PROJECT_STATUS_COLORS: Record<Project['status'], string> = {
 
 export function isTaskOverdue(task: ProjectTask): boolean {
   if (!task.dueDate || task.status === 'done') return false
-  return new Date(task.dueDate) < new Date(new Date().toDateString())
+  return isCalendarOverdue(task.dueDate)
 }
 
 export function isProjectOverdue(project: Project): boolean {
   if (!project.dueDate || project.status === 'completed' || project.status === 'cancelled') {
     return false
   }
-  return new Date(project.dueDate) < new Date(new Date().toDateString())
+  return isCalendarOverdue(project.dueDate)
 }
 
-export function daysUntil(dateStr: string | null): number | null {
-  if (!dateStr) return null
-  const diff = new Date(dateStr).getTime() - new Date(new Date().toDateString()).getTime()
-  return Math.ceil(diff / (1000 * 60 * 60 * 24))
+export { daysUntilDue as daysUntil } from '@/utils/datetime'
+
+export function completedOnCalendarDay(completedAt: string | null | undefined, dayKey: string): boolean {
+  if (!completedAt) return false
+  return instantToCalendarDate(completedAt) === dayKey
 }

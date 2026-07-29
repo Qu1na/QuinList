@@ -12,6 +12,7 @@ import { matuRealtimeRow, matuRealtimeTableChannel, rowUserId } from '@/lib/matu
 import { getMatuClient, isMatuConfigured } from '@/lib/matu'
 import { toJsonb, fromJsonb } from '@/lib/dbJson'
 import { generateId } from '@/utils/permissions'
+import { todayCalendarDate } from '@/utils/datetime'
 import { loadBoardIdsForUser } from '@/services/boardShare'
 import {
   defaultBoardIntegrations,
@@ -561,10 +562,10 @@ export async function createDefaultWorkspace(
       {
         userId,
         role: 'owner',
-        joinedAt: new Date().toISOString().split('T')[0]!,
+        joinedAt: todayCalendarDate(),
       },
     ],
-    createdAt: new Date().toISOString().split('T')[0]!,
+    createdAt: todayCalendarDate(),
   }
 
   const board: Board = {
@@ -578,7 +579,7 @@ export async function createDefaultWorkspace(
     integrations: defaultBoardIntegrations(),
     labels: [],
     lists: [],
-    createdAt: new Date().toISOString().split('T')[0]!,
+    createdAt: todayCalendarDate(),
   }
 
   const { error: wsErr } = await db.from('workspaces').insert({
@@ -718,7 +719,7 @@ export async function inviteMember(
       workspace_id: workspaceId,
       user_id: profile.id,
       role,
-      joined_at: new Date().toISOString().split('T')[0],
+      joined_at: todayCalendarDate(),
     })
     if (error) throw new Error(error.message)
     return
@@ -753,7 +754,7 @@ export async function acceptPendingInvites(userId: string, email: string): Promi
       workspace_id: inv.workspace_id,
       user_id: userId,
       role: inv.role,
-      joined_at: new Date().toISOString().split('T')[0],
+      joined_at: todayCalendarDate(),
     })
     await db.from('workspace_invites').eq('id', inv.id).update({ status: 'accepted' })
   }

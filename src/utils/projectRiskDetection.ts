@@ -9,6 +9,7 @@ import type {
 } from '@/types/projects'
 import { isTaskOverdue, daysUntil } from '@/utils/projectStats'
 import { formatDate } from '@/utils/permissions'
+import { isCalendarOverdue } from '@/utils/datetime'
 
 const AUTO_MARKER_RE = /^<!--auto:(\w+):([^>]+)-->\n?/
 
@@ -63,7 +64,6 @@ export function detectAutoRisks(
   milestones: ProjectMilestone[],
 ): AutoRiskSuggestion[] {
   const suggestions: AutoRiskSuggestion[] = []
-  const today = new Date(new Date().toDateString())
 
   for (const task of tasks) {
     if (task.status === 'done') continue
@@ -101,7 +101,12 @@ export function detectAutoRisks(
         sourceType: 'task',
         sourceId: task.id,
         title: `Tarea próxima a vencer: ${task.title}`,
-        description: `Vence el ${formatDate(task.dueDate)} (${daysLeft === 0 ? 'hoy' : `en ${daysLeft} día${daysLeft === 1 ? '' : 's'}`}).`,
+        description:
+          daysLeft === 0
+            ? 'Vence hoy.'
+            : daysLeft === 1
+              ? 'Vence mañana.'
+              : `Vence el ${formatDate(task.dueDate)} (en ${daysLeft} días).`,
         type: 'risk',
         severity: daysLeft === 0 ? 'medium' : 'low',
         probability: 'high',
@@ -111,8 +116,7 @@ export function detectAutoRisks(
 
   for (const ms of milestones) {
     if (ms.completed || !ms.dueDate) continue
-    const due = new Date(ms.dueDate)
-    if (due >= today) continue
+    if (!isCalendarOverdue(ms.dueDate)) continue
     const days = Math.abs(daysUntil(ms.dueDate) ?? 0)
     suggestions.push({
       sourceType: 'milestone',
@@ -129,7 +133,7 @@ export function detectAutoRisks(
     project.dueDate &&
     project.status !== 'completed' &&
     project.status !== 'cancelled' &&
-    new Date(project.dueDate) < today
+    isCalendarOverdue(project.dueDate)
   ) {
     const days = Math.abs(daysUntil(project.dueDate) ?? 0)
     suggestions.push({

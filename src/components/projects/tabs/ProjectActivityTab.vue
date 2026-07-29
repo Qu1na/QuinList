@@ -2,10 +2,11 @@
 import { computed } from 'vue'
 import { Activity, Users, Clock } from '@lucide/vue'
 import { useProjectsStore } from '@/stores/projects'
-import { formatDateTime } from '@/utils/permissions'
 import UserAvatar from '@/components/projects/shared/UserAvatar.vue'
 import { useProjectUsers } from '@/composables/useProjectUsers'
 import { formatActivityLine } from '@/utils/activityFormat'
+import { compareInstants } from '@/utils/datetime'
+import RelativeTime from '@/components/ui/RelativeTime.vue'
 
 const props = defineProps<{ projectId: string }>()
 
@@ -13,16 +14,16 @@ const projectsStore = useProjectsStore()
 const { resolveUser } = useProjectUsers()
 
 const activities = computed(() =>
-  [...projectsStore.getProjectActivities(props.projectId)].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  [...projectsStore.getProjectActivities(props.projectId)].sort((a, b) =>
+    compareInstants(b.createdAt, a.createdAt),
   ),
 )
 
 const uniqueUsers = computed(() => new Set(activities.value.map((a) => a.userId)).size)
 
 const lastSevenDays = computed(() => {
-  const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000
-  return activities.value.filter((a) => new Date(a.createdAt).getTime() >= cutoff).length
+  const sevenDaysAgoMs = Date.now() - 7 * 86_400_000
+  return activities.value.filter((a) => new Date(a.createdAt).getTime() >= sevenDaysAgoMs).length
 })
 
 function userName(id: string) {
@@ -73,7 +74,7 @@ function userName(id: string) {
               <span class="text-sm text-[#44546f]">{{ formatActivityLine(act, userName(act.userId)) }}</span>
             </div>
             <p v-if="act.details && act.entityTitle !== act.details" class="mt-0.5 text-sm text-[#626f86]">{{ act.details }}</p>
-            <p class="mt-1.5 text-xs font-medium text-[#626f86]">{{ formatDateTime(act.createdAt) }}</p>
+            <RelativeTime :iso="act.createdAt" class="mt-1.5 text-xs font-medium text-[#626f86]" />
           </div>
         </li>
       </ul>

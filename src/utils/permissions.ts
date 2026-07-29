@@ -51,32 +51,9 @@ export function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 }
 
-export function formatDate(dateStr: string | null): string {
-  if (!dateStr) return ''
-  const date = new Date(dateStr + (dateStr.includes('T') ? '' : 'T00:00:00'))
-  return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })
-}
-
-export function formatDateTime(dateStr: string): string {
-  const date = new Date(dateStr)
-  return date.toLocaleString('es-MX', {
-    day: 'numeric',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
-export function isDueSoon(dateStr: string | null): boolean {
-  if (!dateStr) return false
-  const due = new Date(dateStr + 'T00:00:00')
-  const now = new Date()
-  const diff = (due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-  return diff >= 0 && diff <= 3
-}
-
-export function isOverdue(dateStr: string | null): boolean {
-  if (!dateStr) return false
-  const due = new Date(dateStr + 'T23:59:59')
-  return due < new Date()
-}
+export {
+  formatDate,
+  formatDateTime,
+  isDueSoon,
+  isCalendarOverdue as isOverdue,
+} from '@/utils/datetime'

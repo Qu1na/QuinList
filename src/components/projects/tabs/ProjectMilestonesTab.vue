@@ -14,6 +14,7 @@ import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useProjectsStore } from '@/stores/projects'
 import { formatDate } from '@/utils/permissions'
 import { todayISO } from '@/utils/dates'
+import { calendarDurationDays, isCalendarOverdue } from '@/utils/datetime'
 import { burstConfettiFromElement } from '@/utils/confetti'
 import DateInput from '@/components/projects/shared/DateInput.vue'
 import ProjectModal from '@/components/projects/shared/ProjectModal.vue'
@@ -121,17 +122,12 @@ function creatorName(userId: string | null) {
 
 function durationDays(ms: ProjectMilestone) {
   if (!ms.startDate || !ms.dueDate) return null
-  const start = new Date(ms.startDate).getTime()
-  const end = new Date(ms.dueDate).getTime()
-  const days = Math.max(1, Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1)
-  return days
+  return calendarDurationDays(ms.startDate, ms.dueDate)
 }
 
 function isOverdue(ms: ProjectMilestone) {
   if (ms.completed || !ms.dueDate) return false
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  return new Date(ms.dueDate) < today
+  return isCalendarOverdue(ms.dueDate)
 }
 
 function onCardClick(ms: ProjectMilestone) {

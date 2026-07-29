@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, Download, ExternalLink } from '@lucide/vue'
 import { useQuinListStore } from '@/stores/quinlist'
 import { useUiStore } from '@/stores/ui'
 import { formatDate } from '@/utils/permissions'
+import { APP_LOCALE, APP_TIMEZONE, compareCalendarDates } from '@/utils/datetime'
 import { downloadIcs, googleCalendarUrl, exportBoardToIcs } from '@/utils/calendar'
 
 import { useAuthStore } from '@/stores/auth'
@@ -21,7 +22,11 @@ const viewDate = ref(new Date())
 const year = computed(() => viewDate.value.getFullYear())
 const month = computed(() => viewDate.value.getMonth())
 const monthName = computed(() =>
-  viewDate.value.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' }),
+  new Intl.DateTimeFormat(APP_LOCALE, {
+    timeZone: APP_TIMEZONE,
+    month: 'long',
+    year: 'numeric',
+  }).format(viewDate.value),
 )
 
 const daysInMonth = computed(() => new Date(year.value, month.value + 1, 0).getDate())
@@ -39,7 +44,7 @@ const workspaceCards = computed(() => store.getWorkspaceCards())
 const cardsWithDue = computed(() =>
   workspaceCards.value
     .filter((c) => c.dueDate)
-    .sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime()),
+    .sort((a, b) => compareCalendarDates(a.dueDate!, b.dueDate!)),
 )
 
 function dateKey(day: number) {

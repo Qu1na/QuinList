@@ -10,6 +10,7 @@ import {
 } from '@/services/projectShare'
 import type { ProjectShareLink } from '@/types/projects'
 import { useAuthStore } from '@/stores/auth'
+import { formatInstantDateTime, formatRelativeTime } from '@/utils/datetime'
 
 const props = defineProps<{ projectId: string }>()
 
@@ -71,9 +72,11 @@ async function revoke(linkId: string) {
 
 function formatExpiry(link: ProjectShareLink) {
   if (!link.expiresAt) return 'Sin expiración'
-  const d = new Date(link.expiresAt)
-  if (d.getTime() < Date.now()) return 'Expirado'
-  return `Expira ${d.toLocaleString('es')}`
+  const expiresMs = new Date(link.expiresAt).getTime()
+  if (expiresMs < Date.now()) return 'Expirado'
+  const relative = formatRelativeTime(link.expiresAt)
+  if (relative.startsWith('Hace')) return `Expiró ${relative.replace('Hace ', '')}`
+  return `Expira ${formatInstantDateTime(link.expiresAt)} (${relative})`
 }
 </script>
 

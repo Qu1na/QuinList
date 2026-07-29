@@ -15,6 +15,7 @@ import type {
 } from '@/types'
 import { SEED_DATA } from '@/utils/seed'
 import { generateId } from '@/utils/permissions'
+import { compareCalendarDates, todayCalendarDate } from '@/utils/datetime'
 import { uniqueSlug } from '@/utils/slug'
 import {
   defaultBoardIntegrations,
@@ -643,7 +644,7 @@ export const useQuinListStore = defineStore('quinlist', () => {
       integrations: defaultBoardIntegrations(),
       labels: [],
       lists: [],
-      createdAt: new Date().toISOString().split('T')[0]!,
+      createdAt: todayCalendarDate(),
     }
     boards.value.push(board)
     currentBoardId.value = boardId
@@ -664,9 +665,9 @@ export const useQuinListStore = defineStore('quinlist', () => {
       icon: icon || name[0]?.toUpperCase() || 'W',
       color,
       members: auth.currentUserId
-        ? [{ userId: auth.currentUserId, role: 'owner', joinedAt: new Date().toISOString().split('T')[0]! }]
+        ? [{ userId: auth.currentUserId, role: 'owner', joinedAt: todayCalendarDate() }]
         : [],
-      createdAt: new Date().toISOString().split('T')[0]!,
+      createdAt: todayCalendarDate(),
     }
     workspaces.value.push(ws)
     currentWorkspaceId.value = ws.id
@@ -942,7 +943,7 @@ export const useQuinListStore = defineStore('quinlist', () => {
   function getUpcomingCards(): Card[] {
     return cards.value
       .filter((c) => c.dueDate && c.boardId === currentBoardId.value)
-      .sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime())
+      .sort((a, b) => compareCalendarDates(a.dueDate!, b.dueDate!))
       .slice(0, 5)
   }
 
@@ -1052,7 +1053,7 @@ export const useQuinListStore = defineStore('quinlist', () => {
     ws.members.push({
       userId: user.id,
       role,
-      joinedAt: new Date().toISOString().split('T')[0]!,
+      joinedAt: todayCalendarDate(),
     })
     saveLocal()
   }

@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuinListStore } from '@/stores/quinlist'
 import { priorityLabel, priorityColor } from '@/utils/permissions'
+import { compareCalendarDates } from '@/utils/datetime'
 
 const store = useQuinListStore()
 const router = useRouter()
@@ -12,7 +13,7 @@ const highPriorityCards = computed(() =>
     .getWorkspaceCards()
     .filter((c) => c.priority === 'alta' && !c.completed)
     .sort((a, b) => {
-      if (a.dueDate && b.dueDate) return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
+      if (a.dueDate && b.dueDate) return compareCalendarDates(a.dueDate, b.dueDate)
       return 0
     }),
 )

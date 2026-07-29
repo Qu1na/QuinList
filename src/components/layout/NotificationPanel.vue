@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useNotificationStore } from '@/stores/notifications'
 import { useUiStore } from '@/stores/ui'
-import { formatDateTime } from '@/utils/permissions'
+import RelativeTime from '@/components/ui/RelativeTime.vue'
 import { getNotificationIcon } from '@/utils/notificationIcons'
 
 import { useRouter } from 'vue-router'
@@ -52,9 +52,7 @@ function handleClick(notification: (typeof notif.userNotifications)[0]) {
         <div>
           <strong class="block text-xs font-semibold text-slate-800">{{ n.title }}</strong>
           <p class="mt-0.5 text-xs leading-relaxed text-slate-500">{{ n.message }}</p>
-          <time class="mt-1 block text-[0.7rem] text-slate-400">{{
-            formatDateTime(n.createdAt)
-          }}</time>
+          <RelativeTime :iso="n.createdAt" class="mt-1 block text-[0.7rem] text-slate-400" />
         </div>
       </button>
       <p

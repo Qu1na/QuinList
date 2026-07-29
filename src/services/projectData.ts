@@ -6,6 +6,7 @@ import {
   loadProjectsForUser,
   syncProjectsToMatu,
 } from '@/services/projectMatuData'
+import { todayCalendarDate, nowInstantISO } from '@/utils/datetime'
 
 const STORAGE_KEY = 'quinlist_projects_data_v2'
 export const PROJECTS_LOCAL_STORAGE_KEY = STORAGE_KEY
@@ -22,9 +23,9 @@ function normalizeTransaction(raw: Partial<ProjectCost> & { projectId: string })
     paymentMethod: raw.paymentMethod ?? 'transfer',
     reference: raw.reference ?? '',
     notes: raw.notes ?? '',
-    date: raw.date ?? new Date().toISOString().split('T')[0]!,
+    date: raw.date ?? todayCalendarDate(),
     createdBy: raw.createdBy ?? null,
-    createdAt: raw.createdAt ?? new Date().toISOString(),
+    createdAt: raw.createdAt ?? nowInstantISO(),
   }
 }
 

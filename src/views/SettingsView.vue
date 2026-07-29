@@ -8,6 +8,7 @@ import { useIntegrationsStore } from '@/stores/integrations'
 import { saveProfile } from '@/services/matuData'
 import { isMatuConfigured } from '@/lib/matu'
 import { roleLabel } from '@/utils/permissions'
+import { formatCalendarMonthYear } from '@/utils/datetime'
 import { INTEGRATION_META } from '@/utils/integrations'
 import type { IntegrationType } from '@/utils/integrations'
 import AccountShell from '@/components/layout/AccountShell.vue'
@@ -25,13 +26,9 @@ const error = ref('')
 
 const userRole = computed(() => roleLabel(store.getUserRole(store.currentWorkspaceId)))
 
-const memberSince = computed(() => {
-  const ws = store.currentWorkspace
-  const member = ws?.members.find((m) => m.userId === auth.currentUserId)
-  if (!member?.joinedAt) return '—'
-  const date = new Date(member.joinedAt + (member.joinedAt.includes('T') ? '' : 'T00:00:00'))
-  return date.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
-})
+const memberSince = computed(() => formatCalendarMonthYear(
+  store.currentWorkspace?.members.find((m) => m.userId === auth.currentUserId)?.joinedAt,
+))
 
 const boardCount = computed(
   () => store.boards.filter((b) => b.workspaceId === store.currentWorkspaceId).length,

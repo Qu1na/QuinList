@@ -3,6 +3,7 @@ import type { UserRole } from '@/types'
 import { getMatuClient, isMatuConfigured } from '@/lib/matu'
 import { matuRealtimeRow, matuRealtimeTableChannel, rowBelongsToProject } from '@/lib/matuRealtime'
 import { generateId } from '@/utils/permissions'
+import { todayCalendarDate } from '@/utils/datetime'
 
 interface DbProjectTeamInvite {
   id: string
@@ -194,7 +195,7 @@ export async function acceptProjectTeamInvite(
           canViewFinance: invite.canViewFinance,
           canManageTasks: invite.canManageTasks,
           canManageTeam: invite.canManageTeam,
-          joinedAt: new Date().toISOString().split('T')[0]!,
+          joinedAt: todayCalendarDate(),
         },
       }
     }
@@ -214,7 +215,7 @@ export async function acceptProjectTeamInvite(
         canViewFinance: invite.canViewFinance,
         canManageTasks: invite.canManageTasks,
         canManageTeam: invite.canManageTeam,
-        joinedAt: new Date().toISOString().split('T')[0]!,
+        joinedAt: todayCalendarDate(),
       },
     }
   }
@@ -280,7 +281,7 @@ export async function acceptProjectTeamInvite(
     .maybeSingle()
 
   const memberId = (existingMember?.id as string | undefined) ?? generateId()
-  const joinedAt = new Date().toISOString().split('T')[0]!
+  const joinedAt = todayCalendarDate()
 
   if (existingMember) {
     await db.from('project_members').eq('id', memberId).update({

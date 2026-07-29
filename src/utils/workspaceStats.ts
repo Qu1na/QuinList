@@ -1,4 +1,5 @@
 import type { Card, Board } from '@/types'
+import { instantToCalendarDate, lastCalendarDays } from '@/utils/datetime'
 
 export interface ChartSegment {
   label: string
@@ -68,19 +69,12 @@ export function boardCompletionBars(boards: Board[], cards: Card[]): ChartBar[] 
 }
 
 export function completionsByDay(cards: Card[], days = 7): ChartPoint[] {
-  const result: ChartPoint[] = []
-  const now = new Date()
-  for (let i = days - 1; i >= 0; i--) {
-    const d = new Date(now)
-    d.setDate(d.getDate() - i)
-    const key = d.toISOString().slice(0, 10)
-    const label = d.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric' })
-    const value = cards.filter(
-      (c) => c.completed && c.completedAt?.slice(0, 10) === key,
-    ).length
-    result.push({ label, value })
-  }
-  return result
+  return lastCalendarDays(days).map(({ key, label }) => ({
+    label,
+    value: cards.filter(
+      (c) => c.completed && c.completedAt && instantToCalendarDate(c.completedAt) === key,
+    ).length,
+  }))
 }
 
 export function formatDuration(seconds: number): string {

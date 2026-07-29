@@ -24,6 +24,7 @@ import {
   PAYMENT_METHOD_LABELS,
 } from '@/utils/projectFinance'
 import { formatDate } from '@/utils/permissions'
+import { todayCalendarDate } from '@/utils/datetime'
 import { DEFAULT_CURRENCY } from '@/utils/currency'
 import CurrencyInput from '@/components/projects/shared/CurrencyInput.vue'
 import DateInput from '@/components/projects/shared/DateInput.vue'
@@ -64,7 +65,7 @@ const txForm = ref({
   paymentMethod: 'transfer' as PaymentMethod,
   reference: '',
   notes: '',
-  date: new Date().toISOString().split('T')[0]!,
+  date: todayCalendarDate(),
 })
 
 const inputClass = 'ql-input'
@@ -107,7 +108,7 @@ function openAdd(type: TransactionType) {
     paymentMethod: 'transfer',
     reference: '',
     notes: '',
-    date: new Date().toISOString().split('T')[0]!,
+    date: todayCalendarDate(),
   }
   showAdd.value = true
 }

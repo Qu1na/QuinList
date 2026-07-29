@@ -5,6 +5,7 @@ import { Plus, Calendar, Paperclip, MessageSquare, X } from '@lucide/vue'
 import type { ProjectTask, ProjectTaskStatus } from '@/types/projects'
 import type { Priority } from '@/types'
 import { TASK_STATUS_LABELS, isTaskOverdue, PRIORITY_LABELS } from '@/utils/projectStats'
+import { formatCalendarDateShort } from '@/utils/datetime'
 import { beginKanbanDrag, endKanbanDrag } from '@/composables/useKanbanDrag'
 import { useProjectUsers } from '@/composables/useProjectUsers'
 import { useProjectsStore } from '@/stores/projects'
@@ -132,8 +133,7 @@ function onAddKeydown(e: KeyboardEvent, col: ProjectTaskStatus) {
 }
 
 function formatShortDate(dateStr: string) {
-  const d = new Date(dateStr)
-  return d.toLocaleDateString('es', { day: 'numeric', month: 'short' })
+  return formatCalendarDateShort(dateStr)
 }
 
 function creatorName(task: ProjectTask) {

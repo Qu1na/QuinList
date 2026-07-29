@@ -12,7 +12,7 @@ import {
 import { useProjectsStore } from '@/stores/projects'
 import { useAuthStore } from '@/stores/auth'
 import { useProjectUsers } from '@/composables/useProjectUsers'
-import { formatDateTime } from '@/utils/permissions'
+import RelativeTime from '@/components/ui/RelativeTime.vue'
 import { openAttachment, downloadAttachment, getAttachmentPublicUrl } from '@/services/storage'
 import {
   formatFileSize,
@@ -183,7 +183,7 @@ function onBlur() {
             </p>
             <p class="file-card__who">
               {{ resolveUser(entry.uploadedBy)?.name ?? 'Usuario' }}
-              · {{ formatDateTime(entry.createdAt) }}
+              · <RelativeTime :iso="entry.createdAt" />
             </p>
             <div class="file-card__actions">
               <button
@@ -243,7 +243,7 @@ function onBlur() {
               <span class="font-medium text-[#172b4d]">
                 {{ resolveUser(entry.uploadedBy)?.name ?? 'Usuario' }}
               </span>
-              <time class="text-xs text-[#626f86]">{{ formatDateTime(entry.createdAt) }}</time>
+              <RelativeTime :iso="entry.createdAt" class="text-xs text-[#626f86]" />
               <button
                 v-if="entry.uploadedBy === auth.currentUserId && !entry.attachment"
                 type="button"

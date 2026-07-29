@@ -13,12 +13,11 @@ import type { ProjectMilestone, ProjectTask } from '@/types/projects'
 import ProjectModal from '@/components/projects/shared/ProjectModal.vue'
 import TaskStatusBadge from '@/components/projects/shared/TaskStatusBadge.vue'
 import { formatDate } from '@/utils/permissions'
+import { TASK_STATUS_LABELS, PRIORITY_LABELS } from '@/utils/projectStats'
 import {
-  TASK_STATUS_LABELS,
-  PRIORITY_LABELS,
-  isTaskOverdue,
-  daysUntil,
-} from '@/utils/projectStats'
+  calendarDurationDays,
+  formatDueLabel,
+} from '@/utils/datetime'
 
 const props = defineProps<{
   task?: ProjectTask | null
@@ -42,21 +41,12 @@ const durationDays = computed(() => {
   const start = props.task?.startDate ?? props.milestone?.startDate
   const end = props.task?.dueDate ?? props.milestone?.dueDate
   if (!start || !end) return null
-  const diff = new Date(end).getTime() - new Date(start).getTime()
-  return Math.max(1, Math.ceil(diff / (1000 * 60 * 60 * 24)) + 1)
+  return calendarDurationDays(start, end)
 })
 
 const dueInfo = computed(() => {
   if (!props.task?.dueDate) return null
-  if (props.task.status === 'done') return { text: 'Completada', tone: 'ok' as const }
-  if (isTaskOverdue(props.task)) {
-    const days = Math.abs(daysUntil(props.task.dueDate) ?? 0)
-    return { text: `Vencida hace ${days} día${days === 1 ? '' : 's'}`, tone: 'danger' as const }
-  }
-  const left = daysUntil(props.task.dueDate)
-  if (left === 0) return { text: 'Vence hoy', tone: 'warn' as const }
-  if (left != null && left <= 3) return { text: `Vence en ${left} día${left === 1 ? '' : 's'}`, tone: 'warn' as const }
-  return { text: `Vence el ${formatDate(props.task.dueDate)}`, tone: 'ok' as const }
+  return formatDueLabel(props.task.dueDate, { completed: props.task.status === 'done' })
 })
 </script>
 

@@ -4,6 +4,7 @@ import { Plus, Calendar, Flag } from '@lucide/vue'
 import { useProjectsStore } from '@/stores/projects'
 import { formatDate } from '@/utils/permissions'
 import { todayISO } from '@/utils/dates'
+import { calendarDateToUtcMs, todayCalendarDate } from '@/utils/datetime'
 import TaskStatusBadge from '@/components/projects/shared/TaskStatusBadge.vue'
 import ProjectTaskDrawer from '@/components/projects/ProjectTaskDrawer.vue'
 import DateInput from '@/components/projects/shared/DateInput.vue'
@@ -35,16 +36,17 @@ const range = computed(() => {
   const msDates = milestones.value.flatMap((m) => [m.startDate, m.dueDate].filter(Boolean) as string[])
   const dates = [...projectDates, ...taskDates, ...msDates]
   if (!dates.length) return null
-  const min = new Date(Math.min(...dates.map((d) => new Date(d).getTime())))
-  const max = new Date(Math.max(...dates.map((d) => new Date(d).getTime())))
-  const span = max.getTime() - min.getTime() || 1
-  return { min, max, span }
+  const msValues = dates.map((d) => calendarDateToUtcMs(d))
+  const minMs = Math.min(...msValues)
+  const maxMs = Math.max(...msValues)
+  const span = maxMs - minMs || 1
+  return { minMs, maxMs, span }
 })
 
 const todayPercent = computed(() => {
   if (!range.value) return null
-  const now = new Date(new Date().toDateString()).getTime()
-  const pct = ((now - range.value.min.getTime()) / range.value.span) * 100
+  const todayMs = calendarDateToUtcMs(todayCalendarDate())
+  const pct = ((todayMs - range.value.minMs) / range.value.span) * 100
   if (pct < 0 || pct > 100) return null
   return pct
 })
@@ -52,24 +54,31 @@ const todayPercent = computed(() => {
 const monthLabels = computed(() => {
   if (!range.value) return []
   const labels: { left: string; text: string }[] = []
-  const { min, max } = range.value
-  const start = new Date(min.getFullYear(), min.getMonth(), 1)
-  while (start <= max) {
-    const left = ((start.getTime() - min.getTime()) / range.value!.span) * 100
+  const minDate = new Date(range.value.minMs)
+  const maxDate = new Date(range.value.maxMs)
+  const start = new Date(Date.UTC(minDate.getUTCFullYear(), minDate.getUTCMonth(), 1))
+  const maxUtc = Date.UTC(maxDate.getUTCFullYear(), maxDate.getUTCMonth(), maxDate.getUTCDate())
+
+  while (start.getTime() <= maxUtc) {
+    const left = ((start.getTime() - range.value.minMs) / range.value.span) * 100
     labels.push({
       left: `${left}%`,
-      text: start.toLocaleDateString('es', { month: 'short', year: '2-digit' }),
+      text: new Intl.DateTimeFormat('es-CO', {
+        timeZone: 'America/Bogota',
+        month: 'short',
+        year: '2-digit',
+      }).format(start),
     })
-    start.setMonth(start.getMonth() + 1)
+    start.setUTCMonth(start.getUTCMonth() + 1)
   }
   return labels
 })
 
 function barStyle(startDate: string | null, dueDate: string | null) {
   if (!range.value) return {}
-  const start = startDate ? new Date(startDate).getTime() : range.value.min.getTime()
-  const end = dueDate ? new Date(dueDate).getTime() : start + range.value.span * 0.08
-  const left = ((start - range.value.min.getTime()) / range.value.span) * 100
+  const start = startDate ? calendarDateToUtcMs(startDate) : range.value.minMs
+  const end = dueDate ? calendarDateToUtcMs(dueDate) : start + range.value.span * 0.08
+  const left = ((start - range.value.minMs) / range.value.span) * 100
   const width = Math.max(2, ((end - start) / range.value.span) * 100)
   return { left: `${left}%`, width: `${width}%` }
 }

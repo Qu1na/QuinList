@@ -21,7 +21,7 @@ import {
   totalDriveSize,
   type BoardDriveItem,
 } from '@/utils/boardDrive'
-import { formatDateTime } from '@/utils/permissions'
+import RelativeTime from '@/components/ui/RelativeTime.vue'
 import AppWindowPanel from '@/components/ui/AppWindowPanel.vue'
 import { openAttachment, downloadAttachment } from '@/services/storage'
 import AttachmentMedia from '@/components/board/AttachmentMedia.vue'
@@ -207,7 +207,7 @@ function close() {
                   </span>
                   <span class="text-[#091e4221]">·</span>
                   <time class="shrink-0 text-xs text-[#626f86]">
-                    {{ formatDateTime(item.uploadedAt) }}
+                    <RelativeTime :iso="item.uploadedAt" />
                   </time>
                 </div>
               </div>

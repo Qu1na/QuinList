@@ -22,9 +22,9 @@ import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
 import { canEdit } from '@/utils/permissions'
 import AttachmentMedia from '@/components/board/AttachmentMedia.vue'
+import RelativeTime from '@/components/ui/RelativeTime.vue'
 import {
   formatDate,
-  formatDateTime,
   priorityLabel,
   priorityColor,
   isOverdue,
@@ -430,9 +430,7 @@ async function deleteCard() {
                       <span class="text-sm font-semibold text-[#172b4d]">
                         {{ auth.getUserById(comment.userId)?.name }}
                       </span>
-                      <time class="text-xs text-[#626f86]">
-                        {{ formatDateTime(comment.createdAt) }}
-                      </time>
+                      <RelativeTime :iso="comment.createdAt" class="text-xs text-[#626f86]" />
                     </div>
                     <p class="mt-0.5 text-sm leading-snug text-[#172b4d]">
                       {{ comment.text }}

@@ -6,6 +6,7 @@ import { useQuinListStore } from '@/stores/quinlist'
 import { useProjectsStore } from '@/stores/projects'
 import { useAuthStore } from '@/stores/auth'
 import { canEdit } from '@/utils/permissions'
+import { formatRemainingDaysLabel } from '@/utils/datetime'
 import {
   calcFinanceSummary,
   calcProjectProgress,
@@ -93,6 +94,10 @@ const allItems = computed(() => {
       finance,
       overdue: isProjectOverdue(project),
       daysLeft: daysUntil(project.dueDate),
+      remainingLabel: formatRemainingDaysLabel(project.dueDate, {
+        completed: project.status === 'completed',
+        cancelled: project.status === 'cancelled',
+      }),
       responsible: project.responsibleId ? auth.getUserById(project.responsibleId) : null,
     }
   })
@@ -299,11 +304,12 @@ onUnmounted(() => {
     >
       <div v-if="items.length" class="workspace-desktop__grid">
         <button
-          v-for="{ project, progress } in items"
+          v-for="{ project, progress, remainingLabel } in items"
           :key="project.id"
           type="button"
           class="workspace-desktop__item"
           :class="{ 'workspace-desktop__item--selected': selectedProjectId === project.id }"
+          :title="remainingLabel ? `${project.name} — ${remainingLabel}` : project.name"
           @click.stop="onProjectClick(project.id)"
           @dblclick.stop="onProjectDblClick(project.id)"
           @contextmenu.stop="onDesktopContextMenu"

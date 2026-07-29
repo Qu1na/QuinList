@@ -1,4 +1,5 @@
 import type { Project, ProjectCost, TransactionType } from '@/types/projects'
+import { compareCalendarDates, compareInstants } from '@/utils/datetime'
 
 export interface FinanceSummary {
   budget: number
@@ -75,7 +76,7 @@ export function calcFinanceSummary(project: Project, transactions: ProjectCost[]
 
 export function buildLedger(project: Project, transactions: ProjectCost[]): LedgerEntry[] {
   const sorted = [...transactions].sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime() || a.createdAt.localeCompare(b.createdAt),
+    (a, b) => compareCalendarDates(a.date, b.date) || compareInstants(a.createdAt, b.createdAt),
   )
   let running = project.budget
   return sorted.map((t) => {

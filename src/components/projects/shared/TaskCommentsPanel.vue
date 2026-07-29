@@ -4,8 +4,8 @@ import { MessageSquare, Send, Trash2 } from '@lucide/vue'
 import { useProjectsStore } from '@/stores/projects'
 import { useAuthStore } from '@/stores/auth'
 import { useProjectUsers } from '@/composables/useProjectUsers'
-import { formatDateTime } from '@/utils/permissions'
 import UserAvatar from '@/components/projects/shared/UserAvatar.vue'
+import RelativeTime from '@/components/ui/RelativeTime.vue'
 
 const props = defineProps<{
   taskId: string
@@ -56,7 +56,7 @@ function onBlur() {
             <span class="font-medium text-[#172b4d]">
               {{ resolveUser(comment.userId)?.name ?? 'Usuario' }}
             </span>
-            <time class="text-xs text-[#626f86]">{{ formatDateTime(comment.createdAt) }}</time>
+            <RelativeTime :iso="comment.createdAt" class="text-xs text-[#626f86]" />
             <button
               v-if="comment.userId === auth.currentUserId"
               type="button"

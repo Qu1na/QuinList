@@ -29,8 +29,14 @@ import UserAvatar from '@/components/projects/shared/UserAvatar.vue'
 import BarChart from '@/components/charts/BarChart.vue'
 import { useProjectUsers } from '@/composables/useProjectUsers'
 import { DEFAULT_CURRENCY, formatMoney } from '@/utils/currency'
-import { formatDate, formatDateTime } from '@/utils/permissions'
-import { KANBAN_COLUMNS, TASK_STATUS_LABELS, isTaskOverdue, isProjectOverdue } from '@/utils/projectStats'
+import RelativeTime from '@/components/ui/RelativeTime.vue'
+import { formatDate } from '@/utils/permissions'
+import {
+  calendarTimeElapsedPercent,
+  formatRemainingDaysLabel,
+  lastCalendarDays,
+} from '@/utils/datetime'
+import { KANBAN_COLUMNS, TASK_STATUS_LABELS, isTaskOverdue, isProjectOverdue, completedOnCalendarDay } from '@/utils/projectStats'
 import type { ProjectDetailTab } from '@/types/projects'
 
 const props = defineProps<{ projectId: string }>()
@@ -150,18 +156,10 @@ const statusBars = computed(() =>
 )
 
 const progressChart = computed(() => {
-  const days = 7
-  const points = []
-  const now = new Date()
-  for (let i = days - 1; i >= 0; i--) {
-    const d = new Date(now)
-    d.setDate(d.getDate() - i)
-    const key = d.toISOString().slice(0, 10)
-    const label = d.toLocaleDateString('es', { weekday: 'short' })
-    const value = tasks.value.filter((t) => t.completedAt?.slice(0, 10) === key).length
-    points.push({ label, value })
-  }
-  return points
+  return lastCalendarDays(7).map(({ key, label }) => ({
+    label,
+    value: tasks.value.filter((t) => completedOnCalendarDay(t.completedAt, key)).length,
+  }))
 })
 
 const progressChartMax = computed(() =>
@@ -199,6 +197,19 @@ const milestoneProgress = computed(() =>
   milestones.value.length ? Math.round((completedMilestones.value / milestones.value.length) * 100) : 0,
 )
 
+const remainingDaysLabel = computed(() => {
+  if (!project.value?.dueDate) return null
+  return formatRemainingDaysLabel(project.value.dueDate, {
+    completed: project.value.status === 'completed',
+    cancelled: project.value.status === 'cancelled',
+  })
+})
+
+const timeElapsedPercent = computed(() => {
+  if (!project.value) return null
+  return calendarTimeElapsedPercent(project.value.startDate, project.value.dueDate)
+})
+
 function userName(id: string) {
   return resolveUser(id)?.name ?? 'Usuario'
 }
@@ -231,6 +242,11 @@ const widgetOptions: { id: WidgetId; label: string }[] = [
           <span v-if="project.startDate && project.dueDate" class="dash-hero__dates">
             <Calendar :size="14" />
             {{ formatDate(project.startDate) }} — {{ formatDate(project.dueDate) }}
+          </span>
+          <span v-if="remainingDaysLabel" class="dash-hero__dates" :class="isProjectOverdue(project) ? 'text-[#f4845f]' : ''">
+            <Clock :size="14" />
+            {{ remainingDaysLabel }}
+            <template v-if="timeElapsedPercent != null"> · {{ timeElapsedPercent }}% del plazo</template>
           </span>
         </div>
       </div>
@@ -492,7 +508,7 @@ const widgetOptions: { id: WidgetId; label: string }[] = [
         >
           <Paperclip :size="28" class="text-[#f4845f]" />
           <p class="drive-file-card__name">{{ file.name }}</p>
-          <p class="drive-file-card__meta">{{ file.source }} · {{ formatDateTime(file.uploadedAt) }}</p>
+          <p class="drive-file-card__meta">{{ file.source }} · <RelativeTime :iso="file.uploadedAt" /></p>
         </div>
       </div>
       <p v-else class="text-sm text-[#626f86]">Aún no hay archivos en este proyecto.</p>
@@ -512,7 +528,7 @@ const widgetOptions: { id: WidgetId; label: string }[] = [
           :key="act.id"
           class="flex gap-4 py-3.5 text-sm first:pt-0 last:pb-0"
         >
-          <span class="w-28 shrink-0 text-xs text-[#626f86]">{{ formatDateTime(act.createdAt) }}</span>
+          <RelativeTime :iso="act.createdAt" class="w-28 shrink-0 text-xs text-[#626f86]" />
           <div>
             <span class="font-medium text-[#172b4d]">{{ userName(act.userId) }}</span>
             <span class="text-[#626f86]"> — {{ act.action }}: {{ act.details }}</span>
