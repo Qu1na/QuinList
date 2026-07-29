@@ -3,11 +3,13 @@ import { DEFAULT_CURRENCY } from '@/utils/currency'
 import { PROJECT_SEED } from '@/utils/projectSeed'
 import {
   isProjectsMatuEnabled,
-  loadProjectsFromMatu,
+  loadProjectsForUser,
   syncProjectsToMatu,
 } from '@/services/projectMatuData'
 
 const STORAGE_KEY = 'quinlist_projects_data_v2'
+export const PROJECTS_LOCAL_STORAGE_KEY = STORAGE_KEY
+export const PROJECTS_LOCAL_SYNC_EVENT = 'quinlist:projects-local-changed'
 
 function normalizeTransaction(raw: Partial<ProjectCost> & { projectId: string }): ProjectCost {
   return {
@@ -41,6 +43,9 @@ export function normalizeProjectsState(raw: Partial<ProjectsDataState>): Project
     milestones: (raw.milestones ?? []).map((m) => ({
       ...m,
       startDate: m.startDate ?? null,
+      createdBy: m.createdBy ?? null,
+      updatedBy: m.updatedBy ?? null,
+      updatedAt: m.updatedAt ?? m.createdAt ?? new Date().toISOString(),
     })),
     costs,
     risks: (raw.risks ?? []).map((r) => ({
@@ -55,6 +60,9 @@ export function normalizeProjectsState(raw: Partial<ProjectsDataState>): Project
       milestoneId: d.milestoneId ?? null,
       attachments: d.attachments ?? [],
       log: d.log ?? [],
+      createdBy: d.createdBy ?? null,
+      updatedBy: d.updatedBy ?? null,
+      updatedAt: d.updatedAt ?? d.createdAt ?? new Date().toISOString(),
     })),
     documents: (raw.documents ?? []).map((d) => ({
       ...d,
@@ -66,6 +74,7 @@ export function normalizeProjectsState(raw: Partial<ProjectsDataState>): Project
     members: raw.members ?? [],
     activities: raw.activities ?? [],
     timeEntries: raw.timeEntries ?? [],
+    taskComments: raw.taskComments ?? [],
   }
 }
 
@@ -95,11 +104,33 @@ export function loadProjectsLocal(): ProjectsDataState {
 
 export function saveProjectsLocal(data: ProjectsDataState): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+  window.dispatchEvent(new CustomEvent(PROJECTS_LOCAL_SYNC_EVENT))
 }
 
-export async function loadProjectsData(workspaceId: string): Promise<ProjectsDataState> {
+export async function loadProjectsData(
+  workspaceId: string,
+  userId: string | null,
+  isWorkspaceMember: boolean,
+): Promise<ProjectsDataState> {
   if (isProjectsMatuEnabled()) {
-    return loadProjectsFromMatu(workspaceId)
+    if (!userId) {
+      return {
+        projects: [],
+        tasks: [],
+        milestones: [],
+        costs: [],
+        risks: [],
+        deliverables: [],
+        documents: [],
+        folders: [],
+        invites: [],
+        members: [],
+        activities: [],
+        timeEntries: [],
+        taskComments: [],
+      }
+    }
+    return loadProjectsForUser(workspaceId, userId, isWorkspaceMember)
   }
   return loadProjectsLocal()
 }

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { X, Activity, Circle } from '@lucide/vue'
+import { Circle } from '@lucide/vue'
+import AppWindowPanel from '@/components/ui/AppWindowPanel.vue'
 import { useBoardPresenceStore } from '@/stores/boardPresence'
 import { useBoardShareStore } from '@/stores/boardShare'
 import { useAuthStore } from '@/stores/auth'
@@ -87,27 +88,16 @@ function dotColor(row: MemberRow): string {
   <Teleport to="body">
     <div
       v-if="presence.showPanel"
-      class="fixed inset-0 z-[2000] flex justify-end bg-black/30"
+      class="app-window-overlay fixed inset-0 z-[2000] flex justify-end"
       @click.self="presence.closePanel()"
     >
-      <aside class="flex h-full w-full max-w-sm flex-col bg-white shadow-2xl">
-        <header class="flex items-center justify-between border-b border-[#091e4214] px-5 py-4">
-          <div class="flex items-center gap-2">
-            <Activity :size="20" class="text-[#0c66e4]" />
-            <div>
-              <h2 class="font-bold text-[#172b4d]">Actividad del equipo</h2>
-              <p class="text-xs text-[#626f86]">En tiempo real</p>
-            </div>
-          </div>
-          <button
-            class="rounded p-2 text-[#626f86] hover:bg-[#091e420a]"
-            @click="presence.closePanel()"
-          >
-            <X :size="20" />
-          </button>
-        </header>
-
-        <div class="grid grid-cols-2 gap-3 border-b border-[#091e4214] px-5 py-4">
+      <AppWindowPanel
+        title="Actividad del equipo"
+        subtitle="En tiempo real"
+        max-width="sm"
+        @close="presence.closePanel()"
+      >
+        <div class="mb-4 grid grid-cols-2 gap-3">
           <div class="rounded-lg bg-emerald-50 px-3 py-2.5">
             <p class="text-2xl font-bold text-emerald-700">{{ presence.onlineCount }}</p>
             <p class="text-xs text-emerald-800">En línea</p>
@@ -118,7 +108,7 @@ function dotColor(row: MemberRow): string {
           </div>
         </div>
 
-        <div class="scroll-thin min-h-0 flex-1 overflow-y-auto p-3">
+        <div class="scroll-thin min-h-0 flex-1 overflow-y-auto">
           <p
             v-if="presence.loading"
             class="px-2 py-8 text-center text-sm text-[#626f86]"
@@ -167,7 +157,7 @@ function dotColor(row: MemberRow): string {
             </li>
           </ul>
         </div>
-      </aside>
+      </AppWindowPanel>
     </div>
   </Teleport>
 </template>

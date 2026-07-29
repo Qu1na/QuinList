@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import {
-  X,
   HardDrive,
   Search,
   Paperclip,
@@ -23,6 +22,7 @@ import {
   type BoardDriveItem,
 } from '@/utils/boardDrive'
 import { formatDateTime } from '@/utils/permissions'
+import AppWindowPanel from '@/components/ui/AppWindowPanel.vue'
 import { openAttachment, downloadAttachment } from '@/services/storage'
 import AttachmentMedia from '@/components/board/AttachmentMedia.vue'
 
@@ -108,26 +108,16 @@ function close() {
   <Teleport to="body">
     <div
       v-if="drive.showPanel"
-      class="fixed inset-0 z-[2000] flex justify-end bg-black/30"
+      class="app-window-overlay fixed inset-0 z-[2000] flex justify-end"
       @click.self="close"
     >
-      <aside class="flex h-full w-full max-w-lg flex-col bg-white shadow-2xl">
-        <header class="flex items-center justify-between border-b border-[#091e4214] px-5 py-4">
-          <div class="flex items-center gap-2">
-            <HardDrive :size="20" class="text-[#0c66e4]" />
-            <div>
-              <h2 class="font-bold text-[#172b4d]">Drive del tablero</h2>
-              <p class="text-xs text-[#626f86]">
-                {{ allItems.length }} archivo{{ allItems.length === 1 ? '' : 's' }} · {{ totalSize }}
-              </p>
-            </div>
-          </div>
-          <button class="rounded p-2 text-[#626f86] hover:bg-[#091e420a]" @click="close">
-            <X :size="20" />
-          </button>
-        </header>
-
-        <div class="space-y-3 border-b border-[#091e4214] px-5 py-3">
+      <AppWindowPanel
+        title="Drive del tablero"
+        :subtitle="`${allItems.length} archivo${allItems.length === 1 ? '' : 's'} · ${totalSize}`"
+        max-width="lg"
+        @close="close"
+      >
+        <div class="space-y-3 border-b border-[#091e4214] pb-3">
           <div class="relative">
             <Search :size="15" class="absolute top-1/2 left-3 -translate-y-1/2 text-[#626f86]" />
             <input
@@ -159,7 +149,7 @@ function close() {
           </div>
         </div>
 
-        <div class="scroll-thin min-h-0 flex-1 overflow-y-auto p-3">
+        <div class="scroll-thin min-h-0 flex-1 overflow-y-auto pt-3">
           <ul v-if="filteredItems.length" class="space-y-2">
             <li
               v-for="item in filteredItems"
@@ -260,7 +250,7 @@ function close() {
             No hay resultados para «{{ search }}»
           </div>
         </div>
-      </aside>
+      </AppWindowPanel>
     </div>
   </Teleport>
 </template>

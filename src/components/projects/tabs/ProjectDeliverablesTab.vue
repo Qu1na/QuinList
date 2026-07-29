@@ -1,28 +1,26 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { Plus, Package, Trash2, Paperclip, MessageSquare, CheckCircle2 } from '@lucide/vue'
+import { Plus, Package, Trash2, CheckCircle2 } from '@lucide/vue'
 import { useProjectsStore } from '@/stores/projects'
-import { useAuthStore } from '@/stores/auth'
-import { formatDate, formatDateTime } from '@/utils/permissions'
+import { useProjectUsers } from '@/composables/useProjectUsers'
+import { formatDate } from '@/utils/permissions'
 import { todayISO } from '@/utils/dates'
 import type { DeliverableStatus } from '@/types/projects'
 import DateInput from '@/components/projects/shared/DateInput.vue'
 import ProjectModal from '@/components/projects/shared/ProjectModal.vue'
 import UserAvatar from '@/components/projects/shared/UserAvatar.vue'
-import { openAttachment } from '@/services/storage'
+import DeliverableCommentsPanel from '@/components/projects/shared/DeliverableCommentsPanel.vue'
 
 const props = defineProps<{ projectId: string }>()
 
 const projectsStore = useProjectsStore()
-const auth = useAuthStore()
+const { resolveUser } = useProjectUsers()
 const deliverables = computed(() => projectsStore.getProjectDeliverables(props.projectId))
 const milestones = computed(() => projectsStore.getProjectMilestones(props.projectId))
 const members = computed(() => projectsStore.getProjectMembers(props.projectId))
 
 const showAdd = ref(false)
 const detailId = ref<string | null>(null)
-const logText = ref('')
-const uploading = ref(false)
 const form = ref({ title: '', description: '', dueDate: todayISO(), assigneeId: '', milestoneId: '' })
 
 const statusLabels: Record<DeliverableStatus, string> = {
@@ -48,40 +46,28 @@ const pendingCount = computed(() =>
 
 async function add() {
   if (!form.value.title.trim()) return
-  const d = await projectsStore.addDeliverable(props.projectId, form.value.title, form.value.dueDate)
-  if (d) {
-    await projectsStore.updateDeliverable(d.id, {
-      description: form.value.description,
-      dueDate: form.value.dueDate,
-      assigneeId: form.value.assigneeId || null,
-      milestoneId: form.value.milestoneId || null,
-    })
-  }
+  const formCopy = { ...form.value }
   showAdd.value = false
   form.value = { title: '', description: '', dueDate: todayISO(), assigneeId: '', milestoneId: '' }
+
+  try {
+    const d = await projectsStore.addDeliverable(props.projectId, formCopy.title, formCopy.dueDate)
+    if (d) {
+      await projectsStore.updateDeliverable(d.id, {
+        description: formCopy.description,
+        dueDate: formCopy.dueDate,
+        assigneeId: formCopy.assigneeId || null,
+        milestoneId: formCopy.milestoneId || null,
+      })
+    }
+  } catch (err) {
+    console.error(err)
+  }
 }
 
 function userName(id: string | null) {
   if (!id) return '—'
-  return auth.getUserById(id)?.name ?? 'Usuario'
-}
-
-async function onFileUpload(e: Event) {
-  const file = (e.target as HTMLInputElement).files?.[0]
-  if (!file || !detail.value) return
-  uploading.value = true
-  try {
-    await projectsStore.addDeliverableAttachment(detail.value.id, file)
-  } finally {
-    uploading.value = false
-    ;(e.target as HTMLInputElement).value = ''
-  }
-}
-
-async function addLogEntry() {
-  if (!detail.value || !logText.value.trim()) return
-  await projectsStore.addDeliverableLog(detail.value.id, logText.value.trim())
-  logText.value = ''
+  return resolveUser(id)?.name ?? 'Usuario'
 }
 </script>
 
@@ -150,7 +136,7 @@ async function addLogEntry() {
                 :value="d.status"
                 class="ql-input w-auto py-1.5 text-sm"
                 :class="statusClass[d.status]"
-                @change="projectsStore.updateDeliverable(d.id, { status: ($event.target as HTMLSelectElement).value as DeliverableStatus })"
+                @change="projectsStore.updateDeliverable(d.id, { status: ($event.target as HTMLSelectElement).value as DeliverableStatus }, { optimistic: true })"
               >
                 <option v-for="(label, key) in statusLabels" :key="key" :value="key">{{ label }}</option>
               </select>
@@ -179,44 +165,7 @@ async function addLogEntry() {
       size="lg"
       @close="detailId = null"
     >
-      <div class="space-y-4">
-        <div class="flex gap-2">
-          <input
-            v-model="logText"
-            placeholder="Añadir nota a la bitácora..."
-            class="ql-input"
-            @keyup.enter="addLogEntry"
-          />
-          <button type="button" class="ql-btn ql-btn--primary shrink-0" @click="addLogEntry">
-            <MessageSquare :size="18" />
-          </button>
-          <label class="ql-btn ql-btn--ghost shrink-0 cursor-pointer">
-            <Paperclip :size="18" />
-            <input type="file" class="hidden" :disabled="uploading" @change="onFileUpload" />
-          </label>
-        </div>
-        <ul class="max-h-72 space-y-2 overflow-y-auto scroll-thin">
-          <li
-            v-for="entry in detail.log ?? []"
-            :key="entry.id"
-            class="rounded-xl bg-[#f5f5f7] px-4 py-3 text-sm"
-          >
-            <p class="text-[#172b4d]">{{ entry.text }}</p>
-            <p class="mt-1.5 text-xs text-[#626f86]">
-              {{ userName(entry.uploadedBy) }} · {{ formatDateTime(entry.createdAt) }}
-            </p>
-            <button
-              v-if="entry.attachment"
-              type="button"
-              class="project-link-btn mt-1 text-xs"
-              @click="openAttachment(entry.attachment!)"
-            >
-              Ver {{ entry.attachment.name }}
-            </button>
-          </li>
-        </ul>
-        <p v-if="!(detail.log?.length)" class="text-sm text-[#626f86]">Sin entradas en la bitácora.</p>
-      </div>
+      <DeliverableCommentsPanel v-if="detail" :deliverable-id="detail.id" />
     </ProjectModal>
 
     <ProjectModal v-if="showAdd" title="Nuevo entregable" @close="showAdd = false">
@@ -227,7 +176,7 @@ async function addLogEntry() {
         <select v-model="form.assigneeId" class="ql-input">
           <option value="">Sin responsable</option>
           <option v-for="m in members" :key="m.id" :value="m.userId">
-            {{ auth.getUserById(m.userId)?.name }}
+            {{ resolveUser(m.userId)?.name }}
           </option>
         </select>
         <select v-model="form.milestoneId" class="ql-input">
@@ -236,8 +185,8 @@ async function addLogEntry() {
         </select>
       </div>
       <template #footer>
-        <button type="button" class="ql-btn ql-btn--ghost" @click="showAdd = false">Cancelar</button>
-        <button type="button" class="ql-btn ql-btn--primary" @click="add">Crear</button>
+        <button type="button" class="btn-brand-ghost" @click="showAdd = false">Cancelar</button>
+        <button type="button" class="btn-brand" @click="add">Crear</button>
       </template>
     </ProjectModal>
   </div>

@@ -28,8 +28,8 @@ async function createInColumn(title: string, status: ProjectTaskStatus) {
   if (task && status !== 'todo') await projectsStore.moveTaskToColumn(task.id, status)
 }
 
-async function moveTask(taskId: string, status: ProjectTaskStatus) {
-  await projectsStore.moveTaskToColumn(taskId, status)
+function moveTask(taskId: string, status: ProjectTaskStatus) {
+  projectsStore.moveTaskToColumn(taskId, status)
 }
 </script>
 

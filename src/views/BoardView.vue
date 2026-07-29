@@ -15,6 +15,7 @@ import AppModals from '@/components/ui/AppModals.vue'
 import BoardPresencePanel from '@/components/board/BoardPresencePanel.vue'
 import BoardDrivePanel from '@/components/board/BoardDrivePanel.vue'
 import RealtimeToast from '@/components/layout/RealtimeToast.vue'
+import CollaborationToasts from '@/components/layout/CollaborationToasts.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -81,6 +82,7 @@ onUnmounted(() => {
     <ShareBoardModal />
     <BoardPresencePanel />
     <BoardDrivePanel />
+    <CollaborationToasts />
     <RealtimeToast />
   </div>
 </template>

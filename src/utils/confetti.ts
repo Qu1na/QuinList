@@ -106,7 +106,9 @@ export function burstConfetti(x: number, y: number): void {
   requestAnimationFrame(animate)
 }
 
-export function burstConfettiFromElement(el: HTMLElement): void {
+export function burstConfettiFromElement(el: HTMLElement | EventTarget | null | undefined): void {
+  if (!(el instanceof HTMLElement)) return
   const rect = el.getBoundingClientRect()
+  if (!rect.width && !rect.height) return
   burstConfetti(rect.left + rect.width / 2, rect.top + rect.height / 2)
 }

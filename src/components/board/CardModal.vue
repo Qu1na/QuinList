@@ -33,6 +33,7 @@ import type { Priority } from '@/types'
 import { googleCalendarUrl } from '@/utils/calendar'
 import { useIntegrationsStore } from '@/stores/integrations'
 import { burstConfettiFromElement } from '@/utils/confetti'
+import AppWindow from '@/components/ui/AppWindow.vue'
 
 const store = useQuinListStore()
 const auth = useAuthStore()
@@ -188,25 +189,19 @@ async function deleteCard() {
   <Teleport to="body">
     <div
       v-if="card"
-      class="fixed inset-0 z-[1000] flex items-start justify-center overflow-y-auto bg-[#091e4270] p-4 pt-12 pb-8 sm:p-8 sm:pt-16"
+      class="app-window-overlay fixed inset-0 z-[1000] flex items-start justify-center overflow-y-auto p-4 pt-12 pb-8 sm:p-8 sm:pt-16"
       @click.self="close"
     >
-      <div
-        class="relative w-full max-w-[768px] overflow-hidden rounded-lg bg-white shadow-[0_8px_24px_#091e4240]"
+      <AppWindow
+        :title="card.title || 'Tarjeta'"
+        :subtitle="listName ? `en lista ${listName}` : undefined"
+        class="app-window--card"
         role="dialog"
         aria-modal="true"
+        @close="close"
       >
         <!-- Cover strip (solo si hay etiqueta) -->
-        <div v-if="coverColor" class="h-8 w-full" :style="{ background: coverColor }" />
-
-        <button
-          class="absolute top-2 right-2 z-10 flex h-8 w-8 items-center justify-center rounded-sm text-[#44546f] transition-colors hover:bg-[#091e4221]"
-          :class="coverColor ? 'text-white/90 hover:bg-black/20' : ''"
-          aria-label="Cerrar"
-          @click="close"
-        >
-          <X :size="18" />
-        </button>
+        <div v-if="coverColor" class="h-2 w-full" :style="{ background: coverColor }" />
 
         <div class="flex flex-col sm:flex-row">
           <!-- Contenido principal -->
@@ -614,7 +609,7 @@ async function deleteCard() {
             </div>
           </aside>
         </div>
-      </div>
+      </AppWindow>
     </div>
   </Teleport>
 </template>

@@ -88,32 +88,32 @@ function submitWorkspace() {
   <Teleport to="body">
     <div
       v-if="ui.activeModal === 'confirm' && ui.confirmOptions"
-      class="fixed inset-0 z-[2000] flex items-center justify-center bg-slate-900/50 p-4"
+      class="app-window-overlay fixed inset-0 z-[2000] flex items-center justify-center p-4"
       @click.self="ui.resolveConfirm(false)"
     >
-      <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-        <h3 class="text-lg font-semibold text-slate-800">{{ ui.confirmOptions.title }}</h3>
-        <p class="mt-2 text-sm text-slate-600">{{ ui.confirmOptions.message }}</p>
-        <div class="mt-6 flex justify-end gap-2">
-          <button
-            class="rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
-            @click="ui.resolveConfirm(false)"
-          >
-            {{ ui.confirmOptions.cancelText ?? 'Cancelar' }}
-          </button>
-          <button
-            class="rounded-lg px-4 py-2 text-sm font-semibold text-white"
-            :class="
-              ui.confirmOptions.variant === 'danger'
-                ? 'bg-red-500 hover:bg-red-600'
-                : 'bg-blue-600 hover:bg-blue-700'
-            "
-            @click="ui.resolveConfirm(true)"
-          >
-            {{ ui.confirmOptions.confirmText ?? 'Confirmar' }}
-          </button>
-        </div>
-      </div>
+      <AppWindow
+        :title="ui.confirmOptions.title"
+        subtitle="Confirmación"
+        class="app-window--sm"
+        @close="ui.resolveConfirm(false)"
+      >
+        <p class="text-sm text-[#626f86]">{{ ui.confirmOptions.message }}</p>
+        <template #footer>
+          <div class="app-window-footer-actions">
+            <button type="button" class="btn-brand-ghost" @click="ui.resolveConfirm(false)">
+              {{ ui.confirmOptions.cancelText ?? 'Cancelar' }}
+            </button>
+            <button
+              type="button"
+              class="btn-brand"
+              :class="ui.confirmOptions.variant === 'danger' ? 'btn-brand--danger' : ''"
+              @click="ui.resolveConfirm(true)"
+            >
+              {{ ui.confirmOptions.confirmText ?? 'Confirmar' }}
+            </button>
+          </div>
+        </template>
+      </AppWindow>
     </div>
   </Teleport>
 
@@ -121,36 +121,33 @@ function submitWorkspace() {
   <Teleport to="body">
     <div
       v-if="ui.activeModal === 'prompt' && ui.promptOptions"
-      class="fixed inset-0 z-[2000] flex items-center justify-center bg-slate-900/50 p-4"
+      class="app-window-overlay fixed inset-0 z-[2000] flex items-center justify-center p-4"
       @click.self="ui.resolvePrompt(null)"
     >
-      <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-        <h3 class="text-lg font-semibold text-slate-800">{{ ui.promptOptions.title }}</h3>
-        <label class="mt-4 block text-sm font-medium text-slate-600">
-          {{ ui.promptOptions.label }}
-          <input
-            v-model="promptValue"
-            :placeholder="ui.promptOptions.placeholder"
-            class="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400"
-            autofocus
-            @keyup.enter="submitPrompt"
-          />
-        </label>
-        <div class="mt-6 flex justify-end gap-2">
-          <button
-            class="rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-600"
-            @click="ui.resolvePrompt(null)"
-          >
-            Cancelar
-          </button>
-          <button
-            class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
-            @click="submitPrompt"
-          >
-            {{ ui.promptOptions.confirmText ?? 'Aceptar' }}
-          </button>
-        </div>
-      </div>
+      <AppWindow
+        :title="ui.promptOptions.title"
+        :subtitle="ui.promptOptions.label"
+        class="app-window--md"
+        @close="ui.resolvePrompt(null)"
+      >
+        <input
+          v-model="promptValue"
+          :placeholder="ui.promptOptions.placeholder"
+          class="project-create-modal__input"
+          autofocus
+          @keyup.enter="submitPrompt"
+        />
+        <template #footer>
+          <div class="app-window-footer-actions">
+            <button type="button" class="btn-brand-ghost" @click="ui.resolvePrompt(null)">
+              Cancelar
+            </button>
+            <button type="button" class="btn-brand" @click="submitPrompt">
+              {{ ui.promptOptions.confirmText ?? 'Aceptar' }}
+            </button>
+          </div>
+        </template>
+      </AppWindow>
     </div>
   </Teleport>
 
@@ -187,7 +184,7 @@ function submitWorkspace() {
         </div>
 
         <template #footer>
-          <div class="flex justify-end gap-2">
+          <div class="app-window-footer-actions">
             <button type="button" class="btn-brand-ghost" @click="ui.closeModal()">Cancelar</button>
             <button
               type="button"
@@ -207,31 +204,33 @@ function submitWorkspace() {
   <Teleport to="body">
     <div
       v-if="ui.activeModal === 'createList'"
-      class="fixed inset-0 z-[2000] flex items-center justify-center bg-slate-900/50 p-4"
+      class="app-window-overlay fixed inset-0 z-[2000] flex items-center justify-center p-4"
       @click.self="ui.closeModal()"
     >
-      <div class="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
-        <h3 class="mb-4 text-lg font-semibold text-slate-800">Nueva lista</h3>
+      <AppWindow title="Nueva lista" subtitle="Añadir columna al tablero" class="app-window--sm" @close="ui.closeModal()">
+        <label class="project-create-modal__label">Nombre *</label>
         <input
           v-model="listTitle"
+          type="text"
+          class="project-create-modal__input"
           placeholder="Nombre de la lista"
-          class="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400"
           autofocus
           @keyup.enter="submitList"
         />
-        <div class="mt-4 flex justify-end gap-2">
-          <button class="rounded-lg border border-slate-200 px-4 py-2 text-sm" @click="ui.closeModal()">
-            Cancelar
-          </button>
-          <button
-            class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-            :disabled="!listTitle.trim()"
-            @click="submitList"
-          >
-            Crear
-          </button>
-        </div>
-      </div>
+        <template #footer>
+          <div class="app-window-footer-actions">
+            <button type="button" class="btn-brand-ghost" @click="ui.closeModal()">Cancelar</button>
+            <button
+              type="button"
+              class="btn-brand"
+              :disabled="!listTitle.trim()"
+              @click="submitList"
+            >
+              Crear lista
+            </button>
+          </div>
+        </template>
+      </AppWindow>
     </div>
   </Teleport>
 
@@ -239,43 +238,43 @@ function submitWorkspace() {
   <Teleport to="body">
     <div
       v-if="ui.activeModal === 'createTask'"
-      class="fixed inset-0 z-[2000] flex items-center justify-center bg-slate-900/50 p-4"
+      class="app-window-overlay fixed inset-0 z-[2000] flex items-center justify-center p-4"
       @click.self="ui.closeModal()"
     >
-      <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-        <h3 class="mb-4 text-lg font-semibold text-slate-800">Crear tarea</h3>
-        <label class="mb-3 block text-sm font-medium text-slate-600">
-          Título
-          <input
-            v-model="taskTitle"
-            placeholder="¿Qué hay que hacer?"
-            class="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400"
-            autofocus
-            @keyup.enter="submitTask"
-          />
-        </label>
-        <label class="mb-4 block text-sm font-medium text-slate-600">
-          Lista
-          <select
-            v-model="taskListId"
-            class="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none"
-          >
-            <option v-for="list in lists" :key="list.id" :value="list.id">{{ list.title }}</option>
-          </select>
-        </label>
-        <div class="flex justify-end gap-2">
-          <button class="rounded-lg border border-slate-200 px-4 py-2 text-sm" @click="ui.closeModal()">
-            Cancelar
-          </button>
-          <button
-            class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-            :disabled="!taskTitle.trim()"
-            @click="submitTask"
-          >
-            Crear
-          </button>
+      <AppWindow title="Crear tarea" subtitle="Nueva tarjeta" class="app-window--md" @close="ui.closeModal()">
+        <div class="app-window-form-row">
+          <div>
+            <label class="project-create-modal__label">Título *</label>
+            <input
+              v-model="taskTitle"
+              type="text"
+              class="project-create-modal__input"
+              placeholder="¿Qué hay que hacer?"
+              autofocus
+              @keyup.enter="submitTask"
+            />
+          </div>
+          <div>
+            <label class="project-create-modal__label">Lista</label>
+            <select v-model="taskListId" class="project-create-modal__input">
+              <option v-for="list in lists" :key="list.id" :value="list.id">{{ list.title }}</option>
+            </select>
+          </div>
         </div>
-      </div>
+        <template #footer>
+          <div class="app-window-footer-actions">
+            <button type="button" class="btn-brand-ghost" @click="ui.closeModal()">Cancelar</button>
+            <button
+              type="button"
+              class="btn-brand"
+              :disabled="!taskTitle.trim()"
+              @click="submitTask"
+            >
+              Crear tarea
+            </button>
+          </div>
+        </template>
+      </AppWindow>
     </div>
   </Teleport>
 
@@ -283,37 +282,40 @@ function submitWorkspace() {
   <Teleport to="body">
     <div
       v-if="ui.activeModal === 'createWorkspace'"
-      class="fixed inset-0 z-[2000] flex items-center justify-center bg-slate-900/50 p-4"
+      class="app-window-overlay fixed inset-0 z-[2000] flex items-center justify-center p-4"
       @click.self="ui.closeModal()"
     >
-      <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-        <h3 class="mb-4 text-lg font-semibold text-slate-800">Nuevo espacio de trabajo</h3>
-        <label class="mb-3 block text-sm font-medium text-slate-600">
-          Nombre
-          <input
-            v-model="workspaceName"
-            placeholder="Ej: Mi equipo"
-            class="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400"
-            autofocus
-          />
-        </label>
-        <label class="mb-4 block text-sm font-medium text-slate-600">
-          Color
-          <input v-model="workspaceColor" type="color" class="mt-1.5 h-10 w-full cursor-pointer" />
-        </label>
-        <div class="flex justify-end gap-2">
-          <button class="rounded-lg border border-slate-200 px-4 py-2 text-sm" @click="ui.closeModal()">
-            Cancelar
-          </button>
-          <button
-            class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-            :disabled="!workspaceName.trim()"
-            @click="submitWorkspace"
-          >
-            Crear espacio
-          </button>
+      <AppWindow title="Nuevo espacio de trabajo" subtitle="Organiza tus tableros" class="app-window--md" @close="ui.closeModal()">
+        <div class="app-window-form-row">
+          <div>
+            <label class="project-create-modal__label">Nombre *</label>
+            <input
+              v-model="workspaceName"
+              type="text"
+              class="project-create-modal__input"
+              placeholder="Ej: Mi equipo"
+              autofocus
+            />
+          </div>
+          <div>
+            <label class="project-create-modal__label">Color</label>
+            <input v-model="workspaceColor" type="color" class="h-10 w-full cursor-pointer rounded-lg border border-[#091e4229]" />
+          </div>
         </div>
-      </div>
+        <template #footer>
+          <div class="app-window-footer-actions">
+            <button type="button" class="btn-brand-ghost" @click="ui.closeModal()">Cancelar</button>
+            <button
+              type="button"
+              class="btn-brand"
+              :disabled="!workspaceName.trim()"
+              @click="submitWorkspace"
+            >
+              Crear espacio
+            </button>
+          </div>
+        </template>
+      </AppWindow>
     </div>
   </Teleport>
 </template>

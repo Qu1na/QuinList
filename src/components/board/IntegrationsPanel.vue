@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { X, ExternalLink, Download, Copy, Check } from '@lucide/vue'
+import { ExternalLink, Download, Copy, Check } from '@lucide/vue'
+import AppWindowPanel from '@/components/ui/AppWindowPanel.vue'
 import { useQuinListStore } from '@/stores/quinlist'
 import { useIntegrationsStore } from '@/stores/integrations'
 import { INTEGRATION_META } from '@/utils/integrations'
@@ -74,25 +75,20 @@ const integrationTypes: IntegrationType[] = ['google_calendar', 'github', 'ics_e
   <Teleport to="body">
     <div
       v-if="integrations.showPanel && board"
-      class="fixed inset-0 z-[2000] flex justify-end bg-black/30"
+      class="app-window-overlay fixed inset-0 z-[2000] flex justify-end"
       @click.self="integrations.closePanel()"
     >
-      <aside class="flex h-full w-full max-w-md flex-col bg-white shadow-2xl">
-        <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-          <div>
-            <h2 class="text-lg font-bold text-slate-800">Power-Ups</h2>
-            <p class="text-sm text-slate-500">{{ board.title }}</p>
-          </div>
-          <button class="rounded p-2 hover:bg-slate-100" @click="integrations.closePanel()">
-            <X :size="20" />
-          </button>
-        </div>
-
-        <div class="flex-1 overflow-y-auto p-5">
+      <AppWindowPanel
+        title="Power-Ups"
+        :subtitle="board.title"
+        max-width="md"
+        @close="integrations.closePanel()"
+      >
+        <div class="space-y-4">
           <div
             v-for="type in integrationTypes"
             :key="type"
-            class="mb-4 rounded-xl border border-slate-200 p-4"
+            class="rounded-xl border border-[#091e4221] p-4"
           >
             <div class="flex items-start justify-between gap-3">
               <div class="flex gap-3">
@@ -201,10 +197,11 @@ const integrationTypes: IntegrationType[] = ['google_calendar', 'github', 'ics_e
             </div>
           </div>
 
-          <div class="rounded-xl border border-slate-200 p-4">
-            <h3 class="font-semibold text-slate-800">Compartir tablero</h3>
+          <div class="rounded-xl border border-[#091e4221] p-4">
+            <h3 class="font-semibold text-[#172b4d]">Compartir tablero</h3>
             <button
-              class="mt-2 flex items-center gap-2 text-sm text-blue-600 hover:underline"
+              type="button"
+              class="mt-2 flex items-center gap-2 text-sm text-[#2d7eb8] hover:underline"
               @click="copyBoardLink"
             >
               <Check v-if="copied" :size="14" />
@@ -213,7 +210,7 @@ const integrationTypes: IntegrationType[] = ['google_calendar', 'github', 'ics_e
             </button>
           </div>
         </div>
-      </aside>
+      </AppWindowPanel>
     </div>
   </Teleport>
 </template>

@@ -369,6 +369,29 @@
     created_at TIMESTAMPTZ DEFAULT NOW()
   );
 
+  CREATE TABLE IF NOT EXISTS project_team_invites (
+    id TEXT PRIMARY KEY,
+    project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    token TEXT NOT NULL UNIQUE,
+    role TEXT NOT NULL DEFAULT 'member',
+    can_view_finance BOOLEAN DEFAULT FALSE,
+    can_manage_tasks BOOLEAN DEFAULT TRUE,
+    can_manage_team BOOLEAN DEFAULT FALSE,
+    max_uses INT,
+    use_count INT NOT NULL DEFAULT 0,
+    enabled BOOLEAN DEFAULT TRUE,
+    created_by TEXT REFERENCES profiles(id),
+    created_at TIMESTAMPTZ DEFAULT NOW()
+  );
+
+  CREATE TABLE IF NOT EXISTS project_team_invite_uses (
+    id TEXT PRIMARY KEY,
+    invite_id TEXT NOT NULL REFERENCES project_team_invites(id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+    used_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(invite_id, user_id)
+  );
+
   CREATE TABLE IF NOT EXISTS project_share_links (
     id TEXT PRIMARY KEY,
     project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
@@ -393,6 +416,8 @@
 
   CREATE INDEX IF NOT EXISTS idx_project_folders_project ON project_folders(project_id);
   CREATE INDEX IF NOT EXISTS idx_project_invites_project ON project_invites(project_id);
+  CREATE INDEX IF NOT EXISTS idx_project_team_invites_project ON project_team_invites(project_id);
+  CREATE INDEX IF NOT EXISTS idx_project_team_invites_token ON project_team_invites(token);
   CREATE INDEX IF NOT EXISTS idx_project_share_links_project ON project_share_links(project_id);
   CREATE INDEX IF NOT EXISTS idx_project_share_links_token ON project_share_links(token);
   CREATE INDEX IF NOT EXISTS idx_project_time_entries_project ON project_time_entries(project_id);

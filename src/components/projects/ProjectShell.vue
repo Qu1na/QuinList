@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, toRef } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   LayoutDashboard,
@@ -23,10 +23,12 @@ import {
 import type { ProjectDetailTab } from '@/types/projects'
 import { useProjectsStore } from '@/stores/projects'
 import { useAuthStore } from '@/stores/auth'
+import { useProjectAccess } from '@/utils/projectAccess'
 import ProjectStatusBadge from './shared/ProjectStatusBadge.vue'
 import ProjectProgressRing from './shared/ProjectProgressRing.vue'
 import UserAvatar from './shared/UserAvatar.vue'
 import { calcProjectProgress } from '@/utils/projectStats'
+import { provideProjectUsers } from '@/composables/useProjectUsers'
 
 const props = defineProps<{
   projectId: string
@@ -36,6 +38,8 @@ const route = useRoute()
 const router = useRouter()
 const projectsStore = useProjectsStore()
 const auth = useAuthStore()
+const access = useProjectAccess(props.projectId)
+const { teamUsers, visibleTeamUsers, extraTeamCount, onlineCount } = provideProjectUsers(toRef(props, 'projectId'))
 
 const mobileNavOpen = ref(false)
 
@@ -82,10 +86,63 @@ const tabGroups: { label: string; tabs: { id: ProjectDetailTab; label: string; i
   },
 ]
 
+function tabAllowed(tabId: ProjectDetailTab): boolean {
+  if (tabId === 'finance') return access.canViewFinance.value
+  if (tabId === 'team') return access.hasAccess.value
+  if (tabId === 'settings') return access.canEditProject.value && !access.isSharedOnly.value
+  return access.hasAccess.value
+}
+
+const visibleTabGroups = computed(() =>
+  tabGroups
+    .map((group) => ({
+      ...group,
+      tabs: group.tabs.filter((tab) => tabAllowed(tab.id)),
+    }))
+    .filter((group) => group.tabs.length > 0),
+)
+
 const activeTab = computed(() => (route.query.tab as ProjectDetailTab) || 'dashboard')
 const activeTabLabel = computed(
-  () => tabGroups.flatMap((g) => g.tabs).find((t) => t.id === activeTab.value)?.label ?? 'Dashboard',
+  () =>
+    visibleTabGroups.value.flatMap((g) => g.tabs).find((t) => t.id === activeTab.value)?.label ??
+    'Dashboard',
 )
+
+const tabBadges = computed((): Partial<Record<ProjectDetailTab, number>> => {
+  const pid = props.projectId
+  const tasks = projectsStore.getProjectTasks(pid)
+  const pendingTasks = tasks.filter((t) => t.status !== 'done').length
+  const milestones = projectsStore.getProjectMilestones(pid)
+  const pendingMilestones = milestones.filter((m) => !m.completed).length
+  const deliverables = projectsStore.getProjectDeliverables(pid)
+  const pendingDeliverables = deliverables.filter((d) => !d.completed).length
+  const openRisks = projectsStore.getProjectRisks(pid).filter((r) => r.status === 'open').length
+  const docs = projectsStore.getProjectDocuments(pid).length
+  const files = projectsStore.getProjectFiles(pid).length
+  const team = projectsStore.getProjectMembers(pid).length
+  const scheduled = tasks.filter((t) => t.startDate || t.dueDate).length
+
+  return {
+    tasks: pendingTasks || undefined,
+    gantt: scheduled || undefined,
+    milestones: pendingMilestones || undefined,
+    deliverables: pendingDeliverables || undefined,
+    risks: openRisks || undefined,
+    documents: docs || undefined,
+    files: files || undefined,
+    team: team || undefined,
+  }
+})
+
+function badgeFor(tabId: ProjectDetailTab): number | undefined {
+  const n = tabBadges.value[tabId]
+  return n && n > 0 ? n : undefined
+}
+
+function badgeLabel(n: number): string {
+  return n > 99 ? '99+' : String(n)
+}
 
 function setTab(tab: ProjectDetailTab) {
   mobileNavOpen.value = false
@@ -94,7 +151,7 @@ function setTab(tab: ProjectDetailTab) {
 </script>
 
 <template>
-  <div v-if="project" class="project-detail flex h-full min-h-0 flex-col overflow-hidden">
+  <div v-if="project && access.hasAccess.value" class="project-detail flex h-full min-h-0 flex-col overflow-hidden">
     <header class="project-chrome project-chrome--light">
       <div class="project-chrome__bar">
         <button
@@ -108,16 +165,46 @@ function setTab(tab: ProjectDetailTab) {
         </button>
 
         <nav class="project-breadcrumb hidden items-center gap-1.5 text-sm md:flex">
-          <button type="button" class="project-breadcrumb__link" @click="router.push('/app/projects')">
+          <button
+            v-if="!access.isSharedOnly.value"
+            type="button"
+            class="project-breadcrumb__link"
+            @click="router.push('/app/projects')"
+          >
             Proyectos
           </button>
-          <ChevronRight :size="14" class="text-[#c7c7cc]" />
+          <template v-if="!access.isSharedOnly.value">
+            <ChevronRight :size="14" class="text-[#c7c7cc]" />
+          </template>
+          <span v-if="access.isSharedOnly.value" class="text-[#626f86]">Proyecto compartido</span>
+          <ChevronRight v-if="access.isSharedOnly.value" :size="14" class="text-[#c7c7cc]" />
           <span class="font-medium text-[#172b4d]">{{ project.name }}</span>
         </nav>
 
         <h1 class="project-chrome__title md:hidden">{{ project.name }}</h1>
 
         <div class="project-chrome__actions">
+          <button
+            v-if="teamUsers.length"
+            type="button"
+            class="project-chrome__team"
+            :title="`${onlineCount} en línea · ${teamUsers.length} en el equipo`"
+            @click="setTab('team')"
+          >
+            <span
+              v-for="(user, index) in visibleTeamUsers"
+              :key="user.id"
+              class="project-chrome__team-avatar"
+              :class="{ 'project-chrome__team-avatar--online': true }"
+              :style="{ zIndex: 10 - index }"
+            >
+              <UserAvatar :user-id="user.id" size="sm" />
+            </span>
+            <span v-if="extraTeamCount > 0" class="project-chrome__team-more">
+              +{{ extraTeamCount }}
+            </span>
+            <span v-if="onlineCount > 1" class="project-chrome__online-badge">{{ onlineCount }}</span>
+          </button>
           <ProjectStatusBadge :status="project.status" />
           <ProjectProgressRing :percent="progress" :size="44" :stroke="4" />
           <button type="button" class="shrink-0" title="Ir al inicio" @click="router.push('/app')">
@@ -136,7 +223,7 @@ function setTab(tab: ProjectDetailTab) {
       </div>
     </header>
 
-    <div class="flex min-h-0 flex-1 overflow-hidden">
+    <div class="project-detail__body flex min-h-0 flex-1 overflow-hidden">
       <div
         v-if="mobileNavOpen"
         class="fixed inset-0 z-40 bg-black/30 md:hidden"
@@ -148,7 +235,7 @@ function setTab(tab: ProjectDetailTab) {
         :class="{ 'project-sidebar--open': mobileNavOpen }"
       >
         <nav class="project-sidebar__nav scroll-thin">
-          <div v-for="group in tabGroups" :key="group.label" class="mb-4">
+          <div v-for="group in visibleTabGroups" :key="group.label" class="mb-4">
             <p class="project-sidebar__group-label">{{ group.label }}</p>
             <div class="space-y-1">
               <button
@@ -159,8 +246,15 @@ function setTab(tab: ProjectDetailTab) {
                 :class="{ 'project-nav-item--active': activeTab === tab.id }"
                 @click="setTab(tab.id)"
               >
-                <component :is="tab.icon" :size="18" />
-                {{ tab.label }}
+                <component :is="tab.icon" :size="20" />
+                <span class="project-nav-item__label">{{ tab.label }}</span>
+                <span
+                  v-if="badgeFor(tab.id)"
+                  class="project-nav-badge"
+                  :class="{ 'project-nav-badge--active': activeTab === tab.id }"
+                >
+                  {{ badgeLabel(badgeFor(tab.id)!) }}
+                </span>
               </button>
             </div>
           </div>
@@ -168,7 +262,7 @@ function setTab(tab: ProjectDetailTab) {
       </aside>
 
       <div
-        class="project-content scroll-thin"
+        class="project-content scroll-thin min-w-0 flex-1"
         :class="{ 'project-content--board': activeTab === 'tasks' }"
       >
         <div
@@ -178,6 +272,15 @@ function setTab(tab: ProjectDetailTab) {
           <slot />
         </div>
       </div>
+    </div>
+  </div>
+
+  <div v-else-if="project && !access.hasAccess.value" class="flex h-full items-center justify-center px-6">
+    <div class="text-center">
+      <p class="text-base text-[#626f86]">No tienes acceso a este proyecto.</p>
+      <button type="button" class="ql-btn ql-btn--ghost mt-4" @click="router.push('/app/projects')">
+        Volver a proyectos
+      </button>
     </div>
   </div>
 

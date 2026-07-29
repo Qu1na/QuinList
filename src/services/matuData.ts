@@ -8,6 +8,7 @@ import type {
   Workspace,
   WorkspaceMember,
 } from '@/types'
+import { matuRealtimeRow, matuRealtimeTableChannel, rowUserId } from '@/lib/matuRealtime'
 import { getMatuClient, isMatuConfigured } from '@/lib/matu'
 import { toJsonb, fromJsonb } from '@/lib/dbJson'
 import { generateId } from '@/utils/permissions'
@@ -803,9 +804,12 @@ export function subscribeNotificationsRealtime(
 
   const db = getMatuClient()
   const channel = db
-    .channel(`quinlist:notifications:${userId}`)
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, () => {
-      onChange()
+    .channel('notifications')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, (raw: unknown) => {
+      const p = raw as Record<string, unknown>
+      const event = String(p.eventType ?? p.action ?? 'INSERT').toUpperCase()
+      const row = matuRealtimeRow(p, event)
+      if (rowUserId(row) === userId) onChange()
     })
     .subscribe()
 
@@ -836,7 +840,7 @@ export function subscribeRealtime(
 
   const channels = tables.map((table) =>
     db
-      .channel(`quinlist:${table}`)
+      .channel(matuRealtimeTableChannel(table))
       .on('postgres_changes', { event: '*', schema: 'public', table }, () => {
         onChange(table)
       })

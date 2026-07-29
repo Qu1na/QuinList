@@ -1,18 +1,40 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { UserPlus, Shield, Trash2, Mail, Loader2 } from '@lucide/vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import {
+  UserPlus,
+  Shield,
+  Trash2,
+  Link2,
+  Copy,
+  Ban,
+  Users,
+  DollarSign,
+  Loader2,
+} from '@lucide/vue'
 import { useProjectsStore } from '@/stores/projects'
 import { useAuthStore } from '@/stores/auth'
 import { useQuinListStore } from '@/stores/quinlist'
 import { roleLabel } from '@/utils/permissions'
 import type { UserRole } from '@/types'
+import type { ProjectTeamInvite } from '@/types/projects'
 import UserAvatar from '@/components/projects/shared/UserAvatar.vue'
+import ProjectInviteModal from '@/components/projects/ProjectInviteModal.vue'
+import { useProjectAccess } from '@/utils/projectAccess'
+import { useProjectUsers } from '@/composables/useProjectUsers'
+import {
+  buildProjectInviteUrl,
+  loadProjectTeamInvites,
+  revokeProjectTeamInvite,
+  subscribeProjectTeamInvitesRealtime,
+} from '@/services/projectInvite'
 
 const props = defineProps<{ projectId: string }>()
 
 const projectsStore = useProjectsStore()
 const auth = useAuthStore()
 const quinlist = useQuinListStore()
+const access = useProjectAccess(props.projectId)
+const { resolveUser } = useProjectUsers()
 
 const addUserId = ref('')
 const addRole = ref<UserRole>('member')
@@ -20,21 +42,23 @@ const canFinance = ref(false)
 const canTasks = ref(true)
 const canTeam = ref(false)
 
-const inviteEmail = ref('')
-const inviting = ref(false)
-const inviteError = ref('')
-const inviteSuccess = ref('')
+const teamInvites = ref<ProjectTeamInvite[]>([])
+const loadingInvites = ref(false)
+const showInviteModal = ref(false)
+const copiedId = ref<string | null>(null)
+
+let unsubscribeRealtime: (() => void) | null = null
+
+const project = computed(() => projectsStore.getProject(props.projectId))
 
 const members = computed(() =>
   projectsStore.getProjectMembers(props.projectId).map((m) => ({
     ...m,
-    user: auth.getUserById(m.userId),
+    user: resolveUser(m.userId),
   })),
 )
 
-const pendingInvites = computed(() =>
-  projectsStore.getProjectInvites(props.projectId).filter((i) => i.status === 'pending'),
-)
+const activeInvites = computed(() => teamInvites.value.filter((i) => i.enabled))
 
 const availableUsers = computed(() => {
   const ws = quinlist.currentWorkspace
@@ -42,7 +66,33 @@ const availableUsers = computed(() => {
   const memberIds = new Set(members.value.map((m) => m.userId))
   return ws.members
     .filter((m) => !memberIds.has(m.userId))
-    .map((m) => ({ ...m, user: auth.getUserById(m.userId) }))
+    .map((m) => ({ ...m, user: resolveUser(m.userId) }))
+})
+
+async function refreshInvites() {
+  loadingInvites.value = true
+  try {
+    teamInvites.value = await loadProjectTeamInvites(props.projectId)
+  } finally {
+    loadingInvites.value = false
+  }
+}
+
+onMounted(() => {
+  void refreshInvites()
+  unsubscribeRealtime = subscribeProjectTeamInvitesRealtime(props.projectId, () => {
+    void refreshInvites()
+    const wsId = quinlist.currentWorkspaceId
+    if (wsId) void projectsStore.reloadForWorkspace(wsId)
+  })
+})
+
+onUnmounted(() => {
+  unsubscribeRealtime?.()
+})
+
+watch(showInviteModal, (open, wasOpen) => {
+  if (wasOpen && !open) void refreshInvites()
 })
 
 async function addMember() {
@@ -55,172 +105,238 @@ async function addMember() {
   addUserId.value = ''
 }
 
-async function sendInvite() {
-  inviteError.value = ''
-  inviteSuccess.value = ''
-  if (!inviteEmail.value.trim()) {
-    inviteError.value = 'Ingresa un correo electrónico'
-    return
-  }
-  inviting.value = true
-  try {
-    const result = await projectsStore.inviteProjectMember(
-      props.projectId,
-      inviteEmail.value.trim(),
-      addRole.value,
-      { canViewFinance: canFinance.value, canManageTasks: canTasks.value, canManageTeam: canTeam.value },
-    )
-    if (result.type === 'added') {
-      inviteSuccess.value = 'Usuario añadido al equipo del proyecto'
-    } else {
-      inviteSuccess.value = `Invitación enviada a ${inviteEmail.value.trim()}`
-    }
-    inviteEmail.value = ''
-  } catch (err) {
-    inviteError.value = err instanceof Error ? err.message : 'No se pudo enviar la invitación'
-  } finally {
-    inviting.value = false
-  }
+function inviteUrl(invite: ProjectTeamInvite) {
+  return buildProjectInviteUrl(invite.projectId, invite.token)
+}
+
+async function copyInvite(invite: ProjectTeamInvite) {
+  await navigator.clipboard.writeText(inviteUrl(invite))
+  copiedId.value = invite.id
+  setTimeout(() => {
+    copiedId.value = null
+  }, 2000)
+}
+
+async function revokeInvite(inviteId: string) {
+  await revokeProjectTeamInvite(inviteId)
+  await refreshInvites()
 }
 </script>
 
 <template>
   <div class="space-y-7">
-    <div>
-      <h2 class="project-page-title">Equipo</h2>
-      <p class="project-page-sub">Integrantes, permisos e invitaciones del proyecto</p>
+    <div class="flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <h2 class="project-page-title">Equipo</h2>
+        <p class="project-page-sub">Integrantes, permisos e invitaciones del proyecto</p>
+      </div>
+      <button
+        v-if="access.canManageTeam.value"
+        type="button"
+        class="ql-btn ql-btn--accent"
+        @click="showInviteModal = true"
+      >
+        <UserPlus :size="18" />
+        Generar invitación
+      </button>
     </div>
 
     <div class="grid gap-4 sm:grid-cols-3">
       <div class="project-card project-kpi">
-        <p class="project-kpi__label">Integrantes</p>
+        <Users :size="22" class="mb-2 text-[#2d7eb8]" />
         <p class="project-kpi__value">{{ members.length }}</p>
+        <p class="project-kpi__label">Integrantes</p>
       </div>
       <div class="project-card project-kpi">
-        <p class="project-kpi__label">Invitaciones pendientes</p>
-        <p class="project-kpi__value">{{ pendingInvites.length }}</p>
+        <Link2 :size="22" class="mb-2 text-[#5bbce4]" />
+        <p class="project-kpi__value">{{ activeInvites.length }}</p>
+        <p class="project-kpi__label">Enlaces activos</p>
       </div>
       <div class="project-card project-kpi">
-        <p class="project-kpi__label">Con acceso finanzas</p>
+        <DollarSign :size="22" class="mb-2 text-[#f4845f]" />
         <p class="project-kpi__value">{{ members.filter((m) => m.canViewFinance).length }}</p>
+        <p class="project-kpi__label">Con acceso finanzas</p>
       </div>
     </div>
 
-    <div class="project-card project-card--lg">
-      <h3 class="mb-1 flex items-center gap-2 text-base font-semibold text-[#172b4d]">
-        <Mail :size="20" class="text-[#5bbce4]" />
-        Invitar al equipo
+    <div
+      v-if="access.canManageTeam.value && activeInvites.length"
+      class="project-card project-card--lg"
+    >
+      <h3 class="mb-4 flex items-center gap-2 text-base font-semibold text-[#172b4d]">
+        <Link2 :size="20" class="text-[#5bbce4]" />
+        Enlaces de invitación activos
       </h3>
-      <p class="mb-4 text-sm text-[#626f86]">
-        Invita por correo. Si ya pertenece al workspace, se añade de inmediato.
-      </p>
-      <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
-        <label class="flex-1 text-sm">
-          <span class="mb-1.5 block font-medium text-[#44546f]">Correo electrónico</span>
-          <input v-model="inviteEmail" type="email" placeholder="colaborador@empresa.com" class="ql-input" />
-        </label>
-        <select v-model="addRole" class="ql-input w-auto min-w-[160px]">
-          <option value="admin">Administrador</option>
-          <option value="member">Miembro</option>
-          <option value="viewer">Observador</option>
-        </select>
-        <button type="button" class="ql-btn ql-btn--primary" :disabled="inviting" @click="sendInvite">
-          <Loader2 v-if="inviting" :size="18" class="animate-spin" />
-          <UserPlus v-else :size="18" />
-          Invitar
-        </button>
-      </div>
-      <div class="mt-4 flex flex-wrap gap-4 text-sm text-[#44546f]">
-        <label class="flex items-center gap-2"><input v-model="canTasks" type="checkbox" class="rounded" /> Tareas</label>
-        <label class="flex items-center gap-2"><input v-model="canFinance" type="checkbox" class="rounded" /> Finanzas</label>
-        <label class="flex items-center gap-2"><input v-model="canTeam" type="checkbox" class="rounded" /> Equipo</label>
-      </div>
-      <p v-if="inviteError" class="mt-2 text-sm text-red-600">{{ inviteError }}</p>
-      <p v-if="inviteSuccess" class="mt-2 text-sm text-[#2d7eb8]">{{ inviteSuccess }}</p>
 
-      <ul v-if="pendingInvites.length" class="mt-4 space-y-2 border-t border-[#ebebed] pt-4">
-        <li v-for="inv in pendingInvites" :key="inv.id" class="text-sm text-[#626f86]">
-          {{ inv.email }} — pendiente ({{ roleLabel(inv.role) }})
+      <div v-if="loadingInvites" class="flex items-center gap-2 text-sm text-[#626f86]">
+        <Loader2 :size="16" class="animate-spin" />
+        Cargando enlaces...
+      </div>
+
+      <ul v-else class="space-y-2">
+        <li
+          v-for="inv in activeInvites"
+          :key="inv.id"
+          class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#091e4214] bg-[#fafafa] px-4 py-3"
+        >
+          <div class="min-w-0 flex-1">
+            <p class="truncate font-mono text-xs text-[#44546f]">{{ inviteUrl(inv) }}</p>
+            <p class="mt-1 text-xs text-[#626f86]">
+              {{ roleLabel(inv.role) }}
+              · {{ inv.useCount }} uso(s)
+              <span v-if="inv.maxUses === 1"> · Un solo usuario</span>
+              <span v-if="inv.canManageTasks"> · Tareas</span>
+              <span v-if="inv.canViewFinance"> · Finanzas</span>
+              <span v-if="inv.canManageTeam"> · Equipo</span>
+            </p>
+          </div>
+          <div class="flex gap-2">
+            <button type="button" class="ql-btn ql-btn--ghost py-1.5 text-xs" @click="copyInvite(inv)">
+              <Copy :size="14" />
+              {{ copiedId === inv.id ? 'Copiado' : 'Copiar' }}
+            </button>
+            <button
+              type="button"
+              class="ql-btn ql-btn--ghost py-1.5 text-xs text-red-600"
+              @click="revokeInvite(inv.id)"
+            >
+              <Ban :size="14" />
+              Revocar
+            </button>
+          </div>
         </li>
       </ul>
     </div>
 
-    <div v-if="availableUsers.length" class="project-card project-card--lg border-dashed">
+    <div
+      v-if="access.canManageTeam.value && availableUsers.length"
+      class="project-card project-card--lg border-dashed"
+    >
       <h3 class="mb-3 text-base font-semibold text-[#172b4d]">Añadir del workspace</h3>
-      <div class="flex flex-wrap gap-2">
-        <select v-model="addUserId" class="ql-input w-auto min-w-[200px]">
-          <option value="">Seleccionar...</option>
-          <option v-for="u in availableUsers" :key="u.userId" :value="u.userId">
-            {{ u.user?.name ?? u.userId }}
-          </option>
-        </select>
-        <button type="button" class="ql-btn ql-btn--ghost" :disabled="!addUserId" @click="addMember">Añadir</button>
+      <div class="flex flex-wrap items-end gap-3">
+        <label class="text-sm">
+          <span class="mb-1.5 block font-medium text-[#44546f]">Usuario</span>
+          <select v-model="addUserId" class="ql-input w-auto min-w-[220px]">
+            <option value="">Seleccionar...</option>
+            <option v-for="u in availableUsers" :key="u.userId" :value="u.userId">
+              {{ u.user?.name ?? u.userId }}
+            </option>
+          </select>
+        </label>
+        <label class="text-sm">
+          <span class="mb-1.5 block font-medium text-[#44546f]">Rol</span>
+          <select v-model="addRole" class="ql-input w-auto min-w-[160px]">
+            <option value="admin">Administrador</option>
+            <option value="member">Miembro</option>
+            <option value="viewer">Observador</option>
+          </select>
+        </label>
+        <button type="button" class="ql-btn ql-btn--primary" :disabled="!addUserId" @click="addMember">
+          <UserPlus :size="16" />
+          Añadir
+        </button>
       </div>
     </div>
 
-    <div class="ql-table-wrap">
-      <table class="ql-table">
-        <thead>
-          <tr>
-            <th>Integrante</th>
-            <th>Rol</th>
-            <th>Permisos</th>
-            <th />
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="m in members" :key="m.id">
-            <td>
-              <div class="flex items-center gap-3">
-                <UserAvatar :user-id="m.userId" />
-                <div>
-                  <p class="font-medium text-[#172b4d]">{{ m.user?.name ?? 'Usuario' }}</p>
-                  <p class="text-sm text-[#626f86]">{{ m.user?.email }}</p>
-                </div>
-              </div>
-            </td>
-            <td>
-              <select
-                :value="m.role"
-                class="ql-input w-auto py-1.5 text-sm"
-                :disabled="m.role === 'owner'"
-                @change="projectsStore.updateProjectMember(m.id, { role: ($event.target as HTMLSelectElement).value as UserRole })"
-              >
-                <option value="owner">Propietario</option>
-                <option value="admin">Administrador</option>
-                <option value="member">Miembro</option>
-                <option value="viewer">Observador</option>
-              </select>
-            </td>
-            <td>
-              <div class="flex flex-wrap gap-3 text-sm">
-                <label class="flex items-center gap-1.5">
-                  <input type="checkbox" :checked="m.canManageTasks" @change="projectsStore.updateProjectMember(m.id, { canManageTasks: ($event.target as HTMLInputElement).checked })" />
-                  Tareas
-                </label>
-                <label class="flex items-center gap-1.5">
-                  <input type="checkbox" :checked="m.canViewFinance" @change="projectsStore.updateProjectMember(m.id, { canViewFinance: ($event.target as HTMLInputElement).checked })" />
-                  <Shield :size="14" /> Finanzas
-                </label>
-                <label class="flex items-center gap-1.5">
-                  <input type="checkbox" :checked="m.canManageTeam" @change="projectsStore.updateProjectMember(m.id, { canManageTeam: ($event.target as HTMLInputElement).checked })" />
-                  Equipo
-                </label>
-              </div>
-            </td>
-            <td>
-              <button
-                v-if="m.role !== 'owner'"
-                type="button"
-                class="rounded-lg p-2 text-[#626f86] hover:bg-[#f5f5f7] hover:text-red-600"
-                @click="projectsStore.removeProjectMember(m.id)"
-              >
-                <Trash2 :size="18" />
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="project-card project-card--lg !p-0 overflow-hidden">
+      <div class="border-b border-[#091e4214] px-5 py-4">
+        <h3 class="text-base font-semibold text-[#172b4d]">Integrantes del proyecto</h3>
+      </div>
+
+      <div class="divide-y divide-[#091e4214]">
+        <div
+          v-for="m in members"
+          :key="m.id"
+          class="flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <div class="flex min-w-0 items-center gap-3">
+            <UserAvatar :user-id="m.userId" size="lg" />
+            <div class="min-w-0">
+              <p class="font-semibold text-[#172b4d]">{{ m.user?.name ?? 'Cargando…' }}</p>
+              <p class="truncate text-sm text-[#626f86]">{{ m.user?.email ?? m.userId }}</p>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-4">
+            <select
+              :value="m.role"
+              class="ql-input w-auto py-2 text-sm"
+              :disabled="!access.canManageTeam.value || m.role === 'owner'"
+              @change="
+                projectsStore.updateProjectMember(m.id, {
+                  role: ($event.target as HTMLSelectElement).value as UserRole,
+                })
+              "
+            >
+              <option value="owner">Propietario</option>
+              <option value="admin">Administrador</option>
+              <option value="member">Miembro</option>
+              <option value="viewer">Observador</option>
+            </select>
+
+            <div class="flex flex-wrap gap-3 text-sm text-[#44546f]">
+              <label class="flex items-center gap-1.5">
+                <input
+                  type="checkbox"
+                  :checked="m.canManageTasks"
+                  :disabled="!access.canManageTeam.value"
+                  @change="
+                    projectsStore.updateProjectMember(m.id, {
+                      canManageTasks: ($event.target as HTMLInputElement).checked,
+                    })
+                  "
+                />
+                Tareas
+              </label>
+              <label class="flex items-center gap-1.5">
+                <input
+                  type="checkbox"
+                  :checked="m.canViewFinance"
+                  :disabled="!access.canManageTeam.value"
+                  @change="
+                    projectsStore.updateProjectMember(m.id, {
+                      canViewFinance: ($event.target as HTMLInputElement).checked,
+                    })
+                  "
+                />
+                <Shield :size="14" class="text-[#f4845f]" />
+                Finanzas
+              </label>
+              <label class="flex items-center gap-1.5">
+                <input
+                  type="checkbox"
+                  :checked="m.canManageTeam"
+                  :disabled="!access.canManageTeam.value"
+                  @change="
+                    projectsStore.updateProjectMember(m.id, {
+                      canManageTeam: ($event.target as HTMLInputElement).checked,
+                    })
+                  "
+                />
+                Equipo
+              </label>
+            </div>
+
+            <button
+              v-if="access.canManageTeam.value && m.role !== 'owner'"
+              type="button"
+              class="rounded-lg p-2 text-[#626f86] transition hover:bg-[#f5f5f7] hover:text-red-600"
+              title="Quitar del proyecto"
+              @click="projectsStore.removeProjectMember(m.id)"
+            >
+              <Trash2 :size="18" />
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <ProjectInviteModal
+      v-if="auth.currentUserId && project"
+      v-model:open="showInviteModal"
+      :project-id="projectId"
+      :project-name="project.name"
+      :created-by="auth.currentUserId"
+    />
   </div>
 </template>

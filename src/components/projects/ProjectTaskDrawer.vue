@@ -8,6 +8,7 @@ import AppWindow from '@/components/ui/AppWindow.vue'
 import DateInput from './shared/DateInput.vue'
 import { TASK_STATUS_LABELS } from '@/utils/projectStats'
 import { openAttachment } from '@/services/storage'
+import TaskCommentsPanel from './shared/TaskCommentsPanel.vue'
 
 const props = defineProps<{
   taskId: string | null
@@ -207,6 +208,10 @@ async function logTime() {
               </li>
             </ul>
             <p v-else class="text-sm text-[#626f86]">Sin archivos adjuntos.</p>
+          </div>
+
+          <div v-if="task" class="app-window-form-span-full">
+            <TaskCommentsPanel :task-id="task.id" />
           </div>
         </div>
 

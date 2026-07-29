@@ -6,6 +6,7 @@ import type {
   BoardShareRole,
   User,
 } from '@/types'
+import { matuRealtimeRow, matuRealtimeTableChannel, rowBelongsToBoard } from '@/lib/matuRealtime'
 import { getMatuClient, isMatuConfigured } from '@/lib/matu'
 import { generateId, roleLabel } from '@/utils/permissions'
 import type { UserRole } from '@/types'
@@ -557,20 +558,16 @@ export function subscribeBoardShareRealtime(
   const tables = ['board_invites', 'board_members', 'board_invite_uses']
 
   const channels = tables.map((table) => {
-    const filter =
-      table === 'board_members' || table === 'board_invites'
-        ? `board_id=eq.${boardId}`
-        : undefined
-
     return db
-      .channel(`quinlist:share:${boardId}:${table}`)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table, ...(filter ? { filter } : {}) },
-        () => {
+      .channel(matuRealtimeTableChannel(table))
+      .on('postgres_changes', { event: '*', schema: 'public', table }, (raw: unknown) => {
+        const p = raw as Record<string, unknown>
+        const event = String(p.eventType ?? p.action ?? p.event ?? 'INSERT').toUpperCase()
+        const row = matuRealtimeRow(p, event)
+        if (table === 'board_invite_uses' || rowBelongsToBoard(row, boardId)) {
           onChange()
-        },
-      )
+        }
+      })
       .subscribe()
   })
 

@@ -44,7 +44,9 @@ const tabComponents: Record<ProjectDetailTab, object> = {
   settings: ProjectSettingsTab,
 }
 
-onMounted(() => {
+onMounted(async () => {
+  await projectsStore.init()
+  await projectsStore.ensureProjectLoaded(projectId.value)
   projectsStore.setCurrentProject(projectId.value)
 })
 

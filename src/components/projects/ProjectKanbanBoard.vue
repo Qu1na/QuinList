@@ -6,7 +6,12 @@ import type { ProjectTask, ProjectTaskStatus } from '@/types/projects'
 import type { Priority } from '@/types'
 import { TASK_STATUS_LABELS, isTaskOverdue, PRIORITY_LABELS } from '@/utils/projectStats'
 import { beginKanbanDrag, endKanbanDrag } from '@/composables/useKanbanDrag'
+import { useProjectUsers } from '@/composables/useProjectUsers'
+import { useProjectsStore } from '@/stores/projects'
 import UserAvatar from './shared/UserAvatar.vue'
+
+const projectsStore = useProjectsStore()
+const { setPresenceActivity, resolveUser } = useProjectUsers()
 
 const props = defineProps<{
   tasks: ProjectTask[]
@@ -31,7 +36,12 @@ const columnTasks = ref<Record<ProjectTaskStatus, ProjectTask[]>>({
 const addingTo = ref<ProjectTaskStatus | null>(null)
 const newTitle = ref('')
 const isDragging = ref(false)
-const addInput = ref<HTMLTextAreaElement | null>(null)
+const addInputRefs = ref<Partial<Record<ProjectTaskStatus, HTMLTextAreaElement>>>({})
+
+function setAddInputRef(col: ProjectTaskStatus, el: HTMLTextAreaElement | null) {
+  if (el) addInputRefs.value[col] = el
+  else delete addInputRefs.value[col]
+}
 
 const priorityTagClass: Record<Priority, string> = {
   baja: 'pkt-tag--sky',
@@ -61,12 +71,14 @@ watch(() => props.tasks, syncColumns, { deep: true })
 function onDragStart() {
   isDragging.value = true
   beginKanbanDrag()
+  void setPresenceActivity('editing', 'Moviendo tarea')
 }
 
 function onDragEnd() {
   isDragging.value = false
   endKanbanDrag()
   syncColumns()
+  void setPresenceActivity('online')
 }
 
 function onChange(col: ProjectTaskStatus, evt: { added?: { element: ProjectTask } }) {
@@ -76,7 +88,7 @@ function onChange(col: ProjectTaskStatus, evt: { added?: { element: ProjectTask 
 function startAdding(col: ProjectTaskStatus) {
   addingTo.value = col
   newTitle.value = ''
-  setTimeout(() => addInput.value?.focus(), 40)
+  setTimeout(() => addInputRefs.value[col]?.focus(), 40)
 }
 
 function submitAdd(col: ProjectTaskStatus) {
@@ -104,13 +116,17 @@ function formatShortDate(dateStr: string) {
   return d.toLocaleDateString('es', { day: 'numeric', month: 'short' })
 }
 
-function assignees(task: ProjectTask) {
-  const ids = task.assigneeIds.length ? task.assigneeIds : task.createdBy ? [task.createdBy] : []
-  return ids.slice(0, 3)
+function creatorName(task: ProjectTask) {
+  if (!task.createdBy) return 'Creador'
+  return resolveUser(task.createdBy)?.name ?? 'Usuario'
+}
+
+function assigneeIds(task: ProjectTask) {
+  return task.assigneeIds.filter((id) => id !== task.createdBy).slice(0, 3)
 }
 
 function extraAssignees(task: ProjectTask) {
-  const total = task.assigneeIds.length || (task.createdBy ? 1 : 0)
+  const total = assigneeIds(task).length
   return total > 3 ? total - 3 : 0
 }
 
@@ -125,6 +141,10 @@ function priorityLabel(priority: Priority) {
 function coverImage(task: ProjectTask) {
   const img = task.attachments.find((a) => a.type?.startsWith('image/'))
   return img?.url ?? null
+}
+
+function commentCount(task: ProjectTask) {
+  return projectsStore.getTaskComments(task.id).length
 }
 
 onUnmounted(() => {
@@ -191,19 +211,28 @@ onUnmounted(() => {
               <div class="pkt-card__footer">
                 <div class="pkt-card__avatars">
                   <UserAvatar
-                    v-for="uid in assignees(task)"
+                    v-if="task.createdBy"
+                    :user-id="task.createdBy"
+                    size="sm"
+                    class="pkt-card__avatar pkt-card__avatar--creator"
+                    :title="`Creada por ${creatorName(task)}`"
+                  />
+                  <UserAvatar
+                    v-for="uid in assigneeIds(task)"
                     :key="uid"
                     :user-id="uid"
                     size="sm"
                     class="pkt-card__avatar"
+                    :title="resolveUser(uid)?.name ?? 'Asignado'"
                   />
                   <span v-if="extraAssignees(task)" class="pkt-card__avatar-more">
                     +{{ extraAssignees(task) }}
                   </span>
                 </div>
                 <div class="pkt-card__meta">
-                  <span v-if="task.description" class="pkt-card__meta-item">
+                  <span v-if="commentCount(task)" class="pkt-card__meta-item">
                     <MessageSquare :size="14" />
+                    {{ commentCount(task) }}
                   </span>
                   <span v-if="task.attachments.length" class="pkt-card__meta-item">
                     <Paperclip :size="14" />
@@ -219,7 +248,7 @@ onUnmounted(() => {
       <div class="pkt-col__add">
         <div v-if="addingTo === col" class="pkt-add-form">
           <textarea
-            ref="addInput"
+            :ref="(el) => setAddInputRef(col, el as HTMLTextAreaElement | null)"
             v-model="newTitle"
             rows="3"
             class="pkt-add-form__input"

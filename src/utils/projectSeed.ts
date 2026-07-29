@@ -145,7 +145,10 @@ export const PROJECT_SEED: ProjectsDataState = {
       dueDate: '2026-01-15',
       completed: true,
       position: 0,
+      createdBy: 'u1',
+      updatedBy: 'u1',
       createdAt: '2026-01-10T10:00:00',
+      updatedAt: '2026-01-10T10:00:00',
     },
     {
       id: 'pm2',
@@ -156,7 +159,10 @@ export const PROJECT_SEED: ProjectsDataState = {
       dueDate: '2026-03-15',
       completed: false,
       position: 1,
+      createdBy: 'u1',
+      updatedBy: 'u1',
       createdAt: '2026-01-10T10:00:00',
+      updatedAt: '2026-01-10T10:00:00',
     },
     {
       id: 'pm3',
@@ -167,7 +173,10 @@ export const PROJECT_SEED: ProjectsDataState = {
       dueDate: '2026-04-30',
       completed: false,
       position: 2,
+      createdBy: 'u1',
+      updatedBy: 'u1',
       createdAt: '2026-01-10T10:00:00',
+      updatedAt: '2026-01-10T10:00:00',
     },
   ],
   costs: [
@@ -272,7 +281,10 @@ export const PROJECT_SEED: ProjectsDataState = {
       milestoneId: 'pm1',
       attachments: [],
       log: [],
+      createdBy: 'u1',
+      updatedBy: 'u1',
       createdAt: '2026-01-10T10:00:00',
+      updatedAt: '2026-01-10T10:00:00',
     },
     {
       id: 'pd2',
@@ -286,7 +298,10 @@ export const PROJECT_SEED: ProjectsDataState = {
       milestoneId: 'pm2',
       attachments: [],
       log: [],
+      createdBy: 'u1',
+      updatedBy: 'u1',
       createdAt: '2026-01-10T10:00:00',
+      updatedAt: '2026-01-10T10:00:00',
     },
   ],
   documents: [
@@ -373,4 +388,5 @@ export const PROJECT_SEED: ProjectsDataState = {
     },
   ],
   timeEntries: [],
+  taskComments: [],
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch, onUnmounted, ref } from 'vue'
+import { computed, watch, onUnmounted, ref, useAttrs } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { LayoutGrid, Search, Bell, ChevronDown, Plus, UserPlus, X, Users, BarChart3, LogOut, FolderKanban } from '@lucide/vue'
 import { useQuinListStore } from '@/stores/quinlist'
@@ -12,8 +12,13 @@ import { useBoardPresenceStore } from '@/stores/boardPresence'
 import { subscribeBoardShareRealtime } from '@/services/boardShare'
 import { canManageMembers } from '@/utils/permissions'
 import NotificationPanel from './NotificationPanel.vue'
+import AppWindow from '@/components/ui/AppWindow.vue'
 import { useProjectsStore } from '@/stores/projects'
 import { PROJECTS_MODULE_ENABLED } from '@/config/features'
+
+defineOptions({ inheritAttrs: false })
+
+const attrs = useAttrs()
 
 const route = useRoute()
 const router = useRouter()
@@ -130,7 +135,7 @@ onUnmounted(() => {
 <template>
   <header
     class="relative z-30 flex h-12 shrink-0 items-center gap-3 px-4"
-    :class="isBoard ? 'bg-black/15 text-white backdrop-blur-sm' : 'app-header text-white'"
+    :class="[attrs.class, isBoard ? 'bg-black/15 text-white backdrop-blur-sm' : 'app-header text-white']"
   >
     <button
       class="flex items-center gap-2 rounded px-2 py-1.5 transition-colors hover:bg-white/20"
@@ -337,31 +342,20 @@ onUnmounted(() => {
   <Teleport to="body">
     <div
       v-if="showMembersModal && isBoard"
-      class="fixed inset-0 z-[2000] flex items-center justify-center bg-black/50 p-4"
+      class="app-window-overlay fixed inset-0 z-[2000] flex items-center justify-center p-4"
       @click.self="showMembersModal = false"
     >
-      <div class="w-full max-w-md overflow-hidden rounded-xl bg-white shadow-2xl">
-        <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-          <div class="flex items-center gap-2">
-            <Users :size="20" class="text-[#0c66e4]" />
-            <div>
-              <h2 class="font-bold text-[#172b4d]">Miembros del tablero</h2>
-              <p v-if="board" class="text-sm text-[#626f86]">{{ board.title }}</p>
-            </div>
-          </div>
-          <button
-            class="rounded p-2 text-[#626f86] hover:bg-slate-100"
-            @click="showMembersModal = false"
-          >
-            <X :size="20" />
-          </button>
-        </div>
-
-        <ul class="max-h-[60vh] overflow-y-auto p-3">
+      <AppWindow
+        title="Miembros del tablero"
+        :subtitle="board?.title"
+        class="app-window--md"
+        @close="showMembersModal = false"
+      >
+        <ul class="max-h-[50vh] overflow-y-auto -mx-1">
           <li
             v-for="{ user, roleLabel: rLabel } in participantDetails"
             :key="user.id"
-            class="flex items-center gap-3 rounded-lg px-2 py-3 hover:bg-slate-50"
+            class="flex items-center gap-3 rounded-lg px-2 py-3 hover:bg-[#091e420a]"
           >
             <span
               class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
@@ -373,7 +367,7 @@ onUnmounted(() => {
               <p class="truncate font-medium text-[#172b4d]">{{ user.name }}</p>
               <p class="truncate text-sm text-[#626f86]">{{ user.email }}</p>
             </div>
-            <span class="shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-[#44546f]">
+            <span class="shrink-0 rounded-full bg-[#091e420f] px-2.5 py-1 text-xs font-medium text-[#44546f]">
               {{ rLabel }}
             </span>
           </li>
@@ -385,15 +379,21 @@ onUnmounted(() => {
           </li>
         </ul>
 
-        <div class="border-t border-slate-200 px-5 py-3">
-          <button
-            class="w-full rounded-lg bg-[#0c66e4] py-2.5 text-sm font-medium text-white hover:bg-[#0055cc]"
-            @click="showMembersModal = false; openShare()"
-          >
-            Invitar a alguien
-          </button>
-        </div>
-      </div>
+        <template #footer>
+          <div class="app-window-footer-actions">
+            <button type="button" class="btn-brand-ghost" @click="showMembersModal = false">
+              Cerrar
+            </button>
+            <button
+              type="button"
+              class="btn-brand"
+              @click="showMembersModal = false; openShare()"
+            >
+              Invitar a alguien
+            </button>
+          </div>
+        </template>
+      </AppWindow>
     </div>
   </Teleport>
 </template>

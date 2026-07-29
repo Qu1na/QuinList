@@ -2,14 +2,15 @@
 import { computed } from 'vue'
 import { Activity, Users, Clock } from '@lucide/vue'
 import { useProjectsStore } from '@/stores/projects'
-import { useAuthStore } from '@/stores/auth'
 import { formatDateTime } from '@/utils/permissions'
 import UserAvatar from '@/components/projects/shared/UserAvatar.vue'
+import { useProjectUsers } from '@/composables/useProjectUsers'
+import { formatActivityLine } from '@/utils/activityFormat'
 
 const props = defineProps<{ projectId: string }>()
 
 const projectsStore = useProjectsStore()
-const auth = useAuthStore()
+const { resolveUser } = useProjectUsers()
 
 const activities = computed(() =>
   [...projectsStore.getProjectActivities(props.projectId)].sort(
@@ -25,7 +26,7 @@ const lastSevenDays = computed(() => {
 })
 
 function userName(id: string) {
-  return auth.getUserById(id)?.name ?? 'Usuario'
+  return resolveUser(id)?.name ?? 'Usuario'
 }
 </script>
 
@@ -69,10 +70,9 @@ function userName(id: string) {
           <UserAvatar :user-id="act.userId" size="md" />
           <div class="min-w-0 flex-1">
             <div class="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-              <span class="font-medium text-[#172b4d]">{{ userName(act.userId) }}</span>
-              <span class="text-sm text-[#626f86]">{{ act.action }}</span>
+              <span class="text-sm text-[#44546f]">{{ formatActivityLine(act, userName(act.userId)) }}</span>
             </div>
-            <p v-if="act.details" class="mt-0.5 text-sm text-[#44546f]">{{ act.details }}</p>
+            <p v-if="act.details && act.entityTitle !== act.details" class="mt-0.5 text-sm text-[#626f86]">{{ act.details }}</p>
             <p class="mt-1.5 text-xs font-medium text-[#626f86]">{{ formatDateTime(act.createdAt) }}</p>
           </div>
         </li>

@@ -20,15 +20,23 @@ async function bootstrap() {
   const auth = useAuthStore()
   await auth.init()
 
-  if (auth.isAuthenticated) {
-    const store = useQuinListStore()
-    const notif = useNotificationStore()
-    const projects = useProjectsStore()
-    await store.init()
-    await Promise.all([notif.init(), projects.init()])
-  }
-
+  // Mount immediately so the shell renders while MatuDB data loads in background.
   app.mount('#app')
+
+  if (!auth.isAuthenticated) return
+
+  const store = useQuinListStore()
+  const notif = useNotificationStore()
+  const projects = useProjectsStore()
+
+  void (async () => {
+    try {
+      await store.init()
+      await Promise.all([notif.init(), projects.init()])
+    } catch (err) {
+      console.error('[bootstrap] Error cargando datos:', err)
+    }
+  })()
 }
 
 bootstrap()

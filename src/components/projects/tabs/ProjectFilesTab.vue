@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { Search, Download, ExternalLink, FolderOpen, FileText, Image, File } from '@lucide/vue'
+import { Search, FolderOpen } from '@lucide/vue'
 import { useProjectsStore } from '@/stores/projects'
-import { useAuthStore } from '@/stores/auth'
 import { formatDateTime } from '@/utils/permissions'
+import { useProjectUsers } from '@/composables/useProjectUsers'
 import { openAttachment, downloadAttachment } from '@/services/storage'
-import AttachmentMedia from '@/components/board/AttachmentMedia.vue'
-import UserAvatar from '@/components/projects/shared/UserAvatar.vue'
+import FileExplorerItem from '@/components/projects/shared/FileExplorerItem.vue'
+import FileExplorerDesktop from '@/components/projects/shared/FileExplorerDesktop.vue'
 
 const props = defineProps<{ projectId: string }>()
 
 const projectsStore = useProjectsStore()
-const auth = useAuthStore()
+const { resolveUser } = useProjectUsers()
 
 const search = ref('')
 const sourceFilter = ref<'all' | 'Tarea' | 'Documento'>('all')
@@ -31,102 +31,107 @@ const stats = computed(() => ({
   total: allFiles.value.length,
   tasks: allFiles.value.filter((f) => f.source === 'Tarea').length,
   docs: allFiles.value.filter((f) => f.source === 'Documento').length,
+  images: allFiles.value.filter((f) => f.type.startsWith('image/')).length,
 }))
 
 function userName(id: string) {
-  return auth.getUserById(id)?.name ?? 'Usuario'
-}
-
-function fileIcon(type: string) {
-  if (type.startsWith('image/')) return Image
-  if (type.includes('pdf') || type.includes('document')) return FileText
-  return File
+  return resolveUser(id)?.name ?? 'Usuario'
 }
 </script>
 
 <template>
-  <div class="space-y-6">
+  <div class="space-y-5">
     <div>
       <h2 class="project-page-title">Archivos del proyecto</h2>
-      <p class="project-page-sub">
-        Centro de archivos tipo Drive · {{ stats.total }} archivos en total
-      </p>
+      <p class="project-page-sub">Centro de archivos · explorador tipo escritorio</p>
     </div>
 
-    <div class="grid gap-4 sm:grid-cols-3">
-      <div class="project-card project-kpi">
-        <p class="project-kpi__label">Total</p>
-        <p class="project-kpi__value">{{ stats.total }}</p>
+    <div class="grid gap-3 sm:grid-cols-4">
+      <div class="drive-stat">
+        <p class="drive-stat__value">{{ stats.total }}</p>
+        <p class="drive-stat__label">Total</p>
       </div>
-      <div class="project-card project-kpi">
-        <p class="project-kpi__label">Desde tareas</p>
-        <p class="project-kpi__value">{{ stats.tasks }}</p>
+      <div class="drive-stat">
+        <p class="drive-stat__value">{{ stats.tasks }}</p>
+        <p class="drive-stat__label">Desde tareas</p>
       </div>
-      <div class="project-card project-kpi">
-        <p class="project-kpi__label">Documentación</p>
-        <p class="project-kpi__value">{{ stats.docs }}</p>
+      <div class="drive-stat">
+        <p class="drive-stat__value">{{ stats.docs }}</p>
+        <p class="drive-stat__label">Documentación</p>
+      </div>
+      <div class="drive-stat">
+        <p class="drive-stat__value">{{ stats.images }}</p>
+        <p class="drive-stat__label">Imágenes</p>
       </div>
     </div>
 
-    <div class="drive-toolbar">
-      <div class="relative min-w-[240px] flex-1">
-        <Search :size="18" class="absolute top-3 left-3 text-[#8e8e93]" />
+    <div class="flex flex-wrap items-center gap-2">
+      <div class="relative min-w-[200px] flex-1">
+        <Search :size="16" class="absolute top-1/2 left-3 -translate-y-1/2 text-[#8e8e93]" />
         <input
           v-model="search"
           type="text"
           placeholder="Buscar archivos..."
-          class="ql-input py-2.5 pr-3 pl-10"
+          class="project-create-modal__input py-2 pl-9"
         />
       </div>
-      <select v-model="sourceFilter" class="ql-input w-auto min-w-[180px]">
+      <select v-model="sourceFilter" class="project-create-modal__input w-auto min-w-[160px]">
         <option value="all">Todas las fuentes</option>
         <option value="Tarea">Tareas</option>
         <option value="Documento">Documentos</option>
       </select>
     </div>
 
-    <div v-if="filtered.length" class="drive-grid">
-      <div v-for="file in filtered" :key="file.id" class="drive-file-card">
-        <AttachmentMedia
-          v-if="file.type.startsWith('image/')"
+    <FileExplorerDesktop
+      :empty="!filtered.length"
+      empty-title="No hay archivos"
+      empty-hint="Los archivos adjuntos a tareas y documentos aparecerán aquí automáticamente."
+    >
+      <div class="fx-grid">
+        <FileExplorerItem
+          v-for="file in filtered"
+          :key="file.id"
+          :name="file.name"
+          :type="file.type"
           :attachment="file"
-          preview-only
-          image-class="mb-3 h-36 w-full rounded-xl object-cover"
+          :size="file.size"
+          :subtitle="`${file.source} · ${userName(file.uploadedBy)}`"
+          @click="openAttachment(file)"
+          @open="openAttachment(file)"
+          @download="downloadAttachment(file)"
         />
-        <div
-          v-else
-          class="mb-3 flex h-36 items-center justify-center rounded-xl bg-[#f5f5f7]"
-        >
-          <component :is="fileIcon(file.type)" :size="40" class="text-[#5bbce4]" />
-        </div>
-
-        <p class="drive-file-card__name" :title="file.name">{{ file.name }}</p>
-        <p class="drive-file-card__meta">{{ file.source }}</p>
-        <div class="mt-2 flex items-center gap-2">
-          <UserAvatar :user-id="file.uploadedBy" size="sm" />
-          <span class="text-xs text-[#626f86]">{{ userName(file.uploadedBy) }}</span>
-        </div>
-        <p class="mt-1 text-xs text-[#8e8e93]">{{ formatDateTime(file.uploadedAt) }}</p>
-
-        <div class="mt-3 flex gap-2">
-          <button type="button" class="ql-btn ql-btn--ghost flex-1 text-sm" @click="openAttachment(file)">
-            <ExternalLink :size="15" />
-            Abrir
-          </button>
-          <button type="button" class="ql-btn ql-btn--primary flex-1 text-sm" @click="downloadAttachment(file)">
-            <Download :size="15" />
-            Descargar
-          </button>
-        </div>
       </div>
-    </div>
+      <template #empty-icon>
+        <FolderOpen :size="52" class="text-[#c7c7cc]" />
+      </template>
+    </FileExplorerDesktop>
 
-    <div v-else class="project-card flex flex-col items-center justify-center py-16 text-center">
-      <FolderOpen :size="48" class="mb-4 text-[#c7c7cc]" />
-      <p class="text-base font-medium text-[#172b4d]">No hay archivos</p>
-      <p class="mt-1 max-w-sm text-sm text-[#626f86]">
-        Los archivos adjuntos a tareas y documentos aparecerán aquí automáticamente.
-      </p>
-    </div>
+    <p v-if="filtered.length" class="text-center text-xs text-[#8e8e93]">
+      {{ filtered.length }} archivo{{ filtered.length === 1 ? '' : 's' }}
+      · Clic para abrir · Pasa el cursor para descargar
+    </p>
   </div>
 </template>
+
+<style scoped>
+.drive-stat {
+  border-radius: 0.875rem;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: #fff;
+  padding: 1.1rem 1.25rem;
+  text-align: center;
+}
+
+.drive-stat__value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #2d7eb8;
+  line-height: 1.1;
+}
+
+.drive-stat__label {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: #626f86;
+}
+</style>

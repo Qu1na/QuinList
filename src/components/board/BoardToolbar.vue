@@ -24,6 +24,7 @@ import {
   getBoardBackground,
   getBoardBackgroundThumbStyle,
 } from '@/utils/boardBackgrounds'
+import AppWindow from '@/components/ui/AppWindow.vue'
 
 const props = defineProps<{ boardId: string }>()
 
@@ -254,18 +255,22 @@ onUnmounted(() => document.removeEventListener('click', onClickOutside))
   <Teleport to="body">
     <div
       v-if="showBgPicker"
-      class="fixed inset-0 z-[2000] flex items-center justify-center bg-black/40"
+      class="app-window-overlay fixed inset-0 z-[2000] flex items-center justify-center p-4"
       @click.self="showBgPicker = false"
     >
-      <div class="w-full max-w-md rounded-xl bg-white p-5 shadow-2xl">
-        <h3 class="mb-1 font-semibold text-[#172b4d]">Fondo del tablero</h3>
-        <p class="mb-4 text-xs text-[#626f86]">Elige una imagen para tu tablero</p>
+      <AppWindow
+        title="Fondo del tablero"
+        subtitle="Elige una imagen para tu tablero"
+        class="app-window--md"
+        @close="showBgPicker = false"
+      >
         <div class="grid grid-cols-3 gap-3">
           <button
             v-for="bg in BOARD_BACKGROUNDS"
             :key="bg.id"
-            class="group relative h-20 overflow-hidden rounded-lg ring-2 ring-transparent transition-all hover:ring-[#388bff]"
-            :class="{ 'ring-[#0c66e4] ring-offset-2': getBoardBackground(board?.background).id === bg.id }"
+            type="button"
+            class="group relative h-20 overflow-hidden rounded-lg ring-2 ring-transparent transition-all hover:ring-[#5bbce4]"
+            :class="{ 'ring-[#2d7eb8] ring-offset-2': getBoardBackground(board?.background).id === bg.id }"
             :style="getBoardBackgroundThumbStyle(bg.id)"
             :title="bg.label"
             @click="setBackground(bg.id)"
@@ -277,7 +282,12 @@ onUnmounted(() => document.removeEventListener('click', onClickOutside))
             </span>
           </button>
         </div>
-      </div>
+        <template #footer>
+          <div class="app-window-footer-actions">
+            <button type="button" class="btn-brand" @click="showBgPicker = false">Listo</button>
+          </div>
+        </template>
+      </AppWindow>
     </div>
   </Teleport>
 </template>

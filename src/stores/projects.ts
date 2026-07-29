@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, type Ref } from 'vue'
 import type {
   Project,
   ProjectTask,
@@ -13,6 +13,7 @@ import type {
   ProjectMember,
   ProjectActivity,
   ProjectTimeEntry,
+  ProjectTaskComment,
   ProjectDetailTab,
   ProjectsDataState,
   TransactionType,
@@ -21,9 +22,15 @@ import type {
 } from '@/types/projects'
 import type { Attachment, Priority, UserRole } from '@/types'
 import { loadProjectsData, persistProjectsData } from '@/services/projectData'
-import { subscribeProjectsRealtime } from '@/services/projectMatuData'
+import { loadProjectById, loadSingleProject, subscribeProjectsRealtime } from '@/services/projectMatuData'
+import { applyRealtimePayload } from '@/services/projectRealtime'
+import { ensureProjectUserProfiles } from '@/services/projectUsers'
+import type { ActivityActionType } from '@/types/collaboration'
+import type { RealtimeChangePayload } from '@/types/collaboration'
+import { useCollaborationStore } from './collaboration'
 import { useQuinListStore } from './quinlist'
 import { useAuthStore } from './auth'
+import { isWorkspaceMember } from '@/utils/projectAccess'
 import { generateId } from '@/utils/permissions'
 import {
   calcFinanceSummary,
@@ -33,10 +40,17 @@ import {
   getPendingTasks,
   getUpcomingTasks,
 } from '@/utils/projectStats'
+import {
+  detectAutoRisks,
+  getAutoSource,
+  withAutoMarker,
+  stripAutoMarker,
+} from '@/utils/projectRiskDetection'
 import { findTodoList, getDefaultBoardLists } from '@/utils/boardDefaults'
 import { formatMoney, DEFAULT_CURRENCY } from '@/utils/currency'
 import { uploadProjectFile } from '@/services/storage'
 import { isMatuConfigured } from '@/lib/matu'
+import { cloneProjectsState, readProjectsState, writeProjectsState } from '@/utils/projectOptimistic'
 
 export const DASHBOARD_ACTIVITY_LIMIT = 7
 
@@ -53,11 +67,15 @@ export const useProjectsStore = defineStore('projects', () => {
   const members = ref<ProjectMember[]>([])
   const activities = ref<ProjectActivity[]>([])
   const timeEntries = ref<ProjectTimeEntry[]>([])
+  const taskComments = ref<ProjectTaskComment[]>([])
   const isReady = ref(false)
   const currentProjectId = ref<string | null>(null)
   const activeTab = ref<ProjectDetailTab>('dashboard')
   let unsubscribeRealtime: (() => void) | null = null
   let reloadTimer: ReturnType<typeof setTimeout> | null = null
+  let saveTimer: ReturnType<typeof setTimeout> | null = null
+  let saveChain: Promise<void> = Promise.resolve()
+  let saveWaiters: Array<{ resolve: () => void; reject: (err: unknown) => void }> = []
   let suppressReloadUntil = 0
   let loadedWorkspaceId: string | null = null
   let workspaceWatchStop: (() => void) | null = null
@@ -67,7 +85,54 @@ export const useProjectsStore = defineStore('projects', () => {
   )
 
   function workspaceProjects(workspaceId: string) {
-    return projects.value.filter((p) => p.workspaceId === workspaceId)
+    return accessibleProjects(workspaceId)
+  }
+
+  function accessibleProjects(workspaceId: string) {
+    const auth = useAuthStore()
+    const userId = auth.currentUserId
+    if (!userId) return []
+
+    const wsMember = isWorkspaceMember(workspaceId, userId)
+    if (wsMember) {
+      return projects.value.filter((p) => p.workspaceId === workspaceId)
+    }
+
+    return projects.value.filter((p) =>
+      members.value.some((m) => m.projectId === p.id && m.userId === userId),
+    )
+  }
+
+  function getMyProjectMembership(projectId: string) {
+    const auth = useAuthStore()
+    if (!auth.currentUserId) return null
+    return (
+      members.value.find(
+        (m) => m.projectId === projectId && m.userId === auth.currentUserId,
+      ) ?? null
+    )
+  }
+
+  function getSharedOnlyProjects() {
+    const auth = useAuthStore()
+    if (!auth.currentUserId) return []
+    return projects.value.filter((p) => {
+      const mine = members.value.some(
+        (m) => m.projectId === p.id && m.userId === auth.currentUserId,
+      )
+      if (!mine) return false
+      return !isWorkspaceMember(p.workspaceId, auth.currentUserId)
+    })
+  }
+
+  function canAccessProject(projectId: string) {
+    const auth = useAuthStore()
+    const project = getProject(projectId)
+    if (!project || !auth.currentUserId) return false
+    if (isWorkspaceMember(project.workspaceId, auth.currentUserId)) return true
+    return members.value.some(
+      (m) => m.projectId === projectId && m.userId === auth.currentUserId,
+    )
   }
 
   function getProject(id: string) {
@@ -110,6 +175,60 @@ export const useProjectsStore = defineStore('projects', () => {
 
   function getProjectMembers(projectId: string) {
     return members.value.filter((m) => m.projectId === projectId)
+  }
+
+  function getTaskComments(taskId: string) {
+    return taskComments.value
+      .filter((c) => c.taskId === taskId)
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+  }
+
+  async function addTaskComment(taskId: string, content: string) {
+    const auth = useAuthStore()
+    if (!auth.currentUserId) throw new Error('Debes iniciar sesión')
+    const task = tasks.value.find((t) => t.id === taskId)
+    if (!task) throw new Error('Tarea no encontrada')
+
+    const trimmed = content.trim()
+    if (!trimmed) return null
+
+    const now = new Date().toISOString()
+    const comment: ProjectTaskComment = {
+      id: generateId(),
+      projectId: task.projectId,
+      taskId,
+      userId: auth.currentUserId,
+      content: trimmed,
+      createdAt: now,
+      updatedAt: now,
+    }
+
+    commitMutation(() => {
+      taskComments.value.push(comment)
+      logActivity(task.projectId, 'comment_added', task.title, {
+        entityType: 'task',
+        entityId: task.id,
+        entityTitle: task.title,
+      })
+    })
+
+    return comment
+  }
+
+  function deleteTaskComment(commentId: string) {
+    const comment = taskComments.value.find((c) => c.id === commentId)
+    if (!comment) return
+    const task = tasks.value.find((t) => t.id === comment.taskId)
+    commitMutation(() => {
+      taskComments.value = taskComments.value.filter((c) => c.id !== commentId)
+      if (task) {
+        logActivity(task.projectId, 'comment_deleted', task.title, {
+          entityType: 'task',
+          entityId: task.id,
+          entityTitle: task.title,
+        })
+      }
+    })
   }
 
   function getProjectTimeEntries(projectId: string) {
@@ -168,15 +287,17 @@ export const useProjectsStore = defineStore('projects', () => {
       members: members.value,
       activities: activities.value,
       timeEntries: timeEntries.value,
+      taskComments: taskComments.value,
     }
     return collectProjectFiles(state, projectId)
   }
 
-  async function save() {
+  async function flushSave() {
     const quinlist = useQuinListStore()
     const wsId = quinlist.currentWorkspaceId
     if (!wsId) return
-    suppressReloadUntil = Date.now() + 1200
+
+    suppressReloadUntil = Date.now() + 3500
     await persistProjectsData(wsId, {
       projects: projects.value,
       tasks: tasks.value,
@@ -190,19 +311,179 @@ export const useProjectsStore = defineStore('projects', () => {
       members: members.value,
       activities: activities.value,
       timeEntries: timeEntries.value,
+      taskComments: taskComments.value,
+    })
+  }
+
+  function captureSnapshot(): ProjectsDataState {
+    return cloneProjectsState(
+      readProjectsState({
+        projects: projects.value,
+        tasks: tasks.value,
+        milestones: milestones.value,
+        costs: costs.value,
+        risks: risks.value,
+        deliverables: deliverables.value,
+        documents: documents.value,
+        folders: folders.value,
+        invites: invites.value,
+        members: members.value,
+        activities: activities.value,
+        timeEntries: timeEntries.value,
+        taskComments: taskComments.value,
+      }),
+    )
+  }
+
+  function restoreSnapshot(snapshot: ProjectsDataState) {
+    writeProjectsState(
+      {
+        projects,
+        tasks,
+        milestones,
+        costs,
+        risks,
+        deliverables,
+        documents,
+        folders,
+        invites,
+        members,
+        activities,
+        timeEntries,
+        taskComments,
+      },
+      snapshot,
+    )
+  }
+
+  /** Aplica cambio al instante y persiste en segundo plano; revierte si falla el guardado. */
+  function commitMutation(mutate: () => void) {
+    const snapshot = captureSnapshot()
+    mutate()
+    void save().catch((err) => {
+      console.error('[projects] Error guardando, revirtiendo cambios:', err)
+      restoreSnapshot(snapshot)
+    })
+  }
+
+  async function commitMutationAsync(mutate: () => void | Promise<void>) {
+    const snapshot = captureSnapshot()
+    try {
+      await mutate()
+      await save()
+    } catch (err) {
+      restoreSnapshot(snapshot)
+      throw err
+    }
+  }
+
+  function save(): Promise<void> {
+    suppressReloadUntil = Date.now() + 3500
+
+    return new Promise((resolve, reject) => {
+      saveWaiters.push({ resolve, reject })
+      if (saveTimer) clearTimeout(saveTimer)
+      saveTimer = setTimeout(() => {
+        saveTimer = null
+        const waiters = saveWaiters
+        saveWaiters = []
+
+        saveChain = saveChain
+          .then(() => flushSave())
+          .then(() => {
+            waiters.forEach((w) => w.resolve())
+          })
+          .catch((err) => {
+            waiters.forEach((w) => w.reject(err))
+          })
+
+        void saveChain
+      }, 350)
     })
   }
 
   function scheduleRealtimeReload(workspaceId: string) {
-    if (Date.now() < suppressReloadUntil) return
     if (reloadTimer) clearTimeout(reloadTimer)
     reloadTimer = setTimeout(() => {
+      const activeProjectId = currentProjectId.value
+      if (activeProjectId) {
+        void reloadProject(activeProjectId)
+        return
+      }
+      if (Date.now() < suppressReloadUntil) return
       void reloadForWorkspace(workspaceId)
-    }, 450)
+    }, 400)
+  }
+
+  function mergeProjectState(data: ProjectsDataState) {
+    const affectedIds = new Set(data.projects.map((p) => p.id))
+    if (!affectedIds.size) return
+
+    for (const project of data.projects) {
+      const idx = projects.value.findIndex((p) => p.id === project.id)
+      if (idx >= 0) projects.value[idx] = project
+      else projects.value.push(project)
+    }
+
+    const mergeList = <T extends { id: string; projectId: string }>(
+      target: Ref<T[]>,
+      incoming: T[],
+    ) => {
+      for (const pid of affectedIds) {
+        const next = incoming.filter((item) => item.projectId === pid)
+        target.value = target.value.filter((item) => item.projectId !== pid).concat(next)
+      }
+    }
+
+    mergeList(tasks, data.tasks)
+    mergeList(milestones, data.milestones)
+    mergeList(costs, data.costs)
+    mergeList(risks, data.risks)
+    mergeList(deliverables, data.deliverables)
+    mergeList(documents, data.documents)
+    mergeList(folders, data.folders ?? [])
+    mergeList(invites, data.invites ?? [])
+    mergeList(members, data.members)
+    mergeList(activities, data.activities)
+    mergeList(timeEntries, data.timeEntries ?? [])
+    mergeList(taskComments, data.taskComments ?? [])
+  }
+
+  async function reloadProject(projectId: string) {
+    if (!projectId) return
+
+    if (isMatuConfigured()) {
+      const data = await loadSingleProject(projectId)
+      if (data) mergeProjectState(data)
+      return
+    }
+
+    const quinlist = useQuinListStore()
+    const auth = useAuthStore()
+    const wsId = quinlist.currentWorkspaceId
+    if (!wsId) return
+    const wsMember = isWorkspaceMember(wsId, auth.currentUserId)
+    const all = await loadProjectsData(wsId, auth.currentUserId, wsMember)
+    const filtered: ProjectsDataState = {
+      projects: all.projects.filter((p) => p.id === projectId),
+      tasks: all.tasks.filter((t) => t.projectId === projectId),
+      milestones: all.milestones.filter((m) => m.projectId === projectId),
+      costs: all.costs.filter((c) => c.projectId === projectId),
+      risks: all.risks.filter((r) => r.projectId === projectId),
+      deliverables: all.deliverables.filter((d) => d.projectId === projectId),
+      documents: all.documents.filter((d) => d.projectId === projectId),
+      folders: (all.folders ?? []).filter((f) => f.projectId === projectId),
+      invites: (all.invites ?? []).filter((i) => i.projectId === projectId),
+      members: all.members.filter((m) => m.projectId === projectId),
+      activities: all.activities.filter((a) => a.projectId === projectId),
+      timeEntries: (all.timeEntries ?? []).filter((e) => e.projectId === projectId),
+      taskComments: (all.taskComments ?? []).filter((c) => c.projectId === projectId),
+    }
+    if (filtered.projects.length) mergeProjectState(filtered)
   }
 
   function applyWorkspaceData(workspaceId: string, data: ProjectsDataState) {
-    projects.value = data.projects.filter((p) => p.workspaceId === workspaceId)
+    projects.value = data.projects
     const projectIds = new Set(projects.value.map((p) => p.id))
     tasks.value = data.tasks.filter((t) => projectIds.has(t.projectId))
     milestones.value = data.milestones.filter((m) => projectIds.has(m.projectId))
@@ -215,6 +496,7 @@ export const useProjectsStore = defineStore('projects', () => {
     members.value = data.members.filter((m) => projectIds.has(m.projectId))
     activities.value = data.activities.filter((a) => projectIds.has(a.projectId))
     timeEntries.value = (data.timeEntries ?? []).filter((e) => projectIds.has(e.projectId))
+    taskComments.value = (data.taskComments ?? []).filter((c) => projectIds.has(c.projectId))
     loadedWorkspaceId = workspaceId
   }
 
@@ -255,17 +537,50 @@ export const useProjectsStore = defineStore('projects', () => {
     })
   }
 
-  function logActivity(projectId: string, action: string, details: string) {
+  function logActivity(
+    projectId: string,
+    action: ActivityActionType | string,
+    details: string,
+    meta?: { entityType?: string; entityId?: string; entityTitle?: string },
+  ) {
     const auth = useAuthStore()
     if (!auth.currentUserId) return
+    const project = getProject(projectId)
     activities.value.unshift({
       id: generateId(),
       projectId,
+      workspaceId: project?.workspaceId ?? null,
       userId: auth.currentUserId,
       action,
       details,
+      entityType: meta?.entityType ?? null,
+      entityId: meta?.entityId ?? null,
+      entityTitle: meta?.entityTitle ?? details,
       createdAt: new Date().toISOString(),
     })
+  }
+
+  function handleRealtimePayload(payload: RealtimeChangePayload) {
+    const activity = applyRealtimePayload(payload, {
+      projects,
+      tasks,
+      milestones,
+      costs,
+      risks,
+      deliverables,
+      documents,
+      folders,
+      invites,
+      members,
+      activities,
+      timeEntries,
+      taskComments,
+    })
+
+    if (activity) {
+      useCollaborationStore().handleRemoteActivity(activity)
+      void ensureProjectUserProfiles(activity.projectId)
+    }
   }
 
   async function init() {
@@ -288,9 +603,51 @@ export const useProjectsStore = defineStore('projects', () => {
 
   async function reloadForWorkspace(workspaceId: string) {
     if (!workspaceId) return
-    const data = await loadProjectsData(workspaceId)
+    const auth = useAuthStore()
+    const userId = auth.currentUserId
+    const wsMember = isWorkspaceMember(workspaceId, userId)
+    const data = await loadProjectsData(workspaceId, userId, wsMember)
     applyWorkspaceData(workspaceId, data)
     startRealtime(workspaceId)
+  }
+
+  function upsertProjectMember(member: ProjectMember) {
+    const idx = members.value.findIndex(
+      (m) => m.projectId === member.projectId && m.userId === member.userId,
+    )
+    if (idx >= 0) {
+      members.value[idx] = { ...members.value[idx]!, ...member }
+    } else {
+      members.value.push(member)
+    }
+  }
+
+  async function persistProjectMember(member: ProjectMember) {
+    upsertProjectMember(member)
+    await save()
+  }
+
+  async function ensureProjectLoaded(projectId: string) {
+    if (getProject(projectId)) return getProject(projectId)
+
+    const quinlist = useQuinListStore()
+    const wsId = quinlist.currentWorkspaceId
+    if (wsId) {
+      await reloadForWorkspace(wsId)
+      if (getProject(projectId)) return getProject(projectId)
+    }
+
+    if (!isMatuConfigured()) return null
+
+    const remote = await loadProjectById(projectId)
+    if (!remote) return null
+
+    const auth = useAuthStore()
+    const projectWsId = remote.workspaceId
+    const wsMember = isWorkspaceMember(projectWsId, auth.currentUserId)
+    const data = await loadProjectsData(projectWsId, auth.currentUserId, wsMember)
+    applyWorkspaceData(projectWsId, data)
+    return getProject(projectId)
   }
 
   function destroy() {
@@ -300,6 +657,8 @@ export const useProjectsStore = defineStore('projects', () => {
     unsubscribeRealtime?.()
     unsubscribeRealtime = null
     if (reloadTimer) clearTimeout(reloadTimer)
+    if (saveTimer) clearTimeout(saveTimer)
+    saveWaiters = []
     projects.value = []
     tasks.value = []
     milestones.value = []
@@ -370,10 +729,9 @@ export const useProjectsStore = defineStore('projects', () => {
 
     logActivity(
       project.id,
-      'Proyecto creado',
-      project.budget > 0
-        ? `«${project.name}» con presupuesto de ${formatMoney(project.budget, project.currency)}`
-        : `«${project.name}»`,
+      'project_updated',
+      project.name,
+      { entityType: 'project', entityId: project.id, entityTitle: project.name },
     )
     await save()
     return project
@@ -387,7 +745,11 @@ export const useProjectsStore = defineStore('projects', () => {
       ...updates,
       updatedAt: new Date().toISOString(),
     }
-    logActivity(id, 'Proyecto actualizado', 'Se modificó la información del proyecto')
+    logActivity(id, 'project_updated', 'Se modificó la información del proyecto', {
+      entityType: 'project',
+      entityId: id,
+      entityTitle: getProject(id)?.name ?? '',
+    })
     await save()
   }
 
@@ -403,27 +765,34 @@ export const useProjectsStore = defineStore('projects', () => {
     invites.value = invites.value.filter((i) => i.projectId !== id)
     members.value = members.value.filter((m) => m.projectId !== id)
     activities.value = activities.value.filter((a) => a.projectId !== id)
+    timeEntries.value = timeEntries.value.filter((e) => e.projectId !== id)
+    taskComments.value = taskComments.value.filter((c) => c.projectId !== id)
     if (currentProjectId.value === id) currentProjectId.value = null
     await save()
   }
 
-  async function createTask(projectId: string, title: string) {
+  async function createTask(
+    projectId: string,
+    title: string,
+    options?: { startDate?: string | null; dueDate?: string | null; status?: ProjectTask['status'] },
+  ) {
     const auth = useAuthStore()
     const projectTasks = getProjectTasks(projectId)
     const now = new Date().toISOString()
+    const status = options?.status ?? 'todo'
     const task: ProjectTask = {
       id: generateId(),
       projectId,
       title: title.trim(),
       description: '',
-      status: 'todo',
+      status,
       priority: 'media',
       assigneeIds: auth.currentUserId ? [auth.currentUserId] : [],
-      startDate: null,
-      dueDate: null,
+      startDate: options?.startDate ?? null,
+      dueDate: options?.dueDate ?? null,
       completedAt: null,
       position: projectTasks.length,
-      kanbanColumn: 'todo',
+      kanbanColumn: status,
       boardCardId: null,
       boardId: null,
       attachments: [],
@@ -434,41 +803,77 @@ export const useProjectsStore = defineStore('projects', () => {
       updatedAt: now,
     }
     tasks.value.push(task)
-    logActivity(projectId, 'Tarea creada', `«${task.title}»`)
+    logActivity(projectId, 'task_created', `«${task.title}»`, {
+      entityType: 'task',
+      entityId: task.id,
+      entityTitle: task.title,
+    })
     await save()
     return task
   }
 
-  async function updateTask(taskId: string, updates: Partial<ProjectTask>) {
-    const idx = tasks.value.findIndex((t) => t.id === taskId)
-    if (idx === -1) return
-    const prev = tasks.value[idx]!
-    const next = { ...prev, ...updates, updatedAt: new Date().toISOString() }
-    if (updates.status === 'done' && !next.completedAt) {
-      next.completedAt = new Date().toISOString()
-    }
-    if (updates.status && updates.status !== 'done') {
-      next.completedAt = null
-    }
-    if (updates.status) next.kanbanColumn = updates.status
-    tasks.value[idx] = next
+  async function updateTask(
+    taskId: string,
+    updates: Partial<ProjectTask>,
+    options?: { optimistic?: boolean },
+  ) {
+    const apply = () => {
+      const idx = tasks.value.findIndex((t) => t.id === taskId)
+      if (idx === -1) return null
+      const prev = tasks.value[idx]!
+      const next = { ...prev, ...updates, updatedAt: new Date().toISOString() }
+      if (updates.status === 'done' && !next.completedAt) {
+        next.completedAt = new Date().toISOString()
+      }
+      if (updates.status && updates.status !== 'done') {
+        next.completedAt = null
+      }
+      if (updates.status) next.kanbanColumn = updates.status
+      tasks.value[idx] = next
 
-    if (updates.status && updates.status !== prev.status) {
-      logActivity(prev.projectId, 'Tarea actualizada', `«${next.title}» → ${updates.status}`)
+      if (updates.status && updates.status !== prev.status) {
+        const action = updates.status === 'done' ? 'task_completed' : 'task_moved'
+        logActivity(prev.projectId, action, next.title, {
+          entityType: 'task',
+          entityId: taskId,
+          entityTitle: next.title,
+        })
+      }
+      return next
     }
 
+    if (options?.optimistic) {
+      const snapshot = captureSnapshot()
+      const next = apply()
+      if (!next) return
+      void save().catch((err) => {
+        console.error('[projects] Error moviendo tarea, revirtiendo:', err)
+        restoreSnapshot(snapshot)
+      })
+      return next
+    }
+
+    const next = apply()
+    if (!next) return null
     await save()
     return next
   }
 
-  async function moveTaskToColumn(taskId: string, status: ProjectTask['status']) {
-    return updateTask(taskId, { status, kanbanColumn: status })
+  function moveTaskToColumn(taskId: string, status: ProjectTask['status']) {
+    void updateTask(taskId, { status, kanbanColumn: status }, { optimistic: true })
   }
 
   async function deleteTask(taskId: string) {
     const task = tasks.value.find((t) => t.id === taskId)
     tasks.value = tasks.value.filter((t) => t.id !== taskId)
-    if (task) logActivity(task.projectId, 'Tarea eliminada', `«${task.title}»`)
+    taskComments.value = taskComments.value.filter((c) => c.taskId !== taskId)
+    if (task) {
+      logActivity(task.projectId, 'task_deleted', task.title, {
+        entityType: 'task',
+        entityId: task.id,
+        entityTitle: task.title,
+      })
+    }
     await save()
   }
 
@@ -542,13 +947,11 @@ export const useProjectsStore = defineStore('projects', () => {
       createdAt: new Date().toISOString(),
     }
     costs.value.push(tx)
-    const project = getProject(projectId)
-    const label = input.type === 'income' ? 'Ingreso' : 'Egreso'
-    logActivity(
-      projectId,
-      `${label} registrado`,
-      `${tx.title} — ${formatMoney(tx.amount, project?.currency)}`,
-    )
+    logActivity(projectId, 'finance_added', tx.title, {
+      entityType: 'transaction',
+      entityId: tx.id,
+      entityTitle: tx.title,
+    })
     await save()
     return tx
   }
@@ -556,7 +959,13 @@ export const useProjectsStore = defineStore('projects', () => {
   async function deleteTransaction(id: string) {
     const tx = costs.value.find((c) => c.id === id)
     costs.value = costs.value.filter((c) => c.id !== id)
-    if (tx) logActivity(tx.projectId, 'Movimiento eliminado', tx.title)
+    if (tx) {
+      logActivity(tx.projectId, 'custom', tx.title, {
+        entityType: 'transaction',
+        entityId: tx.id,
+        entityTitle: tx.title,
+      })
+    }
     await save()
   }
 
@@ -581,7 +990,13 @@ export const useProjectsStore = defineStore('projects', () => {
   async function deleteMilestone(id: string) {
     const ms = milestones.value.find((m) => m.id === id)
     milestones.value = milestones.value.filter((m) => m.id !== id)
-    if (ms) logActivity(ms.projectId, 'Hito eliminado', ms.title)
+    if (ms) {
+      logActivity(ms.projectId, 'milestone_deleted', ms.title, {
+        entityType: 'milestone',
+        entityId: ms.id,
+        entityTitle: ms.title,
+      })
+    }
     await save()
   }
 
@@ -592,18 +1007,53 @@ export const useProjectsStore = defineStore('projects', () => {
     await save()
   }
 
-  async function updateDeliverable(id: string, updates: Partial<ProjectDeliverable>) {
-    const d = deliverables.value.find((x) => x.id === id)
-    if (!d) return
-    Object.assign(d, updates)
-    if (updates.status === 'delivered' || updates.status === 'approved') d.completed = true
-    await save()
+  async function updateDeliverable(
+    id: string,
+    updates: Partial<ProjectDeliverable>,
+    options?: { optimistic?: boolean },
+  ) {
+    const apply = () => {
+      const d = deliverables.value.find((x) => x.id === id)
+      if (!d) return
+      const prevStatus = d.status
+      Object.assign(d, updates, { updatedAt: new Date().toISOString() })
+      if (updates.status === 'delivered' || updates.status === 'approved') d.completed = true
+      if (updates.status && updates.status !== prevStatus) {
+        const action =
+          updates.status === 'approved' || updates.status === 'delivered'
+            ? 'deliverable_completed'
+            : 'custom'
+        logActivity(d.projectId, action, d.title, {
+          entityType: 'deliverable',
+          entityId: d.id,
+          entityTitle: d.title,
+        })
+      }
+    }
+
+    if (options?.optimistic) {
+      const snapshot = captureSnapshot()
+      apply()
+      void save().catch((err) => {
+        console.error('[projects] Error actualizando entregable:', err)
+        restoreSnapshot(snapshot)
+      })
+      return
+    }
+
+    await commitMutationAsync(apply)
   }
 
   async function deleteDeliverable(id: string) {
     const d = deliverables.value.find((x) => x.id === id)
     deliverables.value = deliverables.value.filter((x) => x.id !== id)
-    if (d) logActivity(d.projectId, 'Entregable eliminado', d.title)
+    if (d) {
+      logActivity(d.projectId, 'deliverable_deleted', d.title, {
+        entityType: 'deliverable',
+        entityId: d.id,
+        entityTitle: d.title,
+      })
+    }
     await save()
   }
 
@@ -617,7 +1067,13 @@ export const useProjectsStore = defineStore('projects', () => {
   async function deleteDocument(id: string) {
     const doc = documents.value.find((d) => d.id === id)
     documents.value = documents.value.filter((d) => d.id !== id)
-    if (doc) logActivity(doc.projectId, 'Documento eliminado', doc.title)
+    if (doc) {
+      logActivity(doc.projectId, 'custom', doc.title, {
+        entityType: 'document',
+        entityId: doc.id,
+        entityTitle: doc.title,
+      })
+    }
     await save()
   }
 
@@ -639,7 +1095,10 @@ export const useProjectsStore = defineStore('projects', () => {
       joinedAt: new Date().toISOString().split('T')[0]!,
     }
     members.value.push(member)
-    logActivity(projectId, 'Miembro añadido', userId)
+    logActivity(projectId, 'member_joined', userId, {
+      entityType: 'member',
+      entityId: userId,
+    })
     await save()
     return member
   }
@@ -661,6 +1120,8 @@ export const useProjectsStore = defineStore('projects', () => {
     input: { title: string; description?: string; startDate: string; dueDate: string },
   ) {
     if (!input.dueDate) throw new Error('La fecha de vencimiento es obligatoria')
+    const auth = useAuthStore()
+    const now = new Date().toISOString()
     const ms: ProjectMilestone = {
       id: generateId(),
       projectId,
@@ -670,10 +1131,17 @@ export const useProjectsStore = defineStore('projects', () => {
       dueDate: input.dueDate,
       completed: false,
       position: getProjectMilestones(projectId).length,
-      createdAt: new Date().toISOString(),
+      createdBy: auth.currentUserId,
+      updatedBy: auth.currentUserId,
+      createdAt: now,
+      updatedAt: now,
     }
     milestones.value.push(ms)
-    logActivity(projectId, 'Hito añadido', input.title)
+    logActivity(projectId, 'milestone_created', input.title, {
+      entityType: 'milestone',
+      entityId: ms.id,
+      entityTitle: ms.title,
+    })
     await save()
     return ms
   }
@@ -681,9 +1149,16 @@ export const useProjectsStore = defineStore('projects', () => {
   async function toggleMilestone(id: string) {
     const ms = milestones.value.find((m) => m.id === id)
     if (!ms) return
-    ms.completed = !ms.completed
-    logActivity(ms.projectId, ms.completed ? 'Hito completado' : 'Hito reabierto', ms.title)
-    await save()
+    commitMutation(() => {
+      ms.completed = !ms.completed
+      ms.updatedAt = new Date().toISOString()
+      logActivity(
+        ms.projectId,
+        ms.completed ? 'milestone_completed' : 'custom',
+        ms.title,
+        { entityType: 'milestone', entityId: ms.id, entityTitle: ms.title },
+      )
+    })
   }
 
   async function addRisk(
@@ -715,12 +1190,75 @@ export const useProjectsStore = defineStore('projects', () => {
       updatedAt: new Date().toISOString(),
     }
     risks.value.push(risk)
-    logActivity(projectId, 'Riesgo registrado', risk.title)
+    logActivity(projectId, 'risk_created', risk.title, {
+      entityType: 'risk',
+      entityId: risk.id,
+      entityTitle: risk.title,
+    })
     await save()
     return risk
   }
 
+  async function syncAutoRisks(projectId: string) {
+    const project = getProject(projectId)
+    if (!project) return
+
+    const suggestions = detectAutoRisks(
+      project,
+      getProjectTasks(projectId),
+      getProjectMilestones(projectId),
+    )
+    const existing = getProjectRisks(projectId)
+
+    for (const suggestion of suggestions) {
+      const found = existing.find((r) => {
+        const source = getAutoSource(r)
+        return source?.type === suggestion.sourceType && source.id === suggestion.sourceId
+      })
+
+      const description = withAutoMarker(
+        suggestion.description,
+        suggestion.sourceType,
+        suggestion.sourceId,
+      )
+
+      if (found) {
+        if (found.status !== 'open') continue
+        const updates: Partial<ProjectRisk> = {}
+        if (found.title !== suggestion.title) updates.title = suggestion.title
+        if (found.severity !== suggestion.severity) updates.severity = suggestion.severity
+        if (found.probability !== suggestion.probability) updates.probability = suggestion.probability
+        if (found.type !== suggestion.type) updates.type = suggestion.type
+        if (stripAutoMarker(found.description) !== suggestion.description) {
+          updates.description = description
+        }
+        if (Object.keys(updates).length) await updateRisk(found.id, updates)
+      } else {
+        await addRisk(projectId, {
+          title: suggestion.title,
+          description,
+          type: suggestion.type,
+          severity: suggestion.severity,
+          probability: suggestion.probability,
+        })
+      }
+    }
+
+    for (const risk of existing) {
+      const source = getAutoSource(risk)
+      if (!source || risk.status !== 'open') continue
+      const stillValid = suggestions.some(
+        (s) => s.sourceType === source.type && s.sourceId === source.id,
+      )
+      if (!stillValid) {
+        await updateRisk(risk.id, { status: 'closed' })
+      }
+    }
+  }
+
   async function addDeliverable(projectId: string, title: string, dueDate?: string | null) {
+    const auth = useAuthStore()
+    const now = new Date().toISOString()
     const d: ProjectDeliverable = {
       id: generateId(),
       projectId,
@@ -733,12 +1271,59 @@ export const useProjectsStore = defineStore('projects', () => {
       milestoneId: null,
       attachments: [],
       log: [],
-      createdAt: new Date().toISOString(),
+      createdBy: auth.currentUserId,
+      updatedBy: auth.currentUserId,
+      createdAt: now,
+      updatedAt: now,
     }
     deliverables.value.push(d)
-    logActivity(projectId, 'Entregable añadido', title)
+    logActivity(projectId, 'deliverable_created', title, {
+      entityType: 'deliverable',
+      entityId: d.id,
+      entityTitle: d.title,
+    })
     await save()
     return d
+  }
+
+  function addDeliverableComment(deliverableId: string, text: string) {
+    const auth = useAuthStore()
+    const d = deliverables.value.find((x) => x.id === deliverableId)
+    if (!d || !auth.currentUserId) return null
+    const trimmed = text.trim()
+    if (!trimmed) return null
+
+    const entry: DeliverableLogEntry = {
+      id: generateId(),
+      text: trimmed,
+      uploadedBy: auth.currentUserId,
+      createdAt: new Date().toISOString(),
+    }
+
+    commitMutation(() => {
+      if (!d.log) d.log = []
+      d.log.unshift(entry)
+      logActivity(d.projectId, 'comment_added', d.title, {
+        entityType: 'deliverable',
+        entityId: d.id,
+        entityTitle: d.title,
+      })
+    })
+
+    return entry
+  }
+
+  function deleteDeliverableComment(deliverableId: string, entryId: string) {
+    const d = deliverables.value.find((x) => x.id === deliverableId)
+    if (!d?.log) return
+    commitMutation(() => {
+      d.log = d.log.filter((e) => e.id !== entryId)
+      logActivity(d.projectId, 'comment_deleted', d.title, {
+        entityType: 'deliverable',
+        entityId: d.id,
+        entityTitle: d.title,
+      })
+    })
   }
 
   async function addDeliverableLog(
@@ -756,14 +1341,22 @@ export const useProjectsStore = defineStore('projects', () => {
       createdAt: new Date().toISOString(),
       attachment,
     }
-    if (!d.log) d.log = []
-    d.log.unshift(entry)
-    if (attachment) {
-      if (!d.attachments) d.attachments = []
-      d.attachments.push(attachment)
-    }
-    logActivity(d.projectId, 'Bitácora de entregable', d.title)
-    await save()
+
+    await commitMutationAsync(() => {
+      if (!d.log) d.log = []
+      d.log.unshift(entry)
+      if (attachment) {
+        if (!d.attachments) d.attachments = []
+        d.attachments.push(attachment)
+      }
+      const action = attachment ? 'file_uploaded' : 'comment_added'
+      logActivity(d.projectId, action, attachment?.name ?? d.title, {
+        entityType: 'deliverable',
+        entityId: d.id,
+        entityTitle: d.title,
+      })
+    })
+
     return entry
   }
 
@@ -782,7 +1375,7 @@ export const useProjectsStore = defineStore('projects', () => {
       uploadedAt: new Date().toISOString(),
       uploadedBy: auth.currentUserId ?? '',
     }
-    await addDeliverableLog(deliverableId, `Archivo adjunto: ${file.name}`, attachment)
+    await addDeliverableLog(deliverableId, '', attachment)
     return attachment
   }
 
@@ -803,7 +1396,11 @@ export const useProjectsStore = defineStore('projects', () => {
     }
     if (!task.attachments) task.attachments = []
     task.attachments.push(attachment)
-    logActivity(task.projectId, 'Archivo en tarea', `${task.title}: ${file.name}`)
+    logActivity(task.projectId, 'file_uploaded', file.name, {
+      entityType: 'task',
+      entityId: task.id,
+      entityTitle: task.title,
+    })
     await save()
     return attachment
   }
@@ -829,7 +1426,11 @@ export const useProjectsStore = defineStore('projects', () => {
     }
     doc.attachments.push(attachment)
     doc.updatedAt = new Date().toISOString()
-    logActivity(projectId, 'Archivo subido', `${doc.title}: ${file.name}`)
+    logActivity(projectId, 'file_uploaded', file.name, {
+      entityType: 'document',
+      entityId: doc.id,
+      entityTitle: doc.title,
+    })
     await save()
     return attachment
   }
@@ -918,7 +1519,13 @@ export const useProjectsStore = defineStore('projects', () => {
   async function deleteRisk(id: string) {
     const risk = risks.value.find((r) => r.id === id)
     risks.value = risks.value.filter((r) => r.id !== id)
-    if (risk) logActivity(risk.projectId, 'Riesgo eliminado', risk.title)
+    if (risk) {
+      logActivity(risk.projectId, 'custom', risk.title, {
+        entityType: 'risk',
+        entityId: risk.id,
+        entityTitle: risk.title,
+      })
+    }
     await save()
   }
 
@@ -943,7 +1550,11 @@ export const useProjectsStore = defineStore('projects', () => {
       updatedAt: now,
     }
     documents.value.push(doc)
-    logActivity(projectId, 'Documento añadido', title)
+    logActivity(projectId, 'document_created', title, {
+      entityType: 'document',
+      entityId: doc.id,
+      entityTitle: title,
+    })
     await save()
     return doc
   }
@@ -1007,11 +1618,16 @@ export const useProjectsStore = defineStore('projects', () => {
     invites,
     activities,
     timeEntries,
+    taskComments,
     isReady,
     currentProjectId,
     currentProject,
     activeTab,
     workspaceProjects,
+    accessibleProjects,
+    getMyProjectMembership,
+    getSharedOnlyProjects,
+    canAccessProject,
     getProject,
     getProjectTasks,
     getProjectMilestones,
@@ -1025,17 +1641,26 @@ export const useProjectsStore = defineStore('projects', () => {
     getProjectMembers,
     getProjectActivities,
     getProjectTimeEntries,
+    getTaskComments,
     getTaskTimeEntries,
     getProjectLoggedMinutes,
     getProjectDashboard,
     getProjectFiles,
     init,
     reloadForWorkspace,
+    reloadProject,
+    mergeProjectState,
+    handleRealtimePayload,
+    upsertProjectMember,
+    persistProjectMember,
+    ensureProjectLoaded,
     destroy,
     createProject,
     updateProject,
     deleteProject,
     createTask,
+    addTaskComment,
+    deleteTaskComment,
     updateTask,
     moveTaskToColumn,
     deleteTask,
@@ -1048,8 +1673,11 @@ export const useProjectsStore = defineStore('projects', () => {
     deleteMilestone,
     toggleMilestone,
     addRisk,
+    syncAutoRisks,
     updateRisk,
     addDeliverable,
+    addDeliverableComment,
+    deleteDeliverableComment,
     addDeliverableLog,
     addDeliverableAttachment,
     addTaskAttachment,

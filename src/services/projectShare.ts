@@ -1,5 +1,6 @@
 import type { ProjectShareLink } from '@/types/projects'
 import { getMatuClient, isMatuConfigured } from '@/lib/matu'
+import { matuRealtimeTableChannel } from '@/lib/matuRealtime'
 import { generateId } from '@/utils/permissions'
 
 const LOCAL_KEY = 'quinlist_project_share_links'
@@ -151,7 +152,7 @@ export function subscribeProjectShareRealtime(onChange: () => void): () => void 
 
   const db = getMatuClient()
   const channel = db
-    .channel('quinlist:project_share_links')
+    .channel(matuRealtimeTableChannel('project_share_links'))
     .on('postgres_changes', { event: '*', schema: 'public', table: 'project_share_links' }, () => {
       onChange()
     })

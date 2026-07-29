@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { avatarColor, getInitials, hasAvatarImage } from '@/utils/avatar'
 
 const props = withDefaults(
   defineProps<{
@@ -14,12 +15,25 @@ const auth = useAuthStore()
 
 const user = computed(() => auth.getUserById(props.userId))
 
-const AVATAR_COLORS = ['#6554c0', '#2d7eb8', '#f4845f', '#5bbce4', '#10b981', '#e56910', '#cd5a91']
+const titleAttr = computed(() => {
+  const u = user.value
+  if (u?.name) return u.name
+  if (u?.email) return u.email
+  return undefined
+})
 
-const bg = computed(() => {
-  let hash = 0
-  for (let i = 0; i < props.userId.length; i++) hash += props.userId.charCodeAt(i)
-  return AVATAR_COLORS[hash % AVATAR_COLORS.length]
+const initials = computed(() => {
+  const u = user.value
+  if (u?.initials) return u.initials
+  if (u?.name || u?.email) return getInitials(u.name, u.email)
+  return '?'
+})
+
+const bg = computed(() => avatarColor(props.userId))
+
+const imageUrl = computed(() => {
+  const url = user.value?.avatar
+  return hasAvatarImage(url) ? url : null
 })
 
 const sizeClass = computed(() => {
@@ -31,11 +45,18 @@ const sizeClass = computed(() => {
 
 <template>
   <span
-    class="inline-flex shrink-0 items-center justify-center rounded-full font-semibold text-white ring-2 ring-white"
+    v-bind="$attrs"
+    class="user-avatar inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full font-semibold text-white shadow-sm ring-2 ring-white"
     :class="sizeClass"
-    :style="{ background: bg }"
-    :title="user?.name"
+    :style="imageUrl ? undefined : { background: bg }"
+    :title="user?.name ?? titleAttr"
   >
-    {{ user?.initials ?? '?' }}
+    <img
+      v-if="imageUrl"
+      :src="imageUrl"
+      :alt="user?.name ?? 'Avatar'"
+      class="h-full w-full object-cover"
+    />
+    <span v-else>{{ initials }}</span>
   </span>
 </template>

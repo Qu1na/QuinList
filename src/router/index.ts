@@ -42,6 +42,12 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/join/project/:projectId/:token',
+      name: 'join-project',
+      component: () => import('../views/JoinProjectView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/app',
       component: AppLayout,
       meta: { requiresAuth: true },

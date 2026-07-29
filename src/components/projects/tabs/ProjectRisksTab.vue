@@ -1,20 +1,26 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { Plus, AlertTriangle, ShieldAlert, Pencil, Trash2 } from '@lucide/vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import { Plus, AlertTriangle, ShieldAlert, Pencil, Trash2, RefreshCw } from '@lucide/vue'
 import { useProjectsStore } from '@/stores/projects'
 import { useAuthStore } from '@/stores/auth'
+import { useProjectUsers } from '@/composables/useProjectUsers'
 import type { RiskSeverity, RiskType, RiskStatus, RiskProbability } from '@/types/projects'
 import ProjectModal from '@/components/projects/shared/ProjectModal.vue'
 import UserAvatar from '@/components/projects/shared/UserAvatar.vue'
+import { isAutoRisk, stripAutoMarker } from '@/utils/projectRiskDetection'
 
 const props = defineProps<{ projectId: string }>()
 
 const projectsStore = useProjectsStore()
 const auth = useAuthStore()
+const { resolveUser } = useProjectUsers()
 const risks = computed(() => projectsStore.getProjectRisks(props.projectId))
 const members = computed(() => projectsStore.getProjectMembers(props.projectId))
+const tasks = computed(() => projectsStore.getProjectTasks(props.projectId))
+const milestones = computed(() => projectsStore.getProjectMilestones(props.projectId))
 
 const showModal = ref(false)
+const syncing = ref(false)
 const editingId = ref<string | null>(null)
 const form = ref({
   title: '',
@@ -52,7 +58,25 @@ const matrixScore = computed(() => {
     total: risks.value.length,
     open: open.length,
     critical: open.filter((r) => r.severity === 'critical' || r.severity === 'high').length,
+    auto: open.filter((r) => isAutoRisk(r)).length,
   }
+})
+
+async function runAutoSync() {
+  syncing.value = true
+  try {
+    await projectsStore.syncAutoRisks(props.projectId)
+  } finally {
+    syncing.value = false
+  }
+}
+
+onMounted(() => {
+  void runAutoSync()
+})
+
+watch([tasks, milestones], () => {
+  void runAutoSync()
 })
 
 function openCreate() {
@@ -73,7 +97,7 @@ function openEdit(risk: typeof risks.value[0]) {
   editingId.value = risk.id
   form.value = {
     title: risk.title,
-    description: risk.description,
+    description: stripAutoMarker(risk.description),
     type: risk.type,
     severity: risk.severity,
     probability: risk.probability,
@@ -89,17 +113,29 @@ async function save() {
     ...form.value,
     ownerId: form.value.ownerId || null,
   }
-  if (editingId.value) {
-    await projectsStore.updateRisk(editingId.value, payload)
-  } else {
-    await projectsStore.addRisk(props.projectId, payload)
-  }
+  const isEdit = !!editingId.value
+  const editId = editingId.value
+
   showModal.value = false
+
+  try {
+    if (isEdit && editId) {
+      await projectsStore.updateRisk(editId, payload)
+    } else {
+      await projectsStore.addRisk(props.projectId, payload)
+    }
+  } catch (err) {
+    console.error(err)
+  }
 }
 
 function userName(id: string | null) {
   if (!id) return '—'
-  return auth.getUserById(id)?.name ?? 'Usuario'
+  return resolveUser(id)?.name ?? 'Usuario'
+}
+
+function riskDescription(risk: typeof risks.value[0]) {
+  return stripAutoMarker(risk.description)
 }
 </script>
 
@@ -108,15 +144,28 @@ function userName(id: string | null) {
     <div class="flex flex-wrap items-start justify-between gap-4">
       <div>
         <h2 class="project-page-title">Riesgos</h2>
-        <p class="project-page-sub">Matriz de riesgos e incidencias del proyecto</p>
+        <p class="project-page-sub">
+          Matriz de riesgos e incidencias · detección automática por fechas y bloqueos
+        </p>
       </div>
-      <button type="button" class="ql-btn ql-btn--primary" @click="openCreate">
-        <Plus :size="18" />
-        Registrar riesgo
-      </button>
+      <div class="flex flex-wrap gap-2">
+        <button
+          type="button"
+          class="ql-btn ql-btn--ghost"
+          :disabled="syncing"
+          @click="runAutoSync"
+        >
+          <RefreshCw :size="16" :class="syncing && 'animate-spin'" />
+          Actualizar detección
+        </button>
+        <button type="button" class="ql-btn ql-btn--primary" @click="openCreate">
+          <Plus :size="18" />
+          Registrar riesgo
+        </button>
+      </div>
     </div>
 
-    <div class="grid gap-4 sm:grid-cols-3">
+    <div class="grid gap-4 sm:grid-cols-4">
       <div class="project-card project-kpi">
         <AlertTriangle :size="20" class="mb-2 text-[#f4845f]" />
         <p class="project-kpi__value">{{ matrixScore.open }}</p>
@@ -126,6 +175,10 @@ function userName(id: string | null) {
         <ShieldAlert :size="20" class="mb-2 text-[#e8754f]" />
         <p class="project-kpi__value">{{ matrixScore.critical }}</p>
         <p class="project-kpi__label">Alta / Crítica</p>
+      </div>
+      <div class="project-card project-kpi">
+        <p class="project-kpi__value">{{ matrixScore.auto }}</p>
+        <p class="project-kpi__label">Detectados auto</p>
       </div>
       <div class="project-card project-kpi">
         <p class="project-kpi__value">{{ matrixScore.total }}</p>
@@ -153,6 +206,7 @@ function userName(id: string | null) {
               <Pencil :size="16" />
             </button>
             <button
+              v-if="!isAutoRisk(risk)"
               type="button"
               class="rounded-lg p-2 text-[#626f86] hover:bg-[#f5f5f7] hover:text-red-600"
               @click="projectsStore.deleteRisk(risk.id)"
@@ -163,6 +217,12 @@ function userName(id: string | null) {
         </div>
 
         <div class="mb-3 flex flex-wrap gap-2">
+          <span
+            v-if="isAutoRisk(risk)"
+            class="rounded-full bg-[#eef6fc] px-2.5 py-0.5 text-xs font-medium text-[#2d7eb8]"
+          >
+            Detectado automáticamente
+          </span>
           <span class="rounded-full px-2.5 py-0.5 text-xs font-medium" :class="severityClass[risk.severity]">
             {{ severityLabels[risk.severity] }}
           </span>
@@ -174,7 +234,7 @@ function userName(id: string | null) {
           </span>
         </div>
 
-        <p v-if="risk.description" class="text-sm text-[#626f86]">{{ risk.description }}</p>
+        <p v-if="riskDescription(risk)" class="text-sm text-[#626f86]">{{ riskDescription(risk) }}</p>
         <p v-if="risk.mitigationPlan" class="mt-2 rounded-lg bg-[#fafafa] px-3 py-2 text-xs text-[#44546f]">
           <span class="font-medium">Mitigación:</span> {{ risk.mitigationPlan }}
         </p>
@@ -187,7 +247,7 @@ function userName(id: string | null) {
           <span v-else class="text-sm text-[#626f86]">Sin responsable</span>
           <select
             :value="risk.status"
-            class="ql-input w-auto py-1.5 text-sm"
+            class="project-create-modal__input w-auto py-1.5 text-sm"
             @change="projectsStore.updateRisk(risk.id, { status: ($event.target as HTMLSelectElement).value as RiskStatus })"
           >
             <option v-for="(label, key) in statusLabels" :key="key" :value="key">{{ label }}</option>
@@ -196,7 +256,9 @@ function userName(id: string | null) {
       </div>
     </div>
 
-    <p v-if="!risks.length" class="py-12 text-center text-sm text-[#626f86]">Sin riesgos registrados.</p>
+    <p v-if="!risks.length" class="py-12 text-center text-sm text-[#626f86]">
+      Sin riesgos registrados. Se detectarán automáticamente tareas vencidas, bloqueadas o próximas a vencer.
+    </p>
 
     <ProjectModal
       v-if="showModal"
@@ -204,32 +266,63 @@ function userName(id: string | null) {
       size="lg"
       @close="showModal = false"
     >
-      <div class="grid gap-3 sm:grid-cols-2">
-        <input v-model="form.title" placeholder="Título *" class="ql-input sm:col-span-2" />
-        <textarea v-model="form.description" rows="2" placeholder="Descripción" class="ql-input sm:col-span-2" />
-        <select v-model="form.type" class="ql-input">
-          <option value="risk">Riesgo</option>
-          <option value="incident">Incidencia</option>
-        </select>
-        <select v-model="form.severity" class="ql-input">
-          <option v-for="(label, key) in severityLabels" :key="key" :value="key">{{ label }}</option>
-        </select>
-        <select v-model="form.probability" class="ql-input">
-          <option value="low">Probabilidad baja</option>
-          <option value="medium">Probabilidad media</option>
-          <option value="high">Probabilidad alta</option>
-        </select>
-        <select v-model="form.ownerId" class="ql-input">
-          <option value="">Sin responsable</option>
-          <option v-for="m in members" :key="m.id" :value="m.userId">
-            {{ auth.getUserById(m.userId)?.name }}
-          </option>
-        </select>
-        <textarea v-model="form.mitigationPlan" rows="2" placeholder="Plan de mitigación" class="ql-input sm:col-span-2" />
+      <div class="app-window-form-row app-window-form-row--2">
+        <div class="app-window-form-span-full">
+          <label class="project-create-modal__label">Título *</label>
+          <input v-model="form.title" class="project-create-modal__input" placeholder="Título del riesgo" />
+        </div>
+        <div class="app-window-form-span-full">
+          <label class="project-create-modal__label">Descripción</label>
+          <textarea
+            v-model="form.description"
+            rows="2"
+            class="project-create-modal__input resize-none"
+            placeholder="Opcional"
+          />
+        </div>
+        <div>
+          <label class="project-create-modal__label">Tipo</label>
+          <select v-model="form.type" class="project-create-modal__input">
+            <option value="risk">Riesgo</option>
+            <option value="incident">Incidencia</option>
+          </select>
+        </div>
+        <div>
+          <label class="project-create-modal__label">Severidad</label>
+          <select v-model="form.severity" class="project-create-modal__input">
+            <option v-for="(label, key) in severityLabels" :key="key" :value="key">{{ label }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="project-create-modal__label">Probabilidad</label>
+          <select v-model="form.probability" class="project-create-modal__input">
+            <option value="low">Baja</option>
+            <option value="medium">Media</option>
+            <option value="high">Alta</option>
+          </select>
+        </div>
+        <div>
+          <label class="project-create-modal__label">Responsable</label>
+          <select v-model="form.ownerId" class="project-create-modal__input">
+            <option value="">Sin responsable</option>
+            <option v-for="m in members" :key="m.id" :value="m.userId">
+              {{ resolveUser(m.userId)?.name }}
+            </option>
+          </select>
+        </div>
+        <div class="app-window-form-span-full">
+          <label class="project-create-modal__label">Plan de mitigación</label>
+          <textarea
+            v-model="form.mitigationPlan"
+            rows="2"
+            class="project-create-modal__input resize-none"
+            placeholder="Opcional"
+          />
+        </div>
       </div>
       <template #footer>
-        <button type="button" class="ql-btn ql-btn--ghost" @click="showModal = false">Cancelar</button>
-        <button type="button" class="ql-btn ql-btn--primary" @click="save">Guardar</button>
+        <button type="button" class="btn-brand-ghost" @click="showModal = false">Cancelar</button>
+        <button type="button" class="btn-brand" @click="save">Guardar</button>
       </template>
     </ProjectModal>
   </div>

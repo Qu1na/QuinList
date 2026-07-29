@@ -23,7 +23,7 @@ const emit = defineEmits<{
 
 const menuRef = ref<HTMLElement | null>(null)
 
-let attachTimer: ReturnType<typeof setTimeout> | null = null
+let attachTimer: number | null = null
 let onOutsidePointer: ((e: PointerEvent) => void) | null = null
 let onEscapeKey: ((e: KeyboardEvent) => void) | null = null
 

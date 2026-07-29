@@ -171,7 +171,7 @@ export function subscribeBoardPresenceRealtime(
   }
 
   const channel = db
-    .channel(`board_presence:${boardId}`)
+    .channel('board_presence')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'board_presence' }, handle)
     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'board_presence' }, handle)
     .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'board_presence' }, handle)

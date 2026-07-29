@@ -149,4 +149,28 @@ db.channel('orders')
 db.removeChannel(channel);
 db.removeAllChannels();
 db.rpc() — Raw SQL
-const { data, error } = await db.rpc('SELECT * FROM users WHERE created_at > NOW() 
+const { data, error } = await db.rpc('SELECT * FROM users WHERE created_at > NOW()');
+
+## Migraciones SQL (QuinList)
+
+Ejecuta en la **consola SQL** de tu proyecto MatuDB, en este orden:
+
+1. `docs/migration-project-modules.sql` — tablas base de proyectos (si aún no las tienes)
+2. `docs/migration-collaboration.sql` — colaboración en tiempo real (comentarios, presencia, actividad)
+3. `docs/migration-realtime.sql` — **habilitar triggers realtime** en cada tabla (sin esto no hay eventos en vivo)
+
+### Realtime en MatuDB
+
+QuinList se suscribe con `db.channel('nombre_tabla')` — el nombre del canal **debe ser la tabla PostgreSQL real** (ej. `project_tasks`, no `quinlist:project_tasks`).
+
+Cada tabla necesita `matudb_enable_realtime(schema, tabla, project_uuid)`. Usa `docs/migration-realtime.sql` reemplazando `SCHEMA` y `PROJECT_ID`.
+
+El `MATUDB_PROJECT_ID` de tu `.env` debe coincidir con el UUID del proyecto en MatuDB.
+
+Tras ejecutar la migración de colaboración, **recarga la página** (Ctrl+F5). Si los comentarios no aparecen, abre la consola del navegador y ejecuta:
+
+```js
+sessionStorage.removeItem('quinlist_matu_missing_tables')
+```
+
+Luego recarga de nuevo.

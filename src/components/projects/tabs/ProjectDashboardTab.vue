@@ -17,6 +17,8 @@ import {
   Settings2,
   Paperclip,
   FolderOpen,
+  Target,
+  Zap,
 } from '@lucide/vue'
 import { useProjectsStore } from '@/stores/projects'
 import { useAuthStore } from '@/stores/auth'
@@ -24,10 +26,11 @@ import ProjectStatusBadge from '@/components/projects/shared/ProjectStatusBadge.
 import BudgetProgressBar from '@/components/projects/shared/BudgetProgressBar.vue'
 import ProjectDonutChart from '@/components/projects/shared/ProjectDonutChart.vue'
 import UserAvatar from '@/components/projects/shared/UserAvatar.vue'
-import LineChart from '@/components/charts/LineChart.vue'
+import BarChart from '@/components/charts/BarChart.vue'
+import { useProjectUsers } from '@/composables/useProjectUsers'
 import { DEFAULT_CURRENCY, formatMoney } from '@/utils/currency'
 import { formatDate, formatDateTime } from '@/utils/permissions'
-import { KANBAN_COLUMNS, TASK_STATUS_LABELS } from '@/utils/projectStats'
+import { KANBAN_COLUMNS, TASK_STATUS_LABELS, isTaskOverdue, isProjectOverdue } from '@/utils/projectStats'
 import type { ProjectDetailTab } from '@/types/projects'
 
 const props = defineProps<{ projectId: string }>()
@@ -57,6 +60,7 @@ const defaultWidgets: Record<WidgetId, boolean> = {
 
 const projectsStore = useProjectsStore()
 const auth = useAuthStore()
+const { resolveUser } = useProjectUsers()
 const router = useRouter()
 const route = useRoute()
 
@@ -72,19 +76,8 @@ function loadWidgets() {
   }
 }
 
-watch(
-  () => props.projectId,
-  () => loadWidgets(),
-  { immediate: true },
-)
-
-watch(
-  widgets,
-  (v) => {
-    localStorage.setItem(`${WIDGETS_KEY}-${props.projectId}`, JSON.stringify(v))
-  },
-  { deep: true },
-)
+watch(() => props.projectId, () => loadWidgets(), { immediate: true })
+watch(widgets, (v) => localStorage.setItem(`${WIDGETS_KEY}-${props.projectId}`, JSON.stringify(v)), { deep: true })
 
 const project = computed(() => projectsStore.getProject(props.projectId))
 const currency = computed(() => project.value?.currency ?? DEFAULT_CURRENCY)
@@ -93,11 +86,42 @@ const tasks = computed(() => projectsStore.getProjectTasks(props.projectId))
 const milestones = computed(() => projectsStore.getProjectMilestones(props.projectId))
 const teamCount = computed(() => projectsStore.getProjectMembers(props.projectId).length)
 const deliverableCount = computed(() => projectsStore.getProjectDeliverables(props.projectId).length)
-const openRisks = computed(() =>
-  projectsStore.getProjectRisks(props.projectId).filter((r) => r.status === 'open').length,
-)
+const openRisks = computed(() => projectsStore.getProjectRisks(props.projectId).filter((r) => r.status === 'open').length)
 const completedMilestones = computed(() => milestones.value.filter((m) => m.completed).length)
-const recentFiles = computed(() => projectsStore.getProjectFiles(props.projectId).slice(0, 4))
+const MAX_RECENT_FILES = 4
+
+const recentFiles = computed(() =>
+  projectsStore.getProjectFiles(props.projectId).slice(0, MAX_RECENT_FILES),
+)
+const overdueTasks = computed(() => tasks.value.filter((t) => isTaskOverdue(t)).length)
+const blockedTasks = computed(() => tasks.value.filter((t) => t.status === 'blocked').length)
+
+const healthScore = computed(() => {
+  let score = dashboard.value.progress
+  score -= overdueTasks.value * 8
+  score -= blockedTasks.value * 5
+  score -= openRisks.value * 6
+  if (project.value && isProjectOverdue(project.value)) score -= 15
+  const msPct = milestones.value.length
+    ? (completedMilestones.value / milestones.value.length) * 100
+    : 100
+  score = score * 0.7 + msPct * 0.3
+  return Math.max(0, Math.min(100, Math.round(score)))
+})
+
+const healthLabel = computed(() => {
+  if (healthScore.value >= 80) return 'Excelente'
+  if (healthScore.value >= 60) return 'Bueno'
+  if (healthScore.value >= 40) return 'Atención'
+  return 'Crítico'
+})
+
+const healthColor = computed(() => {
+  if (healthScore.value >= 80) return '#10b981'
+  if (healthScore.value >= 60) return '#5bbce4'
+  if (healthScore.value >= 40) return '#f59e0b'
+  return '#f4845f'
+})
 
 const donutSegments = computed(() => {
   const counts: Record<string, number> = {}
@@ -121,6 +145,10 @@ const donutSegments = computed(() => {
   }))
 })
 
+const statusBars = computed(() =>
+  donutSegments.value.map((s) => ({ label: s.label, value: s.value, color: s.color })),
+)
+
 const progressChart = computed(() => {
   const days = 7
   const points = []
@@ -135,6 +163,12 @@ const progressChart = computed(() => {
   }
   return points
 })
+
+const progressChartMax = computed(() =>
+  Math.max(...progressChart.value.map((p) => p.value), 1),
+)
+
+const healthCircumference = 2 * Math.PI * 38
 
 const teamWorkload = computed(() => {
   const map = new Map<string, number>()
@@ -161,8 +195,12 @@ const priorityTasks = computed(() =>
     .slice(0, 5),
 )
 
+const milestoneProgress = computed(() =>
+  milestones.value.length ? Math.round((completedMilestones.value / milestones.value.length) * 100) : 0,
+)
+
 function userName(id: string) {
-  return auth.getUserById(id)?.name ?? 'Usuario'
+  return resolveUser(id)?.name ?? 'Usuario'
 }
 
 function goToTab(tab: ProjectDetailTab) {
@@ -171,7 +209,7 @@ function goToTab(tab: ProjectDetailTab) {
 
 const widgetOptions: { id: WidgetId; label: string }[] = [
   { id: 'kpis', label: 'Métricas principales' },
-  { id: 'chart', label: 'Gráfico de progreso' },
+  { id: 'chart', label: 'Gráficos' },
   { id: 'workload', label: 'Carga del equipo' },
   { id: 'shortcuts', label: 'Accesos rápidos' },
   { id: 'upcoming', label: 'Próximos vencimientos' },
@@ -182,18 +220,42 @@ const widgetOptions: { id: WidgetId; label: string }[] = [
 </script>
 
 <template>
-  <div v-if="project" class="space-y-7">
-    <div class="flex flex-wrap items-start justify-between gap-4">
-      <div>
-        <h2 class="project-page-title">Panel del proyecto</h2>
-        <p class="project-page-sub">
-          Vista general de {{ project.name }} ·
+  <div v-if="project" class="dash">
+    <!-- Hero -->
+    <div class="dash-hero">
+      <div class="dash-hero__content">
+        <p class="dash-hero__eyebrow">Panel del proyecto</p>
+        <h2 class="dash-hero__title">{{ project.name }}</h2>
+        <div class="dash-hero__meta">
           <ProjectStatusBadge :status="project.status" />
-        </p>
+          <span v-if="project.startDate && project.dueDate" class="dash-hero__dates">
+            <Calendar :size="14" />
+            {{ formatDate(project.startDate) }} — {{ formatDate(project.dueDate) }}
+          </span>
+        </div>
       </div>
-      <button type="button" class="ql-btn ql-btn--ghost" @click="showWidgetPanel = !showWidgetPanel">
+      <div class="dash-hero__health">
+        <div class="dash-health-ring">
+          <svg viewBox="0 0 88 88">
+            <circle class="dash-health-ring__track" cx="44" cy="44" r="38" />
+            <circle
+              class="dash-health-ring__progress"
+              cx="44"
+              cy="44"
+              r="38"
+              :stroke="healthColor"
+              :stroke-dasharray="`${(healthScore / 100) * healthCircumference} ${healthCircumference}`"
+            />
+          </svg>
+          <div class="dash-health-ring__label">
+            <span class="dash-health-ring__value">{{ healthScore }}</span>
+            <span class="dash-health-ring__text">{{ healthLabel }}</span>
+          </div>
+        </div>
+        <p class="dash-hero__health-caption">Salud del proyecto</p>
+      </div>
+      <button type="button" class="dash-hero__settings" @click="showWidgetPanel = !showWidgetPanel">
         <Settings2 :size="18" />
-        Personalizar
       </button>
     </div>
 
@@ -211,76 +273,97 @@ const widgetOptions: { id: WidgetId; label: string }[] = [
       </div>
     </div>
 
-    <div v-if="widgets.kpis" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <div class="project-card project-kpi">
-        <div class="mb-3 flex items-center gap-3">
-          <div class="rounded-xl bg-[#5bbce4]/15 p-2.5 text-[#2d7eb8]">
-            <TrendingUp :size="22" />
-          </div>
-          <p class="project-kpi__label">Avance del proyecto</p>
-        </div>
-        <p class="project-kpi__value">{{ dashboard.progress }}%</p>
-        <p class="mt-1 text-sm text-[#626f86]">
-          {{ dashboard.completed }} de {{ dashboard.completed + dashboard.pending }} tareas
-        </p>
-        <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-[#ebebed]">
-          <div class="h-full rounded-full bg-[#5bbce4]" :style="{ width: `${dashboard.progress}%` }" />
+    <!-- KPIs -->
+    <div v-if="widgets.kpis" class="dash-kpis">
+      <div class="dash-kpi">
+        <div class="dash-kpi__icon dash-kpi__icon--blue"><TrendingUp :size="20" /></div>
+        <div>
+          <p class="dash-kpi__value">{{ dashboard.progress }}%</p>
+          <p class="dash-kpi__label">Avance</p>
+          <div class="dash-kpi__bar"><div :style="{ width: `${dashboard.progress}%` }" /></div>
         </div>
       </div>
-
-      <div class="project-card project-kpi">
-        <div class="mb-3 flex items-center gap-3">
-          <div class="rounded-xl bg-[#f4845f]/15 p-2.5 text-[#f4845f]">
-            <CheckCircle2 :size="22" />
-          </div>
-          <p class="project-kpi__label">Completadas</p>
+      <div class="dash-kpi">
+        <div class="dash-kpi__icon dash-kpi__icon--green"><CheckCircle2 :size="20" /></div>
+        <div>
+          <p class="dash-kpi__value">{{ dashboard.completed }}</p>
+          <p class="dash-kpi__label">Completadas</p>
         </div>
-        <p class="project-kpi__value">{{ dashboard.completed }}</p>
-        <p class="mt-1 text-sm text-[#626f86]">tareas finalizadas</p>
       </div>
-
-      <div class="project-card project-kpi">
-        <div class="mb-3 flex items-center gap-3">
-          <div class="rounded-xl bg-[#5bbce4]/15 p-2.5 text-[#2d7eb8]">
-            <Clock :size="22" />
-          </div>
-          <p class="project-kpi__label">Pendientes</p>
+      <div class="dash-kpi">
+        <div class="dash-kpi__icon dash-kpi__icon--amber"><Clock :size="20" /></div>
+        <div>
+          <p class="dash-kpi__value">{{ dashboard.pending }}</p>
+          <p class="dash-kpi__label">Pendientes</p>
         </div>
-        <p class="project-kpi__value">{{ dashboard.pending }}</p>
-        <p class="mt-1 text-sm text-[#626f86]">por completar</p>
       </div>
-
-      <div class="project-card project-kpi">
-        <div class="mb-3 flex items-center gap-3">
-          <div class="rounded-xl bg-[#091e420f] p-2.5 text-[#172b4d]">
-            <Wallet :size="22" />
-          </div>
-          <p class="project-kpi__label">Presupuesto usado</p>
+      <div class="dash-kpi">
+        <div class="dash-kpi__icon dash-kpi__icon--red"><AlertTriangle :size="20" /></div>
+        <div>
+          <p class="dash-kpi__value">{{ overdueTasks }}</p>
+          <p class="dash-kpi__label">Vencidas</p>
         </div>
-        <p class="project-kpi__value">
-          {{ dashboard.finance ? `${dashboard.finance.usagePercent}%` : '—' }}
-        </p>
-        <p class="mt-1 text-sm text-[#626f86]">
-          {{ dashboard.finance ? formatMoney(dashboard.finance.spent, currency) : 'Sin datos' }}
-        </p>
+      </div>
+      <div class="dash-kpi">
+        <div class="dash-kpi__icon dash-kpi__icon--purple"><Flag :size="20" /></div>
+        <div>
+          <p class="dash-kpi__value">{{ milestoneProgress }}%</p>
+          <p class="dash-kpi__label">Hitos ({{ completedMilestones }}/{{ milestones.length }})</p>
+        </div>
+      </div>
+      <div class="dash-kpi">
+        <div class="dash-kpi__icon dash-kpi__icon--coral"><Wallet :size="20" /></div>
+        <div>
+          <p class="dash-kpi__value">
+            {{ dashboard.finance ? `${dashboard.finance.usagePercent}%` : '—' }}
+          </p>
+          <p class="dash-kpi__label">Presupuesto usado</p>
+        </div>
       </div>
     </div>
 
-    <div v-if="widgets.chart || widgets.workload" class="grid gap-5 xl:grid-cols-3">
-      <div v-if="widgets.chart" class="project-card project-card--lg xl:col-span-2">
+    <!-- Charts row -->
+    <div v-if="widgets.chart" class="grid gap-5 xl:grid-cols-3">
+      <div class="dash-chart-card xl:col-span-2">
         <div class="mb-5 flex items-center justify-between">
           <div>
-            <h3 class="text-base font-semibold text-[#172b4d]">Tareas completadas</h3>
-            <p class="text-sm text-[#626f86]">Últimos 7 días vs. planificado</p>
+            <h3 class="dash-section-title">Velocidad de entrega</h3>
+            <p class="dash-section-sub">Tareas completadas · últimos 7 días</p>
           </div>
           <button type="button" class="project-link-btn" @click="goToTab('tasks')">Ver tareas</button>
         </div>
-        <LineChart :points="progressChart" :height="180" />
+        <div class="dash-bars">
+          <div v-for="point in progressChart" :key="point.label" class="dash-bars__col">
+            <span class="dash-bars__value">{{ point.value }}</span>
+            <div class="dash-bars__track">
+              <div
+                class="dash-bars__fill"
+                :style="{ height: `${(point.value / progressChartMax) * 100}%` }"
+              />
+            </div>
+            <span class="dash-bars__label">{{ point.label }}</span>
+          </div>
+        </div>
       </div>
 
-      <div v-if="widgets.workload" class="project-card project-card--lg">
-        <h3 class="mb-1 text-base font-semibold text-[#172b4d]">Carga del equipo</h3>
-        <p class="mb-4 text-sm text-[#626f86]">Tareas activas por persona</p>
+      <div class="dash-chart-card">
+        <h3 class="dash-section-title">Distribución por estado</h3>
+        <p class="dash-section-sub mb-5">Tareas del proyecto</p>
+        <ProjectDonutChart :segments="donutSegments" :size="148" />
+      </div>
+    </div>
+
+    <div v-if="widgets.chart" class="dash-chart-card">
+      <h3 class="dash-section-title">Desglose de estados</h3>
+      <p class="dash-section-sub mb-4">Comparativa visual</p>
+      <BarChart :items="statusBars" />
+    </div>
+
+    <!-- Workload + shortcuts -->
+    <div class="grid gap-5 lg:grid-cols-3">
+      <div v-if="widgets.workload" class="dash-chart-card lg:col-span-1">
+        <h3 class="dash-section-title">Carga del equipo</h3>
+        <p class="dash-section-sub mb-4">Tareas activas por persona</p>
         <ul v-if="teamWorkload.length" class="space-y-3">
           <li v-for="item in teamWorkload" :key="item.userId" class="flex items-center gap-3">
             <UserAvatar v-if="item.userId !== '__unassigned__'" :user-id="item.userId" size="sm" />
@@ -290,55 +373,50 @@ const widgetOptions: { id: WidgetId; label: string }[] = [
                 {{ item.userId === '__unassigned__' ? 'Sin asignar' : userName(item.userId) }}
               </p>
               <div class="mt-1 h-2 overflow-hidden rounded-full bg-[#ebebed]">
-                <div
-                  class="h-full rounded-full bg-[#f4845f]"
-                  :style="{ width: `${(item.count / maxWorkload) * 100}%` }"
-                />
+                <div class="h-full rounded-full bg-[#f4845f]" :style="{ width: `${(item.count / maxWorkload) * 100}%` }" />
               </div>
             </div>
             <span class="text-sm font-semibold text-[#172b4d]">{{ item.count }}</span>
           </li>
         </ul>
         <p v-else class="text-sm text-[#626f86]">No hay tareas activas asignadas.</p>
-        <button type="button" class="project-link-btn mt-4" @click="goToTab('team')">Ver equipo</button>
+      </div>
+
+      <div v-if="widgets.shortcuts" class="lg:col-span-2">
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <button
+            v-for="link in [
+              { tab: 'milestones' as const, icon: Flag, label: 'Hitos', value: `${completedMilestones}/${milestones.length}`, color: '#6554c0' },
+              { tab: 'risks' as const, icon: AlertTriangle, label: 'Riesgos abiertos', value: String(openRisks), color: '#f4845f' },
+              { tab: 'tasks' as const, icon: ListTodo, label: 'Total tareas', value: String(dashboard.pending + dashboard.completed), color: '#5bbce4' },
+              { tab: 'team' as const, icon: Users, label: 'Equipo', value: String(teamCount), color: '#2d7eb8' },
+              { tab: 'deliverables' as const, icon: Package, label: 'Entregables', value: String(deliverableCount), color: '#10b981' },
+              { tab: 'gantt' as const, icon: Target, label: 'Cronograma', value: String(tasks.filter(t => t.startDate || t.dueDate).length), color: '#f59e0b' },
+            ]"
+            :key="link.tab"
+            type="button"
+            class="dash-shortcut"
+            @click="goToTab(link.tab)"
+          >
+            <div class="dash-shortcut__icon" :style="{ background: link.color + '18', color: link.color }">
+              <component :is="link.icon" :size="20" />
+            </div>
+            <div class="min-w-0 flex-1 text-left">
+              <p class="dash-shortcut__value">{{ link.value }}</p>
+              <p class="dash-shortcut__label">{{ link.label }}</p>
+            </div>
+            <ArrowRight :size="16" class="text-[#c7c7cc]" />
+          </button>
+        </div>
       </div>
     </div>
 
-    <div v-if="widgets.chart" class="project-card project-card--lg">
-      <h3 class="mb-4 text-base font-semibold text-[#172b4d]">Distribución por estado</h3>
-      <ProjectDonutChart :segments="donutSegments" />
-    </div>
-
-    <div v-if="widgets.shortcuts" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-      <button
-        v-for="link in [
-          { tab: 'milestones' as const, icon: Flag, label: 'Hitos', value: `${completedMilestones}/${milestones.length}` },
-          { tab: 'risks' as const, icon: AlertTriangle, label: 'Riesgos abiertos', value: String(openRisks) },
-          { tab: 'tasks' as const, icon: ListTodo, label: 'Total tareas', value: String(dashboard.pending + dashboard.completed) },
-          { tab: 'team' as const, icon: Users, label: 'Equipo', value: String(teamCount) },
-          { tab: 'deliverables' as const, icon: Package, label: 'Entregables', value: String(deliverableCount) },
-        ]"
-        :key="link.tab"
-        type="button"
-        class="project-stat-btn"
-        @click="goToTab(link.tab)"
-      >
-        <div class="flex items-center gap-3">
-          <component :is="link.icon" :size="20" class="text-[#f4845f]" />
-          <div>
-            <p class="text-xl font-bold text-[#172b4d]">{{ link.value }}</p>
-            <p class="text-sm text-[#626f86]">{{ link.label }}</p>
-          </div>
-        </div>
-        <ArrowRight :size="16" class="text-[#c7c7cc]" />
-      </button>
-    </div>
-
+    <!-- Upcoming + Budget -->
     <div class="grid gap-5 lg:grid-cols-2">
-      <div v-if="widgets.upcoming" class="project-card project-card--lg">
+      <div v-if="widgets.upcoming" class="dash-chart-card">
         <div class="mb-4 flex items-center justify-between">
-          <h3 class="flex items-center gap-2 text-base font-semibold text-[#172b4d]">
-            <Calendar :size="20" class="text-[#5bbce4]" />
+          <h3 class="dash-section-title flex items-center gap-2">
+            <Zap :size="18" class="text-[#f4845f]" />
             Tareas prioritarias
           </h3>
           <button type="button" class="project-link-btn" @click="goToTab('tasks')">Ver todas</button>
@@ -347,19 +425,27 @@ const widgetOptions: { id: WidgetId; label: string }[] = [
           <li
             v-for="task in priorityTasks"
             :key="task.id"
-            class="flex items-center justify-between rounded-xl bg-[#f5f5f7] px-4 py-3"
+            class="flex items-center justify-between rounded-xl border border-[#091e4214] bg-[#fafafa] px-4 py-3"
           >
-            <span class="font-medium text-[#172b4d]">{{ task.title }}</span>
-            <span class="text-sm text-[#626f86]">{{ formatDate(task.dueDate) }}</span>
+            <div class="min-w-0">
+              <p class="truncate font-medium text-[#172b4d]">{{ task.title }}</p>
+              <p class="text-xs text-[#626f86] capitalize">{{ task.priority }} prioridad</p>
+            </div>
+            <span
+              class="shrink-0 text-sm"
+              :class="isTaskOverdue(task) ? 'font-semibold text-[#f4845f]' : 'text-[#626f86]'"
+            >
+              {{ formatDate(task.dueDate) }}
+            </span>
           </li>
         </ul>
         <p v-else class="text-sm text-[#626f86]">No hay tareas pendientes.</p>
       </div>
 
-      <div v-if="widgets.budget" class="project-card project-card--lg">
+      <div v-if="widgets.budget" class="dash-chart-card">
         <div class="mb-4 flex items-center justify-between">
-          <h3 class="flex items-center gap-2 text-base font-semibold text-[#172b4d]">
-            <Wallet :size="20" class="text-[#f4845f]" />
+          <h3 class="dash-section-title flex items-center gap-2">
+            <Wallet :size="18" class="text-[#f4845f]" />
             Presupuesto
           </h3>
           <button type="button" class="project-link-btn" @click="goToTab('finance')">Ver finanzas</button>
@@ -371,20 +457,39 @@ const widgetOptions: { id: WidgetId; label: string }[] = [
           :budget="dashboard.finance.budget"
           :currency="currency"
         />
+        <div v-if="dashboard.finance" class="mt-4 grid grid-cols-3 gap-3 text-center">
+          <div class="rounded-lg bg-[#fafafa] px-3 py-2">
+            <p class="text-sm font-bold text-[#172b4d]">{{ formatMoney(dashboard.finance.budget, currency) }}</p>
+            <p class="text-xs text-[#626f86]">Presupuesto</p>
+          </div>
+          <div class="rounded-lg bg-[#fafafa] px-3 py-2">
+            <p class="text-sm font-bold text-[#f4845f]">{{ formatMoney(dashboard.finance.spent, currency) }}</p>
+            <p class="text-xs text-[#626f86]">Gastado</p>
+          </div>
+          <div class="rounded-lg bg-[#fafafa] px-3 py-2">
+            <p class="text-sm font-bold text-[#10b981]">{{ formatMoney(dashboard.finance.balance, currency) }}</p>
+            <p class="text-xs text-[#626f86]">Saldo</p>
+          </div>
+        </div>
         <p v-else class="text-sm text-[#626f86]">Sin presupuesto configurado.</p>
       </div>
     </div>
 
-    <div v-if="widgets.files" class="project-card project-card--lg">
+    <!-- Files + Activity -->
+    <div v-if="widgets.files" class="dash-chart-card">
       <div class="mb-4 flex items-center justify-between">
-        <h3 class="flex items-center gap-2 text-base font-semibold text-[#172b4d]">
-          <FolderOpen :size="20" class="text-[#5bbce4]" />
+        <h3 class="dash-section-title flex items-center gap-2">
+          <FolderOpen :size="18" class="text-[#5bbce4]" />
           Archivos recientes
         </h3>
         <button type="button" class="project-link-btn" @click="goToTab('files')">Abrir Drive</button>
       </div>
-      <div v-if="recentFiles.length" class="drive-grid">
-        <div v-for="file in recentFiles" :key="file.id" class="drive-file-card">
+      <div v-if="recentFiles.length" class="drive-grid drive-grid--recent">
+        <div
+          v-for="file in recentFiles"
+          :key="`${file.sourceId}-${file.id}`"
+          class="drive-file-card"
+        >
           <Paperclip :size="28" class="text-[#f4845f]" />
           <p class="drive-file-card__name">{{ file.name }}</p>
           <p class="drive-file-card__meta">{{ file.source }} · {{ formatDateTime(file.uploadedAt) }}</p>
@@ -393,10 +498,10 @@ const widgetOptions: { id: WidgetId; label: string }[] = [
       <p v-else class="text-sm text-[#626f86]">Aún no hay archivos en este proyecto.</p>
     </div>
 
-    <div v-if="widgets.activity" class="project-card project-card--lg">
+    <div v-if="widgets.activity" class="dash-chart-card">
       <div class="mb-4 flex items-center justify-between">
-        <h3 class="flex items-center gap-2 text-base font-semibold text-[#172b4d]">
-          <Activity :size="20" class="text-[#5bbce4]" />
+        <h3 class="dash-section-title flex items-center gap-2">
+          <Activity :size="18" class="text-[#5bbce4]" />
           Actividad reciente
         </h3>
         <button type="button" class="project-link-btn" @click="goToTab('activity')">Ver todo</button>
@@ -405,9 +510,9 @@ const widgetOptions: { id: WidgetId; label: string }[] = [
         <li
           v-for="act in dashboard.recentActivity"
           :key="act.id"
-          class="flex gap-4 py-4 text-sm first:pt-0 last:pb-0"
+          class="flex gap-4 py-3.5 text-sm first:pt-0 last:pb-0"
         >
-          <span class="w-32 shrink-0 text-sm text-[#626f86]">{{ formatDateTime(act.createdAt) }}</span>
+          <span class="w-28 shrink-0 text-xs text-[#626f86]">{{ formatDateTime(act.createdAt) }}</span>
           <div>
             <span class="font-medium text-[#172b4d]">{{ userName(act.userId) }}</span>
             <span class="text-[#626f86]"> — {{ act.action }}: {{ act.details }}</span>

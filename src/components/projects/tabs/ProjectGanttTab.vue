@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { Plus, Calendar } from '@lucide/vue'
+import { Plus, Calendar, Flag } from '@lucide/vue'
 import { useProjectsStore } from '@/stores/projects'
 import { formatDate } from '@/utils/permissions'
 import { todayISO } from '@/utils/dates'
 import TaskStatusBadge from '@/components/projects/shared/TaskStatusBadge.vue'
 import ProjectTaskDrawer from '@/components/projects/ProjectTaskDrawer.vue'
 import DateInput from '@/components/projects/shared/DateInput.vue'
+import ProjectModal from '@/components/projects/shared/ProjectModal.vue'
+import ScheduleItemModal from '@/components/projects/shared/ScheduleItemModal.vue'
 import { TASK_STATUS_LABELS } from '@/utils/projectStats'
+import type { ProjectMilestone, ProjectTask } from '@/types/projects'
 
 const props = defineProps<{ projectId: string }>()
 
@@ -15,9 +18,13 @@ const projectsStore = useProjectsStore()
 const project = computed(() => projectsStore.getProject(props.projectId))
 const tasks = computed(() => projectsStore.getProjectTasks(props.projectId))
 const milestones = computed(() => projectsStore.getProjectMilestones(props.projectId))
-const selectedTaskId = ref<string | null>(null)
+
+const selectedTask = ref<ProjectTask | null>(null)
+const selectedMilestone = ref<ProjectMilestone | null>(null)
+const editingTaskId = ref<string | null>(null)
 
 const showQuickAdd = ref(false)
+const saving = ref(false)
 const quickForm = ref({ title: '', startDate: todayISO(), dueDate: todayISO() })
 
 const scheduledTasks = computed(() => tasks.value.filter((t) => t.startDate || t.dueDate))
@@ -75,17 +82,50 @@ function barColor(status: string) {
   return 'bg-[#c7c7cc]'
 }
 
+function openTaskDetail(task: ProjectTask) {
+  selectedMilestone.value = null
+  selectedTask.value = task
+}
+
+function openMilestoneDetail(ms: ProjectMilestone) {
+  selectedTask.value = null
+  selectedMilestone.value = ms
+}
+
+function closeDetail() {
+  selectedTask.value = null
+  selectedMilestone.value = null
+}
+
+function editFromDetail() {
+  if (selectedTask.value) {
+    editingTaskId.value = selectedTask.value.id
+    closeDetail()
+  }
+}
+
+function openQuickAdd() {
+  quickForm.value = { title: '', startDate: todayISO(), dueDate: todayISO() }
+  showQuickAdd.value = true
+}
+
 async function quickAdd() {
   if (!quickForm.value.title.trim()) return
-  const task = await projectsStore.createTask(props.projectId, quickForm.value.title)
-  if (task) {
-    await projectsStore.updateTask(task.id, {
-      startDate: quickForm.value.startDate,
-      dueDate: quickForm.value.dueDate,
-    })
-  }
+  const payload = { ...quickForm.value }
+  saving.value = true
   showQuickAdd.value = false
-  quickForm.value = { title: '', startDate: todayISO(), dueDate: todayISO() }
+  try {
+    await projectsStore.createTask(props.projectId, payload.title, {
+      startDate: payload.startDate,
+      dueDate: payload.dueDate,
+    })
+    quickForm.value = { title: '', startDate: todayISO(), dueDate: todayISO() }
+    await projectsStore.syncAutoRisks(props.projectId)
+  } catch (err) {
+    console.error(err)
+  } finally {
+    saving.value = false
+  }
 }
 </script>
 
@@ -99,23 +139,10 @@ async function quickAdd() {
         </p>
         <p v-else class="project-page-sub">Vista temporal de tareas e hitos del proyecto</p>
       </div>
-      <button type="button" class="ql-btn ql-btn--primary" @click="showQuickAdd = !showQuickAdd">
+      <button type="button" class="ql-btn ql-btn--primary" @click="openQuickAdd">
         <Plus :size="18" />
         Añadir al cronograma
       </button>
-    </div>
-
-    <div v-if="showQuickAdd" class="project-card project-card--lg">
-      <div class="grid gap-4 sm:grid-cols-3">
-        <input
-          v-model="quickForm.title"
-          placeholder="Nombre de la tarea *"
-          class="ql-input"
-        />
-        <DateInput v-model="quickForm.startDate" label="Inicio" />
-        <DateInput v-model="quickForm.dueDate" label="Fin" />
-      </div>
-      <button type="button" class="ql-btn ql-btn--accent mt-4" @click="quickAdd">Crear en cronograma</button>
     </div>
 
     <div v-if="range" class="project-card project-card--lg gantt-chart">
@@ -136,12 +163,30 @@ async function quickAdd() {
         />
       </div>
 
-      <div v-for="ms in milestones" :key="ms.id" class="gantt-row">
+      <div
+        v-for="ms in milestones"
+        :key="ms.id"
+        class="gantt-row gantt-row--clickable"
+        @click="openMilestoneDetail(ms)"
+      >
         <div class="gantt-row__label">
-          <p class="truncate font-medium text-[#6554c0]">◆ {{ ms.title }}</p>
+          <p class="flex items-center gap-1.5 truncate font-medium text-[#6554c0]">
+            <Flag :size="14" class="shrink-0" />
+            {{ ms.title }}
+          </p>
+          <span
+            class="mt-0.5 inline-block rounded-full px-2 py-0 text-[10px] font-medium"
+            :class="ms.completed ? 'bg-emerald-50 text-emerald-700' : 'bg-[#f3f0ff] text-[#6554c0]'"
+          >
+            {{ ms.completed ? 'Completado' : 'Hito' }}
+          </span>
         </div>
         <div class="gantt-row__track gantt-row__track--milestone">
           <div class="gantt-bar gantt-bar--milestone" :style="barStyle(ms.startDate, ms.dueDate)" />
+        </div>
+        <div class="gantt-row__dates hidden lg:block">
+          <Calendar :size="14" class="inline text-[#8e8e93]" />
+          {{ formatDate(ms.startDate) }} — {{ formatDate(ms.dueDate) }}
         </div>
       </div>
 
@@ -149,7 +194,7 @@ async function quickAdd() {
         v-for="task in scheduledTasks"
         :key="task.id"
         class="gantt-row gantt-row--clickable"
-        @click="selectedTaskId = task.id"
+        @click="openTaskDetail(task)"
       >
         <div class="gantt-row__label">
           <p class="truncate text-base font-medium text-[#172b4d]">{{ task.title }}</p>
@@ -187,8 +232,54 @@ async function quickAdd() {
       <p class="mt-1 max-w-md text-sm text-[#626f86]">
         Añade tareas con fechas o crea hitos para visualizar el cronograma.
       </p>
+      <button type="button" class="ql-btn ql-btn--primary mt-5" @click="openQuickAdd">
+        <Plus :size="18" />
+        Añadir al cronograma
+      </button>
     </div>
 
-    <ProjectTaskDrawer :task-id="selectedTaskId" @close="selectedTaskId = null" />
+    <ScheduleItemModal
+      :task="selectedTask"
+      :milestone="selectedMilestone"
+      @close="closeDetail"
+      @edit="editFromDetail"
+    />
+
+    <ProjectModal
+      v-if="showQuickAdd"
+      title="Añadir al cronograma"
+      subtitle="Nueva tarea con fechas"
+      size="md"
+      @close="showQuickAdd = false"
+    >
+      <div class="app-window-form-row app-window-form-row--2">
+        <div class="app-window-form-span-full">
+          <label class="project-create-modal__label">Nombre de la tarea *</label>
+          <input
+            v-model="quickForm.title"
+            type="text"
+            class="project-create-modal__input"
+            placeholder="Ej. Diseño de interfaz"
+            @keyup.enter="quickAdd"
+          />
+        </div>
+        <DateInput v-model="quickForm.startDate" label="Fecha inicio" required variant="modal" />
+        <DateInput
+          v-model="quickForm.dueDate"
+          label="Fecha fin"
+          required
+          variant="modal"
+          :min="quickForm.startDate"
+        />
+      </div>
+      <template #footer>
+        <button type="button" class="btn-brand-ghost" @click="showQuickAdd = false">Cancelar</button>
+        <button type="button" class="btn-brand" :disabled="saving || !quickForm.title.trim()" @click="quickAdd">
+          Crear en cronograma
+        </button>
+      </template>
+    </ProjectModal>
+
+    <ProjectTaskDrawer :task-id="editingTaskId" @close="editingTaskId = null" />
   </div>
 </template>

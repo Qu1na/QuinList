@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { Link2, Copy, Clock, Ban } from '@lucide/vue'
 import {
   buildProjectShareUrl,
   createProjectShareLink,
   getProjectShareLinks,
   revokeProjectShareLink,
+  subscribeProjectShareRealtime,
 } from '@/services/projectShare'
 import type { ProjectShareLink } from '@/types/projects'
 import { useAuthStore } from '@/stores/auth'
@@ -18,6 +19,7 @@ const loading = ref(false)
 const creating = ref(false)
 const expiryMinutes = ref(60)
 const copiedId = ref<string | null>(null)
+let unsubscribeRealtime: (() => void) | null = null
 
 async function refresh() {
   loading.value = true
@@ -30,6 +32,13 @@ async function refresh() {
 
 onMounted(() => {
   void refresh()
+  unsubscribeRealtime = subscribeProjectShareRealtime(() => {
+    void refresh()
+  })
+})
+
+onUnmounted(() => {
+  unsubscribeRealtime?.()
 })
 
 async function createLink() {

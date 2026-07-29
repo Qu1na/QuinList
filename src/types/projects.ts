@@ -98,7 +98,10 @@ export interface ProjectMilestone {
   dueDate: string | null
   completed: boolean
   position: number
+  createdBy: string | null
+  updatedBy: string | null
   createdAt: string
+  updatedAt: string
 }
 
 export interface ProjectCost {
@@ -155,7 +158,10 @@ export interface ProjectDeliverable {
   milestoneId: string | null
   attachments: Attachment[]
   log: DeliverableLogEntry[]
+  createdBy: string | null
+  updatedBy: string | null
   createdAt: string
+  updatedAt: string
 }
 
 export interface ProjectFolder {
@@ -177,6 +183,21 @@ export interface ProjectInvite {
   canManageTeam: boolean
   status: 'pending' | 'accepted' | 'declined'
   invitedBy: string | null
+  createdAt: string
+}
+
+export interface ProjectTeamInvite {
+  id: string
+  projectId: string
+  token: string
+  role: UserRole
+  canViewFinance: boolean
+  canManageTasks: boolean
+  canManageTeam: boolean
+  maxUses: number | null
+  useCount: number
+  enabled: boolean
+  createdBy: string
   createdAt: string
 }
 
@@ -204,12 +225,26 @@ export interface ProjectMember {
   joinedAt: string
 }
 
+export interface ProjectTaskComment {
+  id: string
+  projectId: string
+  taskId: string
+  userId: string
+  content: string
+  createdAt: string
+  updatedAt: string
+}
+
 export interface ProjectActivity {
   id: string
   projectId: string
+  workspaceId?: string | null
   userId: string
   action: string
   details: string
+  entityType?: string | null
+  entityId?: string | null
+  entityTitle?: string | null
   createdAt: string
 }
 
@@ -226,6 +261,7 @@ export interface ProjectsDataState {
   members: ProjectMember[]
   activities: ProjectActivity[]
   timeEntries: ProjectTimeEntry[]
+  taskComments: ProjectTaskComment[]
 }
 
 export type ProjectDetailTab =

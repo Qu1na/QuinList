@@ -11,7 +11,7 @@ import {
   Receipt,
 } from '@lucide/vue'
 import { useProjectsStore } from '@/stores/projects'
-import { useAuthStore } from '@/stores/auth'
+import { useProjectUsers } from '@/composables/useProjectUsers'
 import BarChart from '@/components/charts/BarChart.vue'
 import DonutChart from '@/components/charts/DonutChart.vue'
 import {
@@ -27,12 +27,13 @@ import { formatDate } from '@/utils/permissions'
 import { DEFAULT_CURRENCY } from '@/utils/currency'
 import CurrencyInput from '@/components/projects/shared/CurrencyInput.vue'
 import DateInput from '@/components/projects/shared/DateInput.vue'
+import AppWindow from '@/components/ui/AppWindow.vue'
 import type { TransactionType, PaymentMethod } from '@/types/projects'
 
 const props = defineProps<{ projectId: string }>()
 
 const projectsStore = useProjectsStore()
-const auth = useAuthStore()
+const { resolveUser } = useProjectUsers()
 
 const project = computed(() => projectsStore.getProject(props.projectId))
 const currency = computed(() => project.value?.currency ?? DEFAULT_CURRENCY)
@@ -113,11 +114,13 @@ function openAdd(type: TransactionType) {
 
 async function saveTransaction() {
   if (!txForm.value.title.trim() || txForm.value.amount <= 0) return
-  await projectsStore.addTransaction(props.projectId, {
-    type: txType.value,
-    ...txForm.value,
-  })
+  const payload = { type: txType.value, ...txForm.value }
   showAdd.value = false
+  try {
+    await projectsStore.addTransaction(props.projectId, payload)
+  } catch (err) {
+    console.error(err)
+  }
 }
 
 function startEditBudget() {
@@ -137,7 +140,7 @@ async function saveBudget() {
 
 function userName(id: string | null) {
   if (!id) return '—'
-  return auth.getUserById(id)?.name ?? 'Usuario'
+  return resolveUser(id)?.name ?? 'Usuario'
 }
 </script>
 
@@ -325,51 +328,55 @@ function userName(id: string | null) {
         class="app-window-overlay fixed inset-0 z-[2000] flex items-center justify-center p-4"
         @click.self="showAdd = false"
       >
-        <div class="project-card w-full max-w-lg p-6 shadow-2xl">
-          <h3 class="font-semibold text-[#172b4d]">
-            {{ txType === 'income' ? 'Registrar ingreso' : 'Registrar egreso' }}
-          </h3>
-          <div class="mt-4 grid gap-3 sm:grid-cols-2">
-            <div class="sm:col-span-2">
-              <label class="mb-1 block text-xs text-[#626f86]">Concepto *</label>
-              <input v-model="txForm.title" :class="inputClass" placeholder="Descripción del movimiento" />
+        <AppWindow
+          :title="txType === 'income' ? 'Registrar ingreso' : 'Registrar egreso'"
+          :subtitle="txType === 'income' ? 'Entrada de dinero' : 'Salida de dinero'"
+          class="app-window--wide"
+          @close="showAdd = false"
+        >
+          <div class="app-window-form-row app-window-form-row--2">
+            <div class="app-window-form-span-full">
+              <label class="project-create-modal__label">Concepto *</label>
+              <input v-model="txForm.title" class="project-create-modal__input" placeholder="Descripción del movimiento" />
             </div>
             <div>
-              <label class="mb-1 block text-xs text-[#626f86]">Monto *</label>
+              <label class="project-create-modal__label">Monto *</label>
               <CurrencyInput v-model="txForm.amount" :currency="currency" />
             </div>
             <div>
-              <label class="mb-1 block text-xs text-[#626f86]">Fecha</label>
+              <label class="project-create-modal__label">Fecha</label>
               <DateInput v-model="txForm.date" label="Fecha" />
             </div>
             <div>
-              <label class="mb-1 block text-xs text-[#626f86]">Categoría</label>
-              <select v-model="txForm.category" :class="inputClass">
+              <label class="project-create-modal__label">Categoría</label>
+              <select v-model="txForm.category" class="project-create-modal__input">
                 <option v-for="cat in TRANSACTION_CATEGORIES[txType]" :key="cat" :value="cat">{{ cat }}</option>
               </select>
             </div>
             <div>
-              <label class="mb-1 block text-xs text-[#626f86]">Método de pago</label>
-              <select v-model="txForm.paymentMethod" :class="inputClass">
+              <label class="project-create-modal__label">Método de pago</label>
+              <select v-model="txForm.paymentMethod" class="project-create-modal__input">
                 <option v-for="(label, key) in PAYMENT_METHOD_LABELS" :key="key" :value="key">{{ label }}</option>
               </select>
             </div>
-            <div class="sm:col-span-2">
-              <label class="mb-1 block text-xs text-[#626f86]">Referencia / No. comprobante</label>
-              <input v-model="txForm.reference" :class="inputClass" placeholder="TRF-001, INV-123..." />
+            <div class="app-window-form-span-full">
+              <label class="project-create-modal__label">Referencia / No. comprobante</label>
+              <input v-model="txForm.reference" class="project-create-modal__input" placeholder="TRF-001, INV-123..." />
             </div>
-            <div class="sm:col-span-2">
-              <label class="mb-1 block text-xs text-[#626f86]">Notas</label>
-              <textarea v-model="txForm.notes" rows="2" :class="inputClass" />
+            <div class="app-window-form-span-full">
+              <label class="project-create-modal__label">Notas</label>
+              <textarea v-model="txForm.notes" rows="2" class="project-create-modal__input resize-none" />
             </div>
           </div>
-          <div class="mt-5 flex justify-end gap-2">
-            <button type="button" class="ql-btn ql-btn--ghost" @click="showAdd = false">Cancelar</button>
-            <button type="button" class="ql-btn ql-btn--primary" @click="saveTransaction">
-              Registrar {{ txType === 'income' ? 'ingreso' : 'egreso' }}
-            </button>
-          </div>
-        </div>
+          <template #footer>
+            <div class="app-window-footer-actions">
+              <button type="button" class="btn-brand-ghost" @click="showAdd = false">Cancelar</button>
+              <button type="button" class="btn-brand" @click="saveTransaction">
+                Registrar {{ txType === 'income' ? 'ingreso' : 'egreso' }}
+              </button>
+            </div>
+          </template>
+        </AppWindow>
       </div>
 
       <div
@@ -377,26 +384,32 @@ function userName(id: string | null) {
         class="app-window-overlay fixed inset-0 z-[2000] flex items-center justify-center p-4"
         @click.self="editingBudget = false"
       >
-        <div class="project-card w-full max-w-md p-6 shadow-2xl">
-          <h3 class="font-semibold text-[#172b4d]">Ajustar presupuesto base</h3>
-          <p class="mt-1 text-sm text-[#626f86]">
+        <AppWindow
+          title="Ajustar presupuesto base"
+          subtitle="Configuración financiera"
+          class="app-window--md"
+          @close="editingBudget = false"
+        >
+          <p class="mb-3 text-sm text-[#626f86]">
             El presupuesto base es el monto inicial asignado al proyecto. Los ingresos y egresos modifican el saldo disponible.
           </p>
-          <div class="mt-4 space-y-3">
+          <div class="app-window-form-row">
             <div>
-              <label class="mb-1 block text-sm text-[#44546f]">Presupuesto base *</label>
+              <label class="project-create-modal__label">Presupuesto base *</label>
               <CurrencyInput v-model="budgetInput" :currency="currency" />
             </div>
             <div>
-              <label class="mb-1 block text-sm text-[#44546f]">Meta de rentabilidad (%)</label>
-              <input v-model.number="profitabilityInput" type="number" min="0" max="100" :class="inputClass" />
+              <label class="project-create-modal__label">Meta de rentabilidad (%)</label>
+              <input v-model.number="profitabilityInput" type="number" min="0" max="100" class="project-create-modal__input" />
             </div>
           </div>
-          <div class="mt-5 flex justify-end gap-2">
-            <button type="button" class="ql-btn ql-btn--ghost" @click="editingBudget = false">Cancelar</button>
-            <button type="button" class="ql-btn ql-btn--primary" @click="saveBudget">Guardar</button>
-          </div>
-        </div>
+          <template #footer>
+            <div class="app-window-footer-actions">
+              <button type="button" class="btn-brand-ghost" @click="editingBudget = false">Cancelar</button>
+              <button type="button" class="btn-brand" @click="saveBudget">Guardar</button>
+            </div>
+          </template>
+        </AppWindow>
       </div>
     </Teleport>
   </div>

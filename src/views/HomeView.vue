@@ -20,8 +20,13 @@ const router = useRouter()
 
 const contextMenu = ref<{ x: number; y: number } | null>(null)
 
-onMounted(() => {
-  if (PROJECTS_MODULE_ENABLED) void projectsStore.init()
+onMounted(async () => {
+  if (!PROJECTS_MODULE_ENABLED) return
+  await projectsStore.init()
+  const shared = projectsStore.getSharedOnlyProjects()
+  if (shared.length === 1) {
+    router.replace({ name: 'project-detail', params: { projectId: shared[0]!.id } })
+  }
 })
 
 onUnmounted(() => {

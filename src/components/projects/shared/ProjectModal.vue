@@ -1,53 +1,63 @@
 <script setup lang="ts">
-import { X } from '@lucide/vue'
+import AppWindow from '@/components/ui/AppWindow.vue'
 
-defineProps<{
-  title: string
-  subtitle?: string
-  size?: 'sm' | 'md' | 'lg'
-}>()
+defineOptions({ inheritAttrs: false })
+
+const props = withDefaults(
+  defineProps<{
+    title: string
+    subtitle?: string
+    size?: 'sm' | 'md' | 'lg'
+    step?: number
+    totalSteps?: number
+  }>(),
+  { size: 'md' },
+)
 
 const emit = defineEmits<{ close: [] }>()
 
-const sizeClass = {
-  sm: 'max-w-sm',
-  md: 'max-w-md',
-  lg: 'max-w-lg',
+const sizeClass: Record<string, string> = {
+  sm: 'app-window--sm',
+  md: 'app-window--md',
+  lg: 'app-window--wide',
 }
 </script>
 
 <template>
   <Teleport to="body">
     <div
-      class="fixed inset-0 z-[2000] flex items-center justify-center bg-black/45 p-4 backdrop-blur-[1px]"
+      class="app-window-overlay fixed inset-0 z-[2000] flex items-center justify-center p-4"
       @click.self="emit('close')"
     >
-      <div
-        class="w-full rounded-xl bg-white shadow-2xl"
-        :class="sizeClass[size ?? 'md']"
-        role="dialog"
-        aria-modal="true"
+      <AppWindow
+        :title="title"
+        :subtitle="subtitle"
+        :class="sizeClass[props.size]"
+        v-bind="$attrs"
+        @close="emit('close')"
       >
-        <header class="flex items-start justify-between border-b border-[#091e4214] px-5 py-4">
-          <div>
-            <h3 class="font-semibold text-[#172b4d]">{{ title }}</h3>
-            <p v-if="subtitle" class="mt-0.5 text-xs text-[#626f86]">{{ subtitle }}</p>
-          </div>
-          <button
-            type="button"
-            class="rounded-lg p-1.5 text-[#626f86] hover:bg-[#091e420a]"
-            @click="emit('close')"
-          >
-            <X :size="18" />
-          </button>
-        </header>
-        <div class="px-5 py-4">
+        <div
+          v-if="step != null && totalSteps != null && totalSteps > 1"
+          class="mb-4 flex items-center gap-1.5"
+        >
+          <span
+            v-for="s in totalSteps"
+            :key="s"
+            class="app-step-bar"
+            :class="{ 'app-step-bar--active': step >= s }"
+          />
+        </div>
+
+        <div class="app-window-form">
           <slot />
         </div>
-        <footer v-if="$slots.footer" class="flex justify-end gap-2 border-t border-[#091e4214] px-5 py-3">
-          <slot name="footer" />
-        </footer>
-      </div>
+
+        <template v-if="$slots.footer" #footer>
+          <div class="app-window-footer-actions">
+            <slot name="footer" />
+          </div>
+        </template>
+      </AppWindow>
     </div>
   </Teleport>
 </template>
