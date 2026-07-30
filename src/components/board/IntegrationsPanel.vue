@@ -68,7 +68,13 @@ function copyBoardLink() {
   setTimeout(() => (copied.value = false), 2000)
 }
 
-const integrationTypes: IntegrationType[] = ['google_calendar', 'github', 'ics_export']
+const integrationTypes: IntegrationType[] = [
+  'google_calendar',
+  'slack',
+  'github',
+  'ics_export',
+  'webhook',
+]
 </script>
 
 <template>

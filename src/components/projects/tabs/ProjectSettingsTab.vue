@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Settings, AlertTriangle } from '@lucide/vue'
+import { Settings, AlertTriangle, HeartPulse } from '@lucide/vue'
 import { useProjectsStore } from '@/stores/projects'
 import { useUiStore } from '@/stores/ui'
 import ShareProjectPanel from '@/components/projects/shared/ShareProjectPanel.vue'
 import { CURRENCIES, currencyLabel, formatMoney } from '@/utils/currency'
+import { useProjectHealthConfig } from '@/composables/useProjectHealthConfig'
+import { isProjectFinanceEnabled } from '@/utils/projectFinance'
 
 const props = defineProps<{ projectId: string }>()
 
@@ -14,6 +16,21 @@ const ui = useUiStore()
 const router = useRouter()
 
 const project = computed(() => projectsStore.getProject(props.projectId))
+const tasks = computed(() => projectsStore.getProjectTasks(props.projectId))
+const milestones = computed(() => projectsStore.getProjectMilestones(props.projectId))
+
+const healthCounts = computed(() => ({
+  tasks: tasks.value.length,
+  milestones: milestones.value.length,
+}))
+
+const { factorOptions, setFactor, resetToDefaults } = useProjectHealthConfig(
+  computed(() => props.projectId),
+  project,
+  healthCounts,
+)
+
+const financeEnabled = computed(() => (project.value ? isProjectFinanceEnabled(project.value) : false))
 const selectedCurrency = ref('')
 const savingCurrency = ref(false)
 
@@ -94,18 +111,57 @@ async function deleteProject() {
 
         <section class="border-t border-[#ebebed] pt-8">
           <h4 class="mb-2 text-sm font-semibold text-[#172b4d]">Rentabilidad objetivo</h4>
-          <p class="mb-3 text-sm text-[#626f86]">Porcentaje de rentabilidad esperado para el proyecto.</p>
+          <p v-if="!financeEnabled" class="mb-3 text-sm text-amber-700">
+            El módulo de finanzas no está activo en este proyecto. Configura un presupuesto en Información para habilitarlo.
+          </p>
+          <p v-else class="mb-3 text-sm text-[#626f86]">Porcentaje de rentabilidad esperado para el proyecto.</p>
           <input
             type="number"
             :value="project.profitabilityTarget ?? ''"
             class="ql-input max-w-xs"
             placeholder="Opcional (%)"
+            :disabled="!financeEnabled"
             @change="
               projectsStore.updateProject(projectId, {
                 profitabilityTarget: parseFloat(($event.target as HTMLInputElement).value) || null,
               })
             "
           />
+        </section>
+
+        <section class="border-t border-[#ebebed] pt-8">
+          <h4 class="mb-2 flex items-center gap-2 text-sm font-semibold text-[#172b4d]">
+            <HeartPulse :size="16" class="text-[#f4845f]" />
+            Salud del proyecto
+          </h4>
+          <p class="mb-4 text-sm text-[#626f86]">
+            Elige qué factores influyen en el indicador de salud. Solo aparecen los módulos activos en este proyecto.
+          </p>
+          <div class="space-y-2">
+            <label
+              v-for="opt in factorOptions"
+              :key="opt.id"
+              class="flex items-start gap-3 rounded-lg border border-[#ebebed] px-3 py-2.5"
+              :class="opt.available ? 'bg-white' : 'bg-[#fafafa] opacity-70'"
+            >
+              <input
+                type="checkbox"
+                class="mt-0.5 rounded border-[#c7c7cc]"
+                :checked="opt.enabled"
+                :disabled="!opt.available"
+                @change="setFactor(opt.id, ($event.target as HTMLInputElement).checked)"
+              />
+              <span class="min-w-0">
+                <span class="block text-sm font-medium text-[#172b4d]">{{ opt.label }}</span>
+                <span v-if="opt.unavailableReason" class="mt-0.5 block text-xs text-[#626f86]">
+                  {{ opt.unavailableReason }}
+                </span>
+              </span>
+            </label>
+          </div>
+          <button type="button" class="ql-btn ql-btn--ghost mt-3 text-sm" @click="resetToDefaults">
+            Restaurar valores sugeridos
+          </button>
         </section>
       </div>
     </div>

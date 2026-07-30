@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, toRef } from 'vue'
+import { computed, ref, toRef, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   LayoutDashboard,
@@ -8,6 +8,7 @@ import {
   GanttChart,
   DollarSign,
   Flag,
+  StickyNote,
   Users,
   Package,
   AlertTriangle,
@@ -16,6 +17,7 @@ import {
   History,
   BarChart3,
   Settings,
+  MessageSquare,
   ChevronRight,
   Menu,
   X,
@@ -28,7 +30,9 @@ import ProjectStatusBadge from './shared/ProjectStatusBadge.vue'
 import ProjectProgressRing from './shared/ProjectProgressRing.vue'
 import UserAvatar from './shared/UserAvatar.vue'
 import { calcProjectProgress } from '@/utils/projectStats'
+import { isProjectFinanceEnabled } from '@/utils/projectFinance'
 import { provideProjectUsers } from '@/composables/useProjectUsers'
+import { useProjectChatStore } from '@/stores/projectChat'
 
 const props = defineProps<{
   projectId: string
@@ -39,7 +43,16 @@ const router = useRouter()
 const projectsStore = useProjectsStore()
 const auth = useAuthStore()
 const access = useProjectAccess(props.projectId)
+const projectChat = useProjectChatStore()
 const { teamUsers, visibleTeamUsers, extraTeamCount, onlineCount } = provideProjectUsers(toRef(props, 'projectId'))
+
+watch(
+  () => props.projectId,
+  (id) => {
+    if (id) void projectChat.ensureMounted(id)
+  },
+  { immediate: true },
+)
 
 const mobileNavOpen = ref(false)
 
@@ -64,6 +77,7 @@ const tabGroups: { label: string; tabs: { id: ProjectDetailTab; label: string; i
       { id: 'gantt', label: 'Cronograma', icon: GanttChart },
       { id: 'milestones', label: 'Hitos', icon: Flag },
       { id: 'deliverables', label: 'Entregables', icon: Package },
+      { id: 'notes', label: 'Bitácora', icon: StickyNote },
     ],
   },
   {
@@ -71,6 +85,7 @@ const tabGroups: { label: string; tabs: { id: ProjectDetailTab; label: string; i
     tabs: [
       { id: 'finance', label: 'Finanzas', icon: DollarSign },
       { id: 'team', label: 'Equipo', icon: Users },
+      { id: 'messages', label: 'Mensajes', icon: MessageSquare },
       { id: 'risks', label: 'Riesgos', icon: AlertTriangle },
       { id: 'documents', label: 'Documentación', icon: FileText },
       { id: 'files', label: 'Archivos', icon: FolderOpen },
@@ -87,7 +102,12 @@ const tabGroups: { label: string; tabs: { id: ProjectDetailTab; label: string; i
 ]
 
 function tabAllowed(tabId: ProjectDetailTab): boolean {
-  if (tabId === 'finance') return access.canViewFinance.value
+  if (tabId === 'finance') {
+    return (
+      access.canViewFinance.value &&
+      Boolean(project.value && isProjectFinanceEnabled(project.value))
+    )
+  }
   if (tabId === 'team') return access.hasAccess.value
   if (tabId === 'settings') return access.canEditProject.value && !access.isSharedOnly.value
   return access.hasAccess.value
@@ -118,6 +138,7 @@ const tabBadges = computed((): Partial<Record<ProjectDetailTab, number>> => {
   const deliverables = projectsStore.getProjectDeliverables(pid)
   const pendingDeliverables = deliverables.filter((d) => !d.completed).length
   const openRisks = projectsStore.getProjectRisks(pid).filter((r) => r.status === 'open').length
+  const noteCount = projectsStore.getProjectNotes(pid).length
   const docs = projectsStore.getProjectDocuments(pid).length
   const files = projectsStore.getProjectFiles(pid).length
   const team = projectsStore.getProjectMembers(pid).length
@@ -125,9 +146,11 @@ const tabBadges = computed((): Partial<Record<ProjectDetailTab, number>> => {
 
   return {
     tasks: pendingTasks || undefined,
+    messages: projectChat.unreadCount || undefined,
     gantt: scheduled || undefined,
     milestones: pendingMilestones || undefined,
     deliverables: pendingDeliverables || undefined,
+    notes: noteCount || undefined,
     risks: openRisks || undefined,
     documents: docs || undefined,
     files: files || undefined,
@@ -263,11 +286,17 @@ function setTab(tab: ProjectDetailTab) {
 
       <div
         class="project-content scroll-thin min-w-0 flex-1"
-        :class="{ 'project-content--board': activeTab === 'tasks' }"
+        :class="{
+          'project-content--board': activeTab === 'tasks',
+          'project-content--chat': activeTab === 'messages',
+        }"
       >
         <div
           class="project-content__inner"
-          :class="{ 'project-content__inner--board': activeTab === 'tasks' }"
+          :class="{
+            'project-content__inner--board': activeTab === 'tasks',
+            'project-content__inner--chat': activeTab === 'messages',
+          }"
         >
           <slot />
         </div>

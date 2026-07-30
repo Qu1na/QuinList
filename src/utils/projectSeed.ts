@@ -389,4 +389,5 @@ export const PROJECT_SEED: ProjectsDataState = {
   ],
   timeEntries: [],
   taskComments: [],
+  notes: [],
 }

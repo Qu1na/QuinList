@@ -14,7 +14,7 @@ const projectsStore = useProjectsStore()
 const { resolveUser } = useProjectUsers()
 
 const search = ref('')
-const sourceFilter = ref<'all' | 'Tarea' | 'Documento'>('all')
+const sourceFilter = ref<'all' | 'Tarea' | 'Documento' | 'Chat'>('all')
 
 const allFiles = computed(() => projectsStore.getProjectFiles(props.projectId))
 
@@ -31,6 +31,7 @@ const stats = computed(() => ({
   total: allFiles.value.length,
   tasks: allFiles.value.filter((f) => f.source === 'Tarea').length,
   docs: allFiles.value.filter((f) => f.source === 'Documento').length,
+  chat: allFiles.value.filter((f) => f.source === 'Chat').length,
   images: allFiles.value.filter((f) => f.type.startsWith('image/')).length,
 }))
 
@@ -46,7 +47,7 @@ function userName(id: string) {
       <p class="project-page-sub">Centro de archivos · explorador tipo escritorio</p>
     </div>
 
-    <div class="grid gap-3 sm:grid-cols-4">
+    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
       <div class="drive-stat">
         <p class="drive-stat__value">{{ stats.total }}</p>
         <p class="drive-stat__label">Total</p>
@@ -58,6 +59,10 @@ function userName(id: string) {
       <div class="drive-stat">
         <p class="drive-stat__value">{{ stats.docs }}</p>
         <p class="drive-stat__label">Documentación</p>
+      </div>
+      <div class="drive-stat">
+        <p class="drive-stat__value">{{ stats.chat }}</p>
+        <p class="drive-stat__label">Desde chat</p>
       </div>
       <div class="drive-stat">
         <p class="drive-stat__value">{{ stats.images }}</p>
@@ -79,13 +84,14 @@ function userName(id: string) {
         <option value="all">Todas las fuentes</option>
         <option value="Tarea">Tareas</option>
         <option value="Documento">Documentos</option>
+        <option value="Chat">Chat</option>
       </select>
     </div>
 
     <FileExplorerDesktop
       :empty="!filtered.length"
       empty-title="No hay archivos"
-      empty-hint="Los archivos adjuntos a tareas y documentos aparecerán aquí automáticamente."
+      empty-hint="Los archivos adjuntos en tareas, documentos y chat aparecerán aquí automáticamente."
     >
       <div class="fx-grid">
         <FileExplorerItem

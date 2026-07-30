@@ -1,6 +1,6 @@
 import type { BoardMessage, ChatAttachment } from '@/types'
 import { getMatuClient, isMatuConfigured } from '@/lib/matu'
-import { fromJsonb } from '@/lib/dbJson'
+import { fromJsonb, toJsonb, toJsonbOrNull } from '@/lib/dbJson'
 import { generateId } from '@/utils/permissions'
 import { useAuthStore } from '@/stores/auth'
 import { uploadChatFile, validateChatFile } from '@/services/storage'
@@ -96,6 +96,7 @@ export async function sendBoardMessage(
   userId: string,
   text: string,
   file?: File | null,
+  mentionIds: string[] = [],
 ): Promise<BoardMessage> {
   const trimmed = text.trim()
   let attachment: ChatAttachment | null = null
@@ -133,7 +134,8 @@ export async function sendBoardMessage(
     board_id: message.boardId,
     user_id: message.userId,
     text: message.text,
-    attachment: attachment ?? null,
+    attachment: toJsonbOrNull(attachment),
+    mention_ids: toJsonb(mentionIds, []),
     created_at: message.createdAt,
   })
   if (error) throw new Error(error.message)

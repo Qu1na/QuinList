@@ -10,6 +10,7 @@ import type {
   ProjectInvite,
   ProjectMember,
   ProjectMilestone,
+  ProjectNote,
   ProjectRisk,
   ProjectTask,
   ProjectTaskComment,
@@ -24,6 +25,7 @@ import {
   toInvite,
   toMember,
   toMilestone,
+  toNote,
   toProject,
   toRisk,
   toTask,
@@ -38,6 +40,7 @@ type EntityArrays = {
   milestones: Ref<ProjectMilestone[]>
   costs: Ref<ProjectCost[]>
   risks: Ref<ProjectRisk[]>
+  notes: Ref<ProjectNote[]>
   deliverables: Ref<ProjectDeliverable[]>
   documents: Ref<ProjectDocument[]>
   folders: Ref<ProjectFolder[]>
@@ -104,6 +107,11 @@ export function applyRealtimePayload(
     case 'project_risks': {
       if (payload.event === 'DELETE') removeById(state.risks, id!)
       else upsertIfNewer(state.risks, toRisk(payload.new!), payload.new!)
+      return null
+    }
+    case 'project_notes': {
+      if (payload.event === 'DELETE') removeById(state.notes, id!)
+      else upsertIfNewer(state.notes, toNote(payload.new!), payload.new!)
       return null
     }
     case 'project_deliverables': {

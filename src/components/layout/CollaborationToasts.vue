@@ -2,6 +2,7 @@
 import { storeToRefs } from 'pinia'
 import { X } from '@lucide/vue'
 import { useCollaborationStore } from '@/stores/collaboration'
+import { getActivityIcon } from '@/utils/activityIcons'
 import UserAvatar from '@/components/projects/shared/UserAvatar.vue'
 
 const collab = useCollaborationStore()
@@ -31,6 +32,12 @@ const { toasts } = storeToRefs(collab)
         class="collab-toast"
         :style="{ '--toast-accent': toast.accent }"
       >
+        <span
+          class="collab-toast__icon-wrap"
+          :style="{ background: `${toast.accent}18`, color: toast.accent }"
+        >
+          <component :is="getActivityIcon(toast.actionType)" :size="14" />
+        </span>
         <UserAvatar :user-id="toast.userId" size="sm" class="collab-toast__avatar" />
         <p class="collab-toast__message">{{ toast.message }}</p>
         <button
@@ -53,7 +60,7 @@ const { toasts } = storeToRefs(collab)
   bottom: 1.25rem;
   z-index: 120;
   pointer-events: none;
-  width: min(18rem, calc(100vw - 2rem));
+  width: min(20rem, calc(100vw - 2rem));
 }
 
 .collab-toasts__dismiss-all {
@@ -68,6 +75,7 @@ const { toasts } = storeToRefs(collab)
   background: rgba(255, 255, 255, 0.92);
   border: 1px solid rgba(0, 0, 0, 0.06);
   box-shadow: 0 4px 12px rgba(23, 43, 77, 0.08);
+  backdrop-filter: blur(12px);
 }
 
 .collab-toasts__dismiss-all:hover {
@@ -78,21 +86,32 @@ const { toasts } = storeToRefs(collab)
 .collab-toasts__stack {
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
+  gap: 0.5rem;
 }
 
 .collab-toast {
   pointer-events: auto;
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto auto 1fr auto;
   align-items: start;
   gap: 0.5rem;
-  padding: 0.5rem 0.625rem;
-  border-radius: 0.625rem;
-  background: rgba(255, 255, 255, 0.94);
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.875rem;
+  background: rgba(255, 255, 255, 0.88);
   border: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow: 0 6px 20px rgba(23, 43, 77, 0.1);
+  box-shadow: 0 8px 24px rgba(23, 43, 77, 0.12);
+  backdrop-filter: blur(16px);
   border-left: 3px solid var(--toast-accent, #2d7eb8);
+}
+
+.collab-toast__icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.375rem;
+  margin-top: 0.125rem;
 }
 
 .collab-toast__message {

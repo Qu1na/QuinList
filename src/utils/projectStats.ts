@@ -63,10 +63,11 @@ export function collectProjectFiles(state: ProjectsDataState, projectId: string)
   }
 
   for (const doc of state.documents.filter((d) => d.projectId === projectId)) {
+    const source = doc.category === 'Chat' ? 'Chat' : 'Documento'
     for (const att of doc.attachments ?? []) {
       items.push({
         ...att,
-        source: 'Documento',
+        source,
         sourceId: doc.id,
       })
     }

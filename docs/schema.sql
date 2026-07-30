@@ -282,6 +282,20 @@
     updated_at TIMESTAMPTZ DEFAULT NOW()
   );
 
+  CREATE TABLE IF NOT EXISTS project_notes (
+    id TEXT PRIMARY KEY,
+    project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    title TEXT NOT NULL DEFAULT '',
+    content TEXT DEFAULT '',
+    color TEXT NOT NULL DEFAULT '#fef08a',
+    style TEXT NOT NULL DEFAULT 'pin-single',
+    rotation NUMERIC NOT NULL DEFAULT 0,
+    position INT NOT NULL DEFAULT 0,
+    created_by TEXT REFERENCES profiles(id),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+  );
+
   CREATE TABLE IF NOT EXISTS project_deliverables (
     id TEXT PRIMARY KEY,
     project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
@@ -330,6 +344,7 @@
   CREATE INDEX IF NOT EXISTS idx_project_milestones_project ON project_milestones(project_id);
   CREATE INDEX IF NOT EXISTS idx_project_costs_project ON project_costs(project_id);
   CREATE INDEX IF NOT EXISTS idx_project_risks_project ON project_risks(project_id);
+  CREATE INDEX IF NOT EXISTS idx_project_notes_project ON project_notes(project_id);
   CREATE INDEX IF NOT EXISTS idx_project_deliverables_project ON project_deliverables(project_id);
   CREATE INDEX IF NOT EXISTS idx_project_documents_project ON project_documents(project_id);
   CREATE INDEX IF NOT EXISTS idx_project_members_project ON project_members(project_id);

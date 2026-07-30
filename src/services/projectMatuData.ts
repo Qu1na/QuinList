@@ -8,17 +8,21 @@ import type {
   ProjectInvite,
   ProjectMember,
   ProjectMilestone,
+  ProjectNote,
   ProjectRisk,
   ProjectTask,
   ProjectTaskComment,
   ProjectTimeEntry,
   ProjectsDataState,
 } from '@/types/projects'
+import type { Attachment } from '@/types'
 import { getMatuClient, isMatuConfigured } from '@/lib/matu'
+import { attachmentForPersistence } from '@/services/storage'
 import { fromJsonb, toJsonb } from '@/lib/dbJson'
 import { DEFAULT_CURRENCY } from '@/utils/currency'
 import {
   clearTableMissing,
+  isGracefulMissingTable,
   isCollaborationTable,
   isMissingTableError,
   isTableMissing,
@@ -100,13 +104,13 @@ async function queryRowsByProjectIds(
   const db = getMatuClient()
   const { data, error } = await db.from(table).select('*').in('project_id', projectIds)
   if (error) {
-    if (isCollaborationTable(table) && isMissingTableError(error.message)) {
+    if (isGracefulMissingTable(table) && isMissingTableError(error.message)) {
       markTableMissing(table)
       return []
     }
     throw new Error(error.message)
   }
-  if (isCollaborationTable(table)) clearTableMissing(table)
+  if (isGracefulMissingTable(table)) clearTableMissing(table)
   return (data as Record<string, unknown>[]) ?? []
 }
 
@@ -127,7 +131,7 @@ async function saveRecordSafe(
     await saveRecord(table, id, data)
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
-    if (isCollaborationTable(table) && isMissingTableError(msg)) {
+    if (isGracefulMissingTable(table) && isMissingTableError(msg)) {
       markTableMissing(table)
       return
     }
@@ -145,7 +149,7 @@ async function deleteOrphansSafe(
     await deleteOrphans(table, projectIds, keepIds)
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
-    if (isCollaborationTable(table) && isMissingTableError(msg)) {
+    if (isGracefulMissingTable(table) && isMissingTableError(msg)) {
       markTableMissing(table)
       return
     }
@@ -320,6 +324,38 @@ function costToDb(c: ProjectCost): Record<string, unknown> {
   }
 }
 
+function toNote(row: Record<string, unknown>): ProjectNote {
+  return {
+    id: row.id as string,
+    projectId: row.project_id as string,
+    title: (row.title as string) ?? '',
+    content: (row.content as string) ?? '',
+    color: (row.color as string) ?? '#fef08a',
+    style: (row.style as ProjectNote['style']) ?? 'pin-single',
+    rotation: Number(row.rotation ?? 0),
+    position: Number(row.position ?? 0),
+    createdBy: (row.created_by as string) ?? null,
+    createdAt: row.created_at as string,
+    updatedAt: (row.updated_at as string) ?? (row.created_at as string),
+  }
+}
+
+function noteToDb(n: ProjectNote): Record<string, unknown> {
+  return {
+    id: n.id,
+    project_id: n.projectId,
+    title: n.title,
+    content: n.content,
+    color: n.color,
+    style: n.style,
+    rotation: n.rotation,
+    position: n.position,
+    created_by: n.createdBy,
+    created_at: n.createdAt,
+    updated_at: n.updatedAt,
+  }
+}
+
 function toRisk(row: Record<string, unknown>): ProjectRisk {
   return {
     id: row.id as string,
@@ -412,6 +448,7 @@ function toDocument(row: Record<string, unknown>): ProjectDocument {
 }
 
 function documentToDb(d: ProjectDocument): Record<string, unknown> {
+  const attachments = d.attachments.map((a) => attachmentForPersistence(a as Attachment))
   return {
     id: d.id,
     project_id: d.projectId,
@@ -419,7 +456,7 @@ function documentToDb(d: ProjectDocument): Record<string, unknown> {
     title: d.title,
     content: d.content,
     category: d.category,
-    attachments: toJsonb(d.attachments, []),
+    attachments: toJsonb(attachments, []),
     created_by: d.createdBy,
     created_at: d.createdAt,
     updated_at: d.updatedAt,
@@ -607,6 +644,7 @@ async function loadProjectsDataForIds(projectIds: string[]): Promise<ProjectsDat
       milestones: [],
       costs: [],
       risks: [],
+      notes: [],
       deliverables: [],
       documents: [],
       folders: [],
@@ -631,6 +669,7 @@ async function loadProjectsDataForIds(projectIds: string[]): Promise<ProjectsDat
     activityRows,
     timeRows,
     commentRows,
+    noteRows,
   ] = await Promise.all([
     queryRowsByProjectIds(projectIds, 'project_tasks'),
     queryRowsByProjectIds(projectIds, 'project_milestones'),
@@ -644,6 +683,7 @@ async function loadProjectsDataForIds(projectIds: string[]): Promise<ProjectsDat
     queryRowsByProjectIds(projectIds, 'project_activities'),
     queryRowsByProjectIds(projectIds, 'project_time_entries'),
     queryRowsByProjectIds(projectIds, 'project_task_comments'),
+    queryRowsByProjectIds(projectIds, 'project_notes'),
   ])
 
   return {
@@ -652,6 +692,7 @@ async function loadProjectsDataForIds(projectIds: string[]): Promise<ProjectsDat
     milestones: milestoneRows.map(toMilestone),
     costs: costRows.map(toCost),
     risks: riskRows.map(toRisk),
+    notes: noteRows.map(toNote),
     deliverables: deliverableRows.map(toDeliverable),
     documents: documentRows.map(toDocument),
     folders: folderRows.map(toFolder),
@@ -710,6 +751,25 @@ export async function loadProjectsFromMatu(workspaceId: string): Promise<Project
   return loadProjectsDataForIds(projectIds)
 }
 
+/** Sincroniza solo los registros creados al adjuntar en el chat (evita PUT masivos). */
+export async function syncProjectChatUpload(
+  payload: {
+    folder?: ProjectFolder
+    document: ProjectDocument
+    activities: ProjectActivity[]
+  },
+): Promise<void> {
+  const ops: Promise<void>[] = []
+  if (payload.folder) {
+    ops.push(saveRecord('project_folders', payload.folder.id, folderToDb(payload.folder)))
+  }
+  ops.push(saveRecord('project_documents', payload.document.id, documentToDb(payload.document)))
+  for (const activity of payload.activities) {
+    ops.push(saveRecord('project_activities', activity.id, activityToDb(activity)))
+  }
+  await Promise.all(ops)
+}
+
 export async function syncProjectToMatu(
   projectId: string,
   data: ProjectsDataState,
@@ -734,6 +794,7 @@ export async function syncProjectToMatu(
   const members = byProject(data.members)
   const activities = byProject(data.activities)
   const timeEntries = byProject(data.timeEntries)
+  const notes = byProject(data.notes ?? [])
   const taskComments = byProject(data.taskComments ?? [])
   const projectIds = [projectId]
 
@@ -749,6 +810,7 @@ export async function syncProjectToMatu(
     ...members.map((m) => saveRecord('project_members', m.id, memberToDb(m))),
     ...activities.map((a) => saveRecord('project_activities', a.id, activityToDb(a))),
     ...timeEntries.map((e) => saveRecord('project_time_entries', e.id, timeEntryToDb(e))),
+    ...notes.map((n) => saveRecord('project_notes', n.id, noteToDb(n))),
     ...taskComments.map((c) => saveRecordSafe('project_task_comments', c.id, taskCommentToDb(c))),
   ])
 
@@ -767,6 +829,7 @@ export async function syncProjectToMatu(
     deleteOrphans('project_members', projectIds, members.map((m) => m.id)),
     deleteOrphans('project_activities', projectIds, activities.map((a) => a.id)),
     deleteOrphans('project_time_entries', projectIds, timeEntries.map((e) => e.id)),
+    deleteOrphans('project_notes', projectIds, notes.map((n) => n.id)),
     deleteOrphansSafe('project_task_comments', projectIds, taskComments.map((c) => c.id)),
   ])
 }
@@ -786,6 +849,7 @@ function collectProjectIdsFromState(data: ProjectsDataState): string[] {
   for (const item of data.activities) ids.add(item.projectId)
   for (const item of data.timeEntries) ids.add(item.projectId)
   for (const item of data.taskComments ?? []) ids.add(item.projectId)
+  for (const item of data.notes ?? []) ids.add(item.projectId)
   return [...ids]
 }
 
@@ -813,6 +877,7 @@ const PROJECT_TABLES = [
   'project_members',
   'project_activities',
   'project_time_entries',
+  'project_notes',
   'project_task_comments',
 ]
 
@@ -839,7 +904,7 @@ const PROJECT_ENTITY_TABLES = PROJECT_TABLES.filter((t) => t !== 'projects')
 
 function realtimeEntityTables(): string[] {
   return PROJECT_ENTITY_TABLES.filter(
-    (table) => !isCollaborationTable(table) || !isTableMissing(table),
+    (table) => !isGracefulMissingTable(table) || !isTableMissing(table),
   )
 }
 
@@ -899,6 +964,7 @@ export async function loadSingleProject(projectId: string): Promise<ProjectsData
     activityRows,
     timeRows,
     commentRows,
+    noteRows,
   ] = await Promise.all([
     queryRowsByProjectId(projectId, 'project_tasks'),
     queryRowsByProjectId(projectId, 'project_milestones'),
@@ -912,6 +978,7 @@ export async function loadSingleProject(projectId: string): Promise<ProjectsData
     queryRowsByProjectId(projectId, 'project_activities'),
     queryRowsByProjectId(projectId, 'project_time_entries'),
     queryRowsByProjectId(projectId, 'project_task_comments'),
+    queryRowsByProjectId(projectId, 'project_notes'),
   ])
 
   return {
@@ -920,6 +987,7 @@ export async function loadSingleProject(projectId: string): Promise<ProjectsData
     milestones: milestoneRows.map(toMilestone),
     costs: costRows.map(toCost),
     risks: riskRows.map(toRisk),
+    notes: noteRows.map(toNote),
     deliverables: deliverableRows.map(toDeliverable),
     documents: documentRows.map(toDocument),
     folders: folderRows.map(toFolder),
@@ -939,7 +1007,7 @@ export async function deleteProjectEntity(table: string, id: string): Promise<vo
   const db = getMatuClient()
   const { error } = await db.from(table).eq('id', id).delete()
   if (error) {
-    if (isCollaborationTable(table) && isMissingTableError(error.message)) {
+    if (isGracefulMissingTable(table) && isMissingTableError(error.message)) {
       markTableMissing(table)
       return
     }
@@ -960,6 +1028,7 @@ export {
   toMilestone,
   toCost,
   toRisk,
+  toNote,
   toDeliverable,
   toDocument,
   toFolder,

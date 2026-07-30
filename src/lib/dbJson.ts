@@ -17,6 +17,12 @@ export function toJsonb(value: unknown, fallback: unknown = []): string {
   return JSON.stringify(value)
 }
 
+/** JSONB nullable column — returns null instead of stringifying null. */
+export function toJsonbOrNull(value: unknown): string | null {
+  if (value === null || value === undefined) return null
+  return toJsonb(value)
+}
+
 export function fromJsonb<T>(value: unknown, fallback: T): T {
   if (value === null || value === undefined) return fallback
   if (typeof value === 'string') {

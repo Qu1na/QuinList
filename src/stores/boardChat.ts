@@ -10,10 +10,14 @@ import {
 } from '@/services/boardChat'
 import { useAuthStore } from './auth'
 import { generateId } from '@/utils/permissions'
+import { resolveMentionedUserIds } from '@/utils/mentions'
+import { notifyMention } from '@/services/projectNotifications'
+import { messagePreview } from '@/utils/renderMentions'
+import { useQuinListStore } from './quinlist'
 
 export const useBoardChatStore = defineStore('boardChat', () => {
   const boardId = ref<string | null>(null)
-  const isOpen = ref(false)
+  const viewActive = ref(false)
   const messages = ref<BoardMessage[]>([])
   const loading = ref(false)
   const sending = ref(false)
@@ -26,15 +30,26 @@ export const useBoardChatStore = defineStore('boardChat', () => {
   const isActive = computed(() => boardId.value != null)
 
   const unreadCount = computed(() => {
-    if (isOpen.value || !lastReadAt.value) return 0
+    if (viewActive.value) return 0
     const auth = useAuthStore()
+    const since = lastReadAt.value
+    if (!since) {
+      return messages.value.filter(
+        (m) => !m.pending && m.userId !== auth.currentUserId,
+      ).length
+    }
     return messages.value.filter(
       (m) =>
         !m.pending &&
-        m.createdAt > lastReadAt.value! &&
+        m.createdAt > since &&
         m.userId !== auth.currentUserId,
     ).length
   })
+
+  function setViewActive(active: boolean) {
+    viewActive.value = active
+    if (active) markRead()
+  }
 
   function markRead() {
     lastReadAt.value = new Date().toISOString()
@@ -87,9 +102,18 @@ export const useBoardChatStore = defineStore('boardChat', () => {
     )
     messages.value = withoutPendingDupes
     upsertMessage(message)
+  }
 
-    if (!isOpen.value && message.userId !== auth.currentUserId) {
-      // unreadCount picks this up via lastReadAt
+  async function refresh() {
+    if (!boardId.value) return
+    loading.value = messages.value.length === 0
+    try {
+      messages.value = await loadBoardMessages(boardId.value)
+    } catch (err) {
+      console.error('Error cargando chat:', err)
+      messages.value = []
+    } finally {
+      loading.value = false
     }
   }
 
@@ -107,7 +131,9 @@ export const useBoardChatStore = defineStore('boardChat', () => {
 
       boardId.value = boardIdParam
       await refresh()
-      lastReadAt.value = new Date().toISOString()
+      if (!viewActive.value) {
+        lastReadAt.value = new Date().toISOString()
+      }
 
       unsubscribeRealtime = subscribeBoardChatRealtime(boardIdParam, (event, message) => {
         handleRealtime(event, message).catch(console.error)
@@ -127,7 +153,7 @@ export const useBoardChatStore = defineStore('boardChat', () => {
   }
 
   function unmount() {
-    isOpen.value = false
+    viewActive.value = false
     boardId.value = null
     messages.value = []
     lastReadAt.value = null
@@ -135,36 +161,6 @@ export const useBoardChatStore = defineStore('boardChat', () => {
     unsubscribeRealtime?.()
     unsubscribeRealtime = null
     mounting = null
-  }
-
-  async function toggle(boardIdParam?: string) {
-    if (boardIdParam) await ensureMounted(boardIdParam)
-    isOpen.value = !isOpen.value
-    if (isOpen.value) markRead()
-  }
-
-  async function open(boardIdParam?: string) {
-    if (boardIdParam) await ensureMounted(boardIdParam)
-    isOpen.value = true
-    markRead()
-  }
-
-  function minimize() {
-    isOpen.value = false
-    markRead()
-  }
-
-  async function refresh() {
-    if (!boardId.value) return
-    loading.value = messages.value.length === 0
-    try {
-      messages.value = await loadBoardMessages(boardId.value)
-    } catch (err) {
-      console.error('Error cargando chat:', err)
-      messages.value = []
-    } finally {
-      loading.value = false
-    }
   }
 
   async function send(text: string, file?: File | null) {
@@ -191,9 +187,24 @@ export const useBoardChatStore = defineStore('boardChat', () => {
 
     sending.value = true
     try {
-      const msg = await sendBoardMessage(boardId.value, auth.currentUserId, trimmed, file)
+      const quinlist = useQuinListStore()
+      const ws = quinlist.currentWorkspace
+      const teamUsers = (ws?.members ?? []).map((m) => {
+        const authStore = useAuthStore()
+        const user = authStore.getUserById(m.userId)
+        return { id: m.userId, name: user?.name ?? '', email: user?.email }
+      })
+      const mentionIds = resolveMentionedUserIds(trimmed, teamUsers)
+      const msg = await sendBoardMessage(boardId.value, auth.currentUserId, trimmed, file, mentionIds)
       replaceMessage(tempId, msg)
       markRead()
+      if (mentionIds.length) {
+        const board = quinlist.boards.find((b) => b.id === boardId.value)
+        const recipients = mentionIds.filter((id) => id !== auth.currentUserId)
+        notifyMention(recipients, board?.title ?? 'tablero', messagePreview(trimmed), {
+          boardId: boardId.value,
+        })
+      }
     } catch (err) {
       removeMessage(tempId)
       error.value = err instanceof Error ? err.message : 'No se pudo enviar'
@@ -208,7 +219,7 @@ export const useBoardChatStore = defineStore('boardChat', () => {
 
   return {
     boardId,
-    isOpen,
+    viewActive,
     isActive,
     messages,
     loading,
@@ -218,9 +229,7 @@ export const useBoardChatStore = defineStore('boardChat', () => {
     mount,
     ensureMounted,
     unmount,
-    toggle,
-    open,
-    minimize,
+    setViewActive,
     refresh,
     send,
     destroy,

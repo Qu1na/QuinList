@@ -122,6 +122,39 @@ export interface ProjectCost {
 /** Alias semántico — los movimientos financieros viven en `costs` por compatibilidad con el schema SQL */
 export type ProjectTransaction = ProjectCost
 
+export type NoteAttachmentStyle = 'pin-red' | 'pin-single' | 'tape-beige' | 'tape-blue' | 'tape-green'
+
+export interface ProjectNote {
+  id: string
+  projectId: string
+  title: string
+  content: string
+  color: string
+  style: NoteAttachmentStyle
+  rotation: number
+  position: number
+  createdBy: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+import type { ChatMessageStatus, ChatReadReceipt } from '@/types/chat'
+
+export interface ProjectChatMessage {
+  id: string
+  projectId: string
+  userId: string
+  text: string
+  mentionIds: string[]
+  createdAt: string
+  attachment?: { name: string; url: string; type: string; size: number } | null
+  status?: ChatMessageStatus
+  readBy?: ChatReadReceipt[]
+  pending?: boolean
+  editedAt?: string | null
+  deletedAt?: string | null
+}
+
 export interface ProjectRisk {
   id: string
   projectId: string
@@ -254,6 +287,7 @@ export interface ProjectsDataState {
   milestones: ProjectMilestone[]
   costs: ProjectCost[]
   risks: ProjectRisk[]
+  notes: ProjectNote[]
   deliverables: ProjectDeliverable[]
   documents: ProjectDocument[]
   folders: ProjectFolder[]
@@ -274,6 +308,8 @@ export type ProjectDetailTab =
   | 'team'
   | 'deliverables'
   | 'risks'
+  | 'notes'
+  | 'messages'
   | 'documents'
   | 'files'
   | 'activity'

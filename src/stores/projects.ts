@@ -6,6 +6,7 @@ import type {
   ProjectMilestone,
   ProjectCost,
   ProjectRisk,
+  ProjectNote,
   ProjectDeliverable,
   ProjectDocument,
   ProjectFolder,
@@ -26,9 +27,11 @@ import { restoreProjectsFromBackup } from '@/utils/projectRecovery'
 import {
   deleteProjectEntity,
   deleteProjectRecord,
+  isProjectsMatuEnabled,
   loadProjectById,
   loadSingleProject,
   subscribeWorkspaceProjectsRealtime,
+  syncProjectChatUpload,
 } from '@/services/projectMatuData'
 import { applyRealtimePayload } from '@/services/projectRealtime'
 import { ensureProjectUserProfiles } from '@/services/projectUsers'
@@ -59,6 +62,8 @@ import {
   withAutoMarker,
   stripAutoMarker,
 } from '@/utils/projectRiskDetection'
+import { notifyTaskComment, notifyTaskAssigned } from '@/services/projectNotifications'
+import { randomPalette } from '@/utils/projectNotes'
 import { findTodoList, getDefaultBoardLists } from '@/utils/boardDefaults'
 import { formatMoney, DEFAULT_CURRENCY } from '@/utils/currency'
 import { uploadProjectFile } from '@/services/storage'
@@ -73,6 +78,7 @@ export const useProjectsStore = defineStore('projects', () => {
   const milestones = ref<ProjectMilestone[]>([])
   const costs = ref<ProjectCost[]>([])
   const risks = ref<ProjectRisk[]>([])
+  const notes = ref<ProjectNote[]>([])
   const deliverables = ref<ProjectDeliverable[]>([])
   const documents = ref<ProjectDocument[]>([])
   const folders = ref<ProjectFolder[]>([])
@@ -178,6 +184,12 @@ export const useProjectsStore = defineStore('projects', () => {
     return risks.value.filter((r) => r.projectId === projectId)
   }
 
+  function getProjectNotes(projectId: string) {
+    return notes.value
+      .filter((n) => n.projectId === projectId)
+      .sort((a, b) => a.position - b.position || compareInstants(b.createdAt, a.createdAt))
+  }
+
   function getProjectDeliverables(projectId: string) {
     return deliverables.value.filter((d) => d.projectId === projectId)
   }
@@ -223,6 +235,14 @@ export const useProjectsStore = defineStore('projects', () => {
         entityId: task.id,
         entityTitle: task.title,
       })
+      const auth = useAuthStore()
+      const authorName = auth.currentUser?.name ?? 'Alguien'
+      const project = getProject(task.projectId)
+      const recipients = [
+        ...task.assigneeIds,
+        task.createdBy,
+      ].filter((id): id is string => Boolean(id && id !== auth.currentUserId))
+      notifyTaskComment([...new Set(recipients)], task.title, task.projectId, task.id, authorName)
     })
 
     return comment
@@ -294,6 +314,7 @@ export const useProjectsStore = defineStore('projects', () => {
       milestones: milestones.value,
       costs: costs.value,
       risks: risks.value,
+      notes: notes.value,
       deliverables: deliverables.value,
       documents: documents.value,
       folders: folders.value,
@@ -317,6 +338,7 @@ export const useProjectsStore = defineStore('projects', () => {
       milestones: milestones.value,
       costs: costs.value,
       risks: risks.value,
+      notes: notes.value,
       deliverables: deliverables.value,
       documents: documents.value,
       folders: folders.value,
@@ -336,6 +358,7 @@ export const useProjectsStore = defineStore('projects', () => {
         milestones: milestones.value,
         costs: costs.value,
         risks: risks.value,
+        notes: notes.value,
         deliverables: deliverables.value,
         documents: documents.value,
         folders: folders.value,
@@ -356,6 +379,7 @@ export const useProjectsStore = defineStore('projects', () => {
         milestones,
         costs,
         risks,
+        notes,
         deliverables,
         documents,
         folders,
@@ -483,6 +507,7 @@ export const useProjectsStore = defineStore('projects', () => {
     mergeList(milestones, data.milestones)
     mergeList(costs, data.costs)
     mergeList(risks, data.risks)
+    mergeList(notes, data.notes ?? [])
     mergeList(deliverables, data.deliverables)
     mergeList(documents, data.documents)
     mergeList(folders, data.folders ?? [])
@@ -514,6 +539,7 @@ export const useProjectsStore = defineStore('projects', () => {
       milestones: all.milestones.filter((m) => m.projectId === projectId),
       costs: all.costs.filter((c) => c.projectId === projectId),
       risks: all.risks.filter((r) => r.projectId === projectId),
+      notes: (all.notes ?? []).filter((n) => n.projectId === projectId),
       deliverables: all.deliverables.filter((d) => d.projectId === projectId),
       documents: all.documents.filter((d) => d.projectId === projectId),
       folders: (all.folders ?? []).filter((f) => f.projectId === projectId),
@@ -544,6 +570,7 @@ export const useProjectsStore = defineStore('projects', () => {
     replaceForIncoming(milestones, data.milestones)
     replaceForIncoming(costs, data.costs)
     replaceForIncoming(risks, data.risks)
+    replaceForIncoming(notes, data.notes ?? [])
     replaceForIncoming(deliverables, data.deliverables)
     replaceForIncoming(documents, data.documents)
     replaceForIncoming(folders, data.folders ?? [])
@@ -619,6 +646,7 @@ export const useProjectsStore = defineStore('projects', () => {
       milestones,
       costs,
       risks,
+      notes,
       deliverables,
       documents,
       folders,
@@ -735,6 +763,7 @@ export const useProjectsStore = defineStore('projects', () => {
     milestones.value = []
     costs.value = []
     risks.value = []
+    notes.value = []
     deliverables.value = []
     documents.value = []
     folders.value = []
@@ -830,6 +859,7 @@ export const useProjectsStore = defineStore('projects', () => {
     milestones.value = milestones.value.filter((m) => m.projectId !== id)
     costs.value = costs.value.filter((c) => c.projectId !== id)
     risks.value = risks.value.filter((r) => r.projectId !== id)
+    notes.value = notes.value.filter((n) => n.projectId !== id)
     deliverables.value = deliverables.value.filter((d) => d.projectId !== id)
     documents.value = documents.value.filter((d) => d.projectId !== id)
     folders.value = folders.value.filter((f) => f.projectId !== id)
@@ -918,6 +948,14 @@ export const useProjectsStore = defineStore('projects', () => {
       }
       if (updates.status) next.kanbanColumn = updates.status
       tasks.value[idx] = next
+
+      if (updates.assigneeIds) {
+        const added = updates.assigneeIds.filter((id) => !prev.assigneeIds.includes(id))
+        if (added.length) {
+          const project = getProject(prev.projectId)
+          notifyTaskAssigned(added, next.title, prev.projectId, taskId, project?.name ?? 'Proyecto')
+        }
+      }
 
       if (updates.status && updates.status !== prev.status) {
         const action = updates.status === 'done' ? 'task_completed' : 'task_moved'
@@ -1216,12 +1254,24 @@ export const useProjectsStore = defineStore('projects', () => {
   async function updateProjectMember(id: string, updates: Partial<ProjectMember>) {
     const m = members.value.find((x) => x.id === id)
     if (!m) return
+    if (m.role === 'owner') {
+      if (updates.role !== undefined && updates.role !== 'owner') return
+      if (
+        updates.canManageTasks !== undefined ||
+        updates.canViewFinance !== undefined ||
+        updates.canManageTeam !== undefined
+      ) {
+        return
+      }
+    }
     Object.assign(m, updates)
     await save()
   }
 
   async function removeProjectMember(id: string) {
-    members.value = members.value.filter((m) => m.id !== id)
+    const m = members.value.find((x) => x.id === id)
+    if (!m || m.role === 'owner') return
+    members.value = members.value.filter((member) => member.id !== id)
     await purgeMatuEntity('project_members', id)
     await save()
   }
@@ -1562,6 +1612,144 @@ export const useProjectsStore = defineStore('projects', () => {
     return folder
   }
 
+  async function ensureProjectFolder(
+    projectId: string,
+    name: string,
+    parentId: string | null = null,
+  ): Promise<string> {
+    const { folderId, created } = findOrCreateFolderLocal(projectId, name, parentId)
+    if (created) await save()
+    return folderId
+  }
+
+  function findOrCreateFolderLocal(
+    projectId: string,
+    name: string,
+    parentId: string | null = null,
+  ): { folderId: string; folder: ProjectFolder | null; created: boolean } {
+    const key = name.trim().toLowerCase()
+    const existing = folders.value.find(
+      (f) =>
+        f.projectId === projectId &&
+        (f.parentId ?? null) === parentId &&
+        f.name.trim().toLowerCase() === key,
+    )
+    if (existing) return { folderId: existing.id, folder: null, created: false }
+
+    const auth = useAuthStore()
+    const folder: ProjectFolder = {
+      id: generateId(),
+      projectId,
+      parentId,
+      name: name.trim(),
+      createdBy: auth.currentUserId,
+      createdAt: nowInstantISO(),
+    }
+    folders.value.push(folder)
+    return { folderId: folder.id, folder, created: true }
+  }
+
+  async function registerChatDocumentFile(
+    projectId: string,
+    file: File,
+    options: {
+      folderName: string
+      channelLabel: string
+      category?: string
+    },
+  ): Promise<Attachment> {
+    const auth = useAuthStore()
+    if (!auth.currentUserId) throw new Error('Debes iniciar sesión para adjuntar archivos')
+
+    const { folderId, folder, created: folderCreated } = findOrCreateFolderLocal(
+      projectId,
+      options.folderName,
+      null,
+    )
+
+    const now = nowInstantISO()
+    const doc: ProjectDocument = {
+      id: generateId(),
+      projectId,
+      folderId,
+      title: file.name.trim(),
+      content: `Compartido en el canal ${options.channelLabel}.`,
+      category: options.category ?? 'Chat',
+      attachments: [],
+      createdBy: auth.currentUserId,
+      createdAt: now,
+      updatedAt: now,
+    }
+    documents.value.push(doc)
+
+    const uploaded = await uploadProjectFile(projectId, 'documents', doc.id, file, { strict: true })
+    const attachment: Attachment = {
+      id: generateId(),
+      name: file.name,
+      url: uploaded.url,
+      type: file.type,
+      size: file.size,
+      storageFilename: uploaded.storageFilename,
+      uploadedAt: now,
+      uploadedBy: auth.currentUserId,
+    }
+    doc.attachments.push(attachment)
+    doc.updatedAt = nowInstantISO()
+
+    const syncedActivities: ProjectActivity[] = []
+    const recordActivity = (
+      action: string,
+      details: string,
+      meta?: { entityType?: string; entityId?: string; entityTitle?: string },
+    ) => {
+      const project = getProject(projectId)
+      const entry: ProjectActivity = {
+        id: generateId(),
+        projectId,
+        workspaceId: project?.workspaceId ?? null,
+        userId: auth.currentUserId!,
+        action,
+        details,
+        entityType: meta?.entityType ?? 'document',
+        entityId: meta?.entityId ?? doc.id,
+        entityTitle: meta?.entityTitle ?? details,
+        createdAt: nowInstantISO(),
+      }
+      activities.value.unshift(entry)
+      syncedActivities.push(entry)
+    }
+
+    if (folderCreated && folder) {
+      recordActivity('Carpeta creada', folder.name, {
+        entityType: 'folder',
+        entityId: folder.id,
+        entityTitle: folder.name,
+      })
+    }
+    recordActivity('document_created', doc.title, {
+      entityType: 'document',
+      entityId: doc.id,
+      entityTitle: doc.title,
+    })
+    recordActivity('file_uploaded', file.name, {
+      entityType: 'document',
+      entityId: doc.id,
+      entityTitle: doc.title,
+    })
+
+    if (isProjectsMatuEnabled()) {
+      await syncProjectChatUpload({
+        folder: folderCreated ? folder ?? undefined : undefined,
+        document: doc,
+        activities: syncedActivities,
+      })
+    } else {
+      await save()
+    }
+
+    return attachment
+  }
+
   async function deleteFolder(id: string) {
     const folder = folders.value.find((f) => f.id === id)
     if (!folder) return
@@ -1642,11 +1830,74 @@ export const useProjectsStore = defineStore('projects', () => {
     await save()
   }
 
+  async function addNote(
+    projectId: string,
+    input: {
+      title: string
+      content: string
+      color?: string
+      style?: ProjectNote['style']
+    },
+  ) {
+    const auth = useAuthStore()
+    const now = nowInstantISO()
+    const existing = getProjectNotes(projectId)
+    const palette = randomPalette()
+    const note: ProjectNote = {
+      id: generateId(),
+      projectId,
+      title: input.title.trim(),
+      content: input.content.trim(),
+      color: input.color ?? palette.color,
+      style: input.style ?? palette.style,
+      rotation: 0,
+      position: existing.length,
+      createdBy: auth.currentUserId,
+      createdAt: now,
+      updatedAt: now,
+    }
+    notes.value.push(note)
+    logActivity(projectId, 'note_created', note.title, {
+      entityType: 'note',
+      entityId: note.id,
+      entityTitle: note.title,
+    })
+    await save()
+    return note
+  }
+
+  async function updateNote(id: string, updates: Partial<ProjectNote>) {
+    const note = notes.value.find((n) => n.id === id)
+    if (!note) return
+    Object.assign(note, updates, { updatedAt: nowInstantISO() })
+    logActivity(note.projectId, 'note_updated', note.title, {
+      entityType: 'note',
+      entityId: note.id,
+      entityTitle: note.title,
+    })
+    await save()
+  }
+
+  async function deleteNote(id: string) {
+    const note = notes.value.find((n) => n.id === id)
+    notes.value = notes.value.filter((n) => n.id !== id)
+    if (note) {
+      logActivity(note.projectId, 'note_deleted', note.title, {
+        entityType: 'note',
+        entityId: note.id,
+        entityTitle: note.title,
+      })
+    }
+    await purgeMatuEntity('project_notes', id)
+    await save()
+  }
+
   async function addDocument(
     projectId: string,
     title: string,
     content: string,
     folderId: string | null = null,
+    category = 'General',
   ) {
     const auth = useAuthStore()
     const now = nowInstantISO()
@@ -1656,7 +1907,7 @@ export const useProjectsStore = defineStore('projects', () => {
       folderId,
       title: title.trim(),
       content: content.trim(),
-      category: 'General',
+      category,
       attachments: [],
       createdBy: auth.currentUserId,
       createdAt: now,
@@ -1724,6 +1975,7 @@ export const useProjectsStore = defineStore('projects', () => {
     milestones,
     costs,
     risks,
+    notes,
     deliverables,
     documents,
     members,
@@ -1747,6 +1999,7 @@ export const useProjectsStore = defineStore('projects', () => {
     getProjectCosts,
     getProjectTransactions,
     getProjectRisks,
+    getProjectNotes,
     getProjectDeliverables,
     getProjectDocuments,
     getProjectFolders,
@@ -1796,10 +2049,15 @@ export const useProjectsStore = defineStore('projects', () => {
     addDeliverableAttachment,
     addTaskAttachment,
     addDocumentFile,
+    registerChatDocumentFile,
+    ensureProjectFolder,
     createFolder,
     deleteFolder,
     inviteProjectMember,
     deleteRisk,
+    addNote,
+    updateNote,
+    deleteNote,
     updateDeliverable,
     deleteDeliverable,
     addDocument,

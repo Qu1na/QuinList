@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import {
   Star,
   Zap,
@@ -12,12 +12,14 @@ import {
   Activity,
   HardDrive,
   Trash2,
+  MessageSquare,
 } from '@lucide/vue'
 import { useQuinListStore } from '@/stores/quinlist'
 import { useIntegrationsStore } from '@/stores/integrations'
 import { useUiStore } from '@/stores/ui'
 import { useBoardPresenceStore } from '@/stores/boardPresence'
 import { useBoardDriveStore } from '@/stores/boardDrive'
+import { useBoardChatStore } from '@/stores/boardChat'
 import { canEdit, canManageMembers } from '@/utils/permissions'
 import {
   BOARD_BACKGROUNDS,
@@ -34,6 +36,10 @@ const ui = useUiStore()
 const presence = useBoardPresenceStore()
 const drive = useBoardDriveStore()
 const router = useRouter()
+const route = useRoute()
+const boardChat = useBoardChatStore()
+
+const showMessages = computed(() => route.query.view === 'messages')
 
 const board = computed(() => store.boards.find((b) => b.id === props.boardId))
 const canEditBoard = computed(() =>
@@ -52,6 +58,20 @@ const driveFileCount = computed(() => {
     0,
   )
 })
+
+function toggleMessages() {
+  drive.closePanel()
+  presence.closePanel()
+  if (showMessages.value) {
+    router.replace({ name: 'board', params: { boardId: props.boardId } })
+  } else {
+    router.replace({
+      name: 'board',
+      params: { boardId: props.boardId },
+      query: { view: 'messages' },
+    })
+  }
+}
 
 function toggleDrive() {
   presence.closePanel()
@@ -151,6 +171,22 @@ onUnmounted(() => document.removeEventListener('click', onClickOutside))
     </button>
 
     <div class="flex-1" />
+
+    <button
+      class="relative flex items-center gap-1.5 rounded px-2.5 py-1.5 text-sm font-medium text-white transition-colors"
+      :class="showMessages ? 'bg-white/35 ring-1 ring-white/50' : 'bg-white/20 hover:bg-white/30'"
+      title="Mensajes del equipo"
+      @click="toggleMessages"
+    >
+      <MessageSquare :size="15" />
+      <span class="hidden sm:inline">Mensajes</span>
+      <span
+        v-if="boardChat.unreadCount > 0 && !showMessages"
+        class="absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white ring-2 ring-[#0052cc]"
+      >
+        {{ boardChat.unreadCount > 9 ? '9+' : boardChat.unreadCount }}
+      </span>
+    </button>
 
     <button
       v-if="canViewDrive"

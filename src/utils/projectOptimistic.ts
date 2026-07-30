@@ -10,6 +10,7 @@ export function cloneProjectsState(state: ProjectsDataState): ProjectsDataState 
       milestones: toRaw(state.milestones),
       costs: toRaw(state.costs),
       risks: toRaw(state.risks),
+      notes: toRaw(state.notes),
       deliverables: toRaw(state.deliverables),
       documents: toRaw(state.documents),
       folders: toRaw(state.folders),
@@ -28,6 +29,7 @@ export function readProjectsState(source: {
   milestones: ProjectsDataState['milestones']
   costs: ProjectsDataState['costs']
   risks: ProjectsDataState['risks']
+  notes: ProjectsDataState['notes']
   deliverables: ProjectsDataState['deliverables']
   documents: ProjectsDataState['documents']
   folders: ProjectsDataState['folders']
@@ -43,6 +45,7 @@ export function readProjectsState(source: {
     milestones: source.milestones,
     costs: source.costs,
     risks: source.risks,
+    notes: source.notes,
     deliverables: source.deliverables,
     documents: source.documents,
     folders: source.folders,
@@ -61,6 +64,7 @@ export function writeProjectsState(
     milestones: { value: ProjectsDataState['milestones'] }
     costs: { value: ProjectsDataState['costs'] }
     risks: { value: ProjectsDataState['risks'] }
+    notes: { value: ProjectsDataState['notes'] }
     deliverables: { value: ProjectsDataState['deliverables'] }
     documents: { value: ProjectsDataState['documents'] }
     folders: { value: ProjectsDataState['folders'] }
@@ -77,6 +81,7 @@ export function writeProjectsState(
   target.milestones.value = data.milestones
   target.costs.value = data.costs
   target.risks.value = data.risks
+  target.notes.value = data.notes
   target.deliverables.value = data.deliverables
   target.documents.value = data.documents
   target.folders.value = data.folders

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { Trash2, Paperclip } from '@lucide/vue'
+import { Trash2, Paperclip, LayoutGrid, ExternalLink } from '@lucide/vue'
+import { useRouter } from 'vue-router'
 import { useProjectsStore } from '@/stores/projects'
 import type { ProjectTaskStatus } from '@/types/projects'
 import type { Priority } from '@/types'
@@ -17,8 +18,10 @@ const props = defineProps<{
 const emit = defineEmits<{ close: [] }>()
 
 const projectsStore = useProjectsStore()
+const router = useRouter()
 const saving = ref(false)
 const uploading = ref(false)
+const linkingBoard = ref(false)
 
 const task = computed(() =>
   props.taskId ? projectsStore.tasks.find((t) => t.id === props.taskId) ?? null : null,
@@ -102,6 +105,25 @@ async function logTime() {
     timeNote.value = ''
   } finally {
     loggingTime.value = false
+  }
+}
+
+async function openInBoard() {
+  if (!task.value) return
+  linkingBoard.value = true
+  try {
+    if (task.value.boardCardId && task.value.boardId) {
+      router.push({ name: 'board', params: { boardId: task.value.boardId } })
+      emit('close')
+      return
+    }
+    const result = await projectsStore.openTaskInBoard(task.value.id)
+    if (result) {
+      router.push({ name: 'board', params: { boardId: result.boardId }, query: { card: result.cardId } })
+      emit('close')
+    }
+  } finally {
+    linkingBoard.value = false
   }
 }
 </script>
@@ -216,11 +238,23 @@ async function logTime() {
         </div>
 
         <template #footer>
-          <div class="flex w-full justify-between">
-            <button type="button" class="btn-brand-ghost text-red-600 hover:bg-red-50" @click="remove">
-              <Trash2 :size="16" />
-              Eliminar
-            </button>
+          <div class="flex w-full flex-wrap items-center justify-between gap-2">
+            <div class="flex gap-2">
+              <button type="button" class="btn-brand-ghost text-red-600 hover:bg-red-50" @click="remove">
+                <Trash2 :size="16" />
+                Eliminar
+              </button>
+              <button
+                type="button"
+                class="btn-brand-ghost"
+                :disabled="linkingBoard"
+                @click="openInBoard"
+              >
+                <LayoutGrid :size="16" />
+                {{ task.boardCardId ? 'Ver en tablero' : 'Abrir en tablero' }}
+                <ExternalLink v-if="task.boardCardId" :size="14" class="opacity-60" />
+              </button>
+            </div>
             <div class="flex gap-2">
               <button type="button" class="btn-brand-ghost" @click="emit('close')">Cancelar</button>
               <button

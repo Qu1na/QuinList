@@ -7,6 +7,9 @@ export type NotificationType =
   | 'card_due_soon'
   | 'member_added'
   | 'mention'
+  | 'task_assigned'
+  | 'task_commented'
+  | 'project_chat'
 
 export interface User {
   id: string
@@ -201,6 +204,9 @@ export interface Notification {
     boardId?: string
     cardId?: string
     workspaceId?: string
+    projectId?: string
+    taskId?: string
+    tab?: string
   }
 }
 

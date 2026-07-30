@@ -1,4 +1,6 @@
 /** Tables introduced in docs/migration-collaboration.sql */
+export const OPTIONAL_MODULE_TABLES = [] as const
+
 export const COLLABORATION_TABLES = ['project_task_comments', 'project_presence'] as const
 
 const STORAGE_KEY = 'quinlist_matu_missing_tables'
@@ -50,7 +52,7 @@ export function markTableMissing(table: string): void {
   if (warnedTables.has(table)) return
   warnedTables.add(table)
   console.warn(
-    `[MatuDB] La tabla "${table}" no existe. Ejecuta docs/migration-collaboration.sql en la consola SQL de tu proyecto MatuDB y recarga la página.`,
+    `[MatuDB] La tabla "${table}" no existe. Ejecuta docs/migration-chat-complete.sql en la consola SQL de tu proyecto MatuDB y recarga la página.`,
   )
 }
 
@@ -71,6 +73,14 @@ export function isTableMissing(table: string): boolean {
 
 export function isCollaborationTable(table: string): boolean {
   return (COLLABORATION_TABLES as readonly string[]).includes(table)
+}
+
+export function isOptionalModuleTable(table: string): boolean {
+  return (OPTIONAL_MODULE_TABLES as readonly string[]).includes(table)
+}
+
+export function isGracefulMissingTable(table: string): boolean {
+  return isCollaborationTable(table) || isOptionalModuleTable(table)
 }
 
 export function collaborationTablesForRealtime(): string[] {

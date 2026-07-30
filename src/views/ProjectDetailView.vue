@@ -11,9 +11,11 @@ import ProjectMilestonesTab from '@/components/projects/tabs/ProjectMilestonesTa
 import ProjectTeamTab from '@/components/projects/tabs/ProjectTeamTab.vue'
 import ProjectDeliverablesTab from '@/components/projects/tabs/ProjectDeliverablesTab.vue'
 import ProjectRisksTab from '@/components/projects/tabs/ProjectRisksTab.vue'
+import ProjectNotesTab from '@/components/projects/tabs/ProjectNotesTab.vue'
 import ProjectDocumentsTab from '@/components/projects/tabs/ProjectDocumentsTab.vue'
 import ProjectFilesTab from '@/components/projects/tabs/ProjectFilesTab.vue'
 import ProjectActivityTab from '@/components/projects/tabs/ProjectActivityTab.vue'
+import ProjectMessagesTab from '@/components/projects/tabs/ProjectMessagesTab.vue'
 import ProjectReportsTab from '@/components/projects/tabs/ProjectReportsTab.vue'
 import ProjectSettingsTab from '@/components/projects/tabs/ProjectSettingsTab.vue'
 import type { ProjectDetailTab } from '@/types/projects'
@@ -33,8 +35,10 @@ const tabComponents: Record<ProjectDetailTab, object> = {
   finance: ProjectFinanceTab,
   milestones: ProjectMilestonesTab,
   team: ProjectTeamTab,
+  messages: ProjectMessagesTab,
   deliverables: ProjectDeliverablesTab,
   risks: ProjectRisksTab,
+  notes: ProjectNotesTab,
   documents: ProjectDocumentsTab,
   files: ProjectFilesTab,
   activity: ProjectActivityTab,

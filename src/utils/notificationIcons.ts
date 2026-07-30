@@ -17,6 +17,9 @@ export const notificationIconMap: Record<NotificationType, Component> = {
   card_due_soon: Clock,
   member_added: UserPlus,
   mention: AtSign,
+  task_assigned: Pin,
+  task_commented: MessageSquare,
+  project_chat: MessageSquare,
 }
 
 export function getNotificationIcon(type: NotificationType): Component {

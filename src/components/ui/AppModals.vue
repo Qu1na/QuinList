@@ -4,6 +4,7 @@ import { useUiStore } from '@/stores/ui'
 import { useQuinListStore } from '@/stores/quinlist'
 import { useRouter } from 'vue-router'
 import AppWindow from '@/components/ui/AppWindow.vue'
+import AppConfirmDialog from '@/components/ui/AppConfirmDialog.vue'
 
 const ui = useUiStore()
 const store = useQuinListStore()
@@ -84,38 +85,12 @@ function submitWorkspace() {
 </script>
 
 <template>
-  <!-- Confirm -->
-  <Teleport to="body">
-    <div
-      v-if="ui.activeModal === 'confirm' && ui.confirmOptions"
-      class="app-window-overlay fixed inset-0 z-[2000] flex items-center justify-center p-4"
-      @click.self="ui.resolveConfirm(false)"
-    >
-      <AppWindow
-        :title="ui.confirmOptions.title"
-        subtitle="Confirmación"
-        class="app-window--sm"
-        @close="ui.resolveConfirm(false)"
-      >
-        <p class="text-sm text-[#626f86]">{{ ui.confirmOptions.message }}</p>
-        <template #footer>
-          <div class="app-window-footer-actions">
-            <button type="button" class="btn-brand-ghost" @click="ui.resolveConfirm(false)">
-              {{ ui.confirmOptions.cancelText ?? 'Cancelar' }}
-            </button>
-            <button
-              type="button"
-              class="btn-brand"
-              :class="ui.confirmOptions.variant === 'danger' ? 'btn-brand--danger' : ''"
-              @click="ui.resolveConfirm(true)"
-            >
-              {{ ui.confirmOptions.confirmText ?? 'Confirmar' }}
-            </button>
-          </div>
-        </template>
-      </AppWindow>
-    </div>
-  </Teleport>
+  <!-- Confirm (estilo alerta macOS / iOS) -->
+  <AppConfirmDialog
+    v-if="ui.activeModal === 'confirm' && ui.confirmOptions"
+    :options="ui.confirmOptions"
+    @resolve="ui.resolveConfirm"
+  />
 
   <!-- Prompt -->
   <Teleport to="body">

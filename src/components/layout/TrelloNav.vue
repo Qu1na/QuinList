@@ -15,6 +15,7 @@ import NotificationPanel from './NotificationPanel.vue'
 import AppWindow from '@/components/ui/AppWindow.vue'
 import { useProjectsStore } from '@/stores/projects'
 import { PROJECTS_MODULE_ENABLED } from '@/config/features'
+import { searchGlobally, groupLabel, type GlobalSearchResult } from '@/utils/globalSearch'
 
 defineOptions({ inheritAttrs: false })
 
@@ -39,18 +40,55 @@ const showMembersModal = ref(false)
 const showSearchResults = ref(false)
 const showAccountMenu = ref(false)
 
-const searchResults = computed(() => {
+const searchResults = computed((): GlobalSearchResult[] => {
   if (!ui.searchQuery.trim()) return []
-  return store.searchCards(ui.searchQuery)
+  if (!PROJECTS_MODULE_ENABLED) {
+    return store.searchCards(ui.searchQuery).map((card) => ({
+      id: `card-${card.id}`,
+      group: 'card' as const,
+      title: card.title,
+      subtitle: store.boards.find((b) => b.id === card.boardId)?.title ?? '',
+      boardId: card.boardId,
+      cardId: card.id,
+    }))
+  }
+  return searchGlobally(ui.searchQuery, {
+    boards: store.boards,
+    cards: store.cards,
+    projectsState: {
+      projects: projectsStore.projects,
+      tasks: projectsStore.tasks,
+      milestones: projectsStore.milestones,
+      costs: projectsStore.costs,
+      risks: projectsStore.risks,
+      notes: projectsStore.notes,
+      deliverables: projectsStore.deliverables,
+      documents: projectsStore.documents,
+      folders: projectsStore.folders,
+      invites: projectsStore.invites,
+      members: projectsStore.members,
+      activities: projectsStore.activities,
+      timeEntries: projectsStore.timeEntries,
+      taskComments: projectsStore.taskComments,
+    },
+    workspaceId: store.currentWorkspaceId,
+  })
 })
 
 function onSearchInput() {
   showSearchResults.value = ui.searchQuery.trim().length > 0
 }
 
-function selectSearchResult(cardId: string, boardIdResult: string) {
-  router.push({ name: 'board', params: { boardId: boardIdResult } })
-  ui.openCard(cardId)
+function selectSearchResult(result: GlobalSearchResult) {
+  if (result.group === 'card' && result.boardId && result.cardId) {
+    router.push({ name: 'board', params: { boardId: result.boardId } })
+    ui.openCard(result.cardId)
+  } else if (result.projectId) {
+    router.push({
+      path: `/app/projects/${result.projectId}`,
+      query: result.tab ? { tab: result.tab } : undefined,
+    })
+  }
   ui.searchQuery = ''
   showSearchResults.value = false
 }
@@ -162,7 +200,7 @@ onUnmounted(() => {
         <input
           v-model="ui.searchQuery"
           type="text"
-          placeholder="Buscar tarjetas..."
+          placeholder="Buscar tarjetas, proyectos, tareas..."
           class="w-full bg-transparent text-sm text-white placeholder:text-white/70 outline-none"
           @input="onSearchInput"
           @focus="onSearchInput"
@@ -174,15 +212,16 @@ onUnmounted(() => {
         class="scroll-thin absolute top-full right-0 left-0 z-50 mt-1 max-h-72 overflow-y-auto rounded-lg bg-white py-1 shadow-2xl"
       >
         <button
-          v-for="card in searchResults"
-          :key="card.id"
+          v-for="item in searchResults"
+          :key="item.id"
           class="flex w-full flex-col px-4 py-2.5 text-left hover:bg-slate-50"
-          @mousedown.prevent="selectSearchResult(card.id, card.boardId)"
+          @mousedown.prevent="selectSearchResult(item)"
         >
-          <span class="text-sm font-medium text-[#172b4d]">{{ card.title }}</span>
-          <span class="text-xs text-[#626f86]">
-            {{ store.boards.find((b) => b.id === card.boardId)?.title }}
+          <span class="text-[10px] font-semibold uppercase tracking-wide text-[#2d7eb8]">
+            {{ groupLabel(item.group) }}
           </span>
+          <span class="text-sm font-medium text-[#172b4d]">{{ item.title }}</span>
+          <span class="text-xs text-[#626f86]">{{ item.subtitle }}</span>
         </button>
         <p
           v-if="searchResults.length === 0"

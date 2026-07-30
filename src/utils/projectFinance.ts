@@ -46,6 +46,10 @@ export const PAYMENT_METHOD_LABELS: Record<ProjectCost['paymentMethod'], string>
   other: 'Otro',
 }
 
+export function isProjectFinanceEnabled(project: Project): boolean {
+  return (project.budget ?? 0) > 0
+}
+
 export function calcFinanceSummary(project: Project, transactions: ProjectCost[]): FinanceSummary {
   const income = transactions
     .filter((t) => t.type === 'income')

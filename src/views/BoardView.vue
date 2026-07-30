@@ -4,10 +4,12 @@ import { useRoute, useRouter } from 'vue-router'
 import { useQuinListStore } from '@/stores/quinlist'
 import { useUiStore } from '@/stores/ui'
 import { useBoardPresenceStore } from '@/stores/boardPresence'
+import { useBoardChatStore } from '@/stores/boardChat'
 import { getBoardBackgroundStyle } from '@/utils/boardBackgrounds'
 import TrelloNav from '@/components/layout/TrelloNav.vue'
 import BoardToolbar from '@/components/board/BoardToolbar.vue'
 import KanbanBoard from '@/components/board/KanbanBoard.vue'
+import BoardMessagesView from '@/components/board/BoardMessagesView.vue'
 import IntegrationsPanel from '@/components/board/IntegrationsPanel.vue'
 import ShareBoardModal from '@/components/board/ShareBoardModal.vue'
 import CardModal from '@/components/board/CardModal.vue'
@@ -22,9 +24,12 @@ const router = useRouter()
 const store = useQuinListStore()
 const ui = useUiStore()
 const presence = useBoardPresenceStore()
+const boardChat = useBoardChatStore()
 
 const boardId = computed(() => route.params.boardId as string)
 const board = computed(() => store.boards.find((b) => b.id === boardId.value))
+const view = computed(() => route.query.view as string | undefined)
+const showMessages = computed(() => view.value === 'messages')
 const backgroundStyle = computed(() =>
   getBoardBackgroundStyle(board.value?.background, { fixed: true }),
 )
@@ -34,11 +39,13 @@ watch(
   ([id, b, ready]) => {
     if (!id) {
       void presence.unmount()
+      boardChat.unmount()
       return
     }
     if (!b) {
       if (ready) router.replace({ name: 'home' })
       void presence.unmount()
+      boardChat.unmount()
       return
     }
     store.setCurrentBoard(id)
@@ -46,9 +53,14 @@ watch(
       store.setCurrentWorkspace(b.workspaceId)
     }
     void presence.mount(id)
+    void boardChat.ensureMounted(id)
   },
   { immediate: true },
 )
+
+watch(showMessages, (active) => {
+  boardChat.setViewActive(active)
+})
 
 watch(
   () => ui.selectedCardId,
@@ -68,6 +80,7 @@ watch(
 
 onUnmounted(() => {
   void presence.unmount()
+  boardChat.unmount()
 })
 </script>
 
@@ -75,7 +88,8 @@ onUnmounted(() => {
   <div class="flex h-screen min-h-0 flex-col" :style="backgroundStyle">
     <TrelloNav />
     <BoardToolbar v-if="boardId" :board-id="boardId" />
-    <KanbanBoard v-if="board" class="min-h-0 flex-1" />
+    <BoardMessagesView v-if="board && showMessages" :board-id="boardId" class="min-h-0 flex-1" />
+    <KanbanBoard v-else-if="board" class="min-h-0 flex-1" />
     <CardModal />
     <AppModals />
     <IntegrationsPanel />

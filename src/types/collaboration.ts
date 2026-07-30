@@ -13,6 +13,9 @@ export type ActivityActionType =
   | 'document_created'
   | 'file_uploaded'
   | 'risk_created'
+  | 'note_created'
+  | 'note_updated'
+  | 'note_deleted'
   | 'member_joined'
   | 'member_removed'
   | 'comment_added'
@@ -38,7 +41,7 @@ export interface CollabToast {
   message: string
   userId: string
   userName: string
-  emoji: string
+  actionType: ActivityActionType
   accent: string
   duration: number
 }

@@ -12,8 +12,10 @@ const props = withDefaults(
     segments: DonutSegment[]
     size?: number
     stroke?: number
+    centerLabel?: string
+    centerSubLabel?: string
   }>(),
-  { size: 160, stroke: 22 },
+  { size: 160, stroke: 22, centerLabel: '', centerSubLabel: 'total' },
 )
 
 const total = computed(() => props.segments.reduce((s, seg) => s + seg.value, 0) || 1)
@@ -62,8 +64,8 @@ const arcs = computed(() => {
         />
       </svg>
       <div class="absolute inset-0 flex flex-col items-center justify-center">
-        <span class="text-2xl font-bold text-[#172b4d]">{{ total }}</span>
-        <span class="text-xs text-[#626f86]">tareas</span>
+        <span class="text-2xl font-bold text-[#172b4d]">{{ centerLabel || total }}</span>
+        <span class="text-xs text-[#626f86]">{{ centerSubLabel }}</span>
       </div>
     </div>
     <ul class="flex flex-wrap gap-x-5 gap-y-2 sm:flex-col">

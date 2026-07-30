@@ -36,6 +36,10 @@ import {
   formatRemainingDaysLabel,
   lastCalendarDays,
 } from '@/utils/datetime'
+import ActivityLine from '@/components/projects/shared/ActivityLine.vue'
+import { useProjectHealthConfig } from '@/composables/useProjectHealthConfig'
+import { calculateProjectHealth } from '@/utils/projectHealth'
+import { isProjectFinanceEnabled } from '@/utils/projectFinance'
 import { KANBAN_COLUMNS, TASK_STATUS_LABELS, isTaskOverdue, isProjectOverdue, completedOnCalendarDay } from '@/utils/projectStats'
 import type { ProjectDetailTab } from '@/types/projects'
 
@@ -76,7 +80,11 @@ const widgets = ref<Record<WidgetId, boolean>>({ ...defaultWidgets })
 function loadWidgets() {
   try {
     const raw = localStorage.getItem(`${WIDGETS_KEY}-${props.projectId}`)
-    if (raw) widgets.value = { ...defaultWidgets, ...JSON.parse(raw) }
+    const merged = raw ? { ...defaultWidgets, ...JSON.parse(raw) } : { ...defaultWidgets }
+    if (project.value && !isProjectFinanceEnabled(project.value)) {
+      merged.budget = false
+    }
+    widgets.value = merged
   } catch {
     widgets.value = { ...defaultWidgets }
   }
@@ -101,33 +109,39 @@ const recentFiles = computed(() =>
 )
 const overdueTasks = computed(() => tasks.value.filter((t) => isTaskOverdue(t)).length)
 const blockedTasks = computed(() => tasks.value.filter((t) => t.status === 'blocked').length)
+const financeEnabled = computed(() => (project.value ? isProjectFinanceEnabled(project.value) : false))
 
-const healthScore = computed(() => {
-  let score = dashboard.value.progress
-  score -= overdueTasks.value * 8
-  score -= blockedTasks.value * 5
-  score -= openRisks.value * 6
-  if (project.value && isProjectOverdue(project.value)) score -= 15
-  const msPct = milestones.value.length
-    ? (completedMilestones.value / milestones.value.length) * 100
-    : 100
-  score = score * 0.7 + msPct * 0.3
-  return Math.max(0, Math.min(100, Math.round(score)))
-})
+const healthCounts = computed(() => ({
+  tasks: tasks.value.length,
+  milestones: milestones.value.length,
+}))
 
-const healthLabel = computed(() => {
-  if (healthScore.value >= 80) return 'Excelente'
-  if (healthScore.value >= 60) return 'Bueno'
-  if (healthScore.value >= 40) return 'Atención'
-  return 'Crítico'
-})
+const { factors: healthFactors } = useProjectHealthConfig(
+  computed(() => props.projectId),
+  project,
+  healthCounts,
+)
 
-const healthColor = computed(() => {
-  if (healthScore.value >= 80) return '#10b981'
-  if (healthScore.value >= 60) return '#5bbce4'
-  if (healthScore.value >= 40) return '#f59e0b'
-  return '#f4845f'
-})
+const health = computed(() =>
+  calculateProjectHealth({
+    taskProgress: dashboard.value.progress,
+    overdueTasks: overdueTasks.value,
+    blockedTasks: blockedTasks.value,
+    openRisks: openRisks.value,
+    projectOverdue: project.value ? isProjectOverdue(project.value) : false,
+    milestonePercent: milestones.value.length
+      ? Math.round((completedMilestones.value / milestones.value.length) * 100)
+      : null,
+    finance: financeEnabled.value ? dashboard.value.finance : null,
+    factors: healthFactors.value,
+  }),
+)
+
+const healthScore = computed(() => health.value.score)
+
+const healthLabel = computed(() => health.value.label)
+
+const healthColor = computed(() => health.value.color)
 
 const donutSegments = computed(() => {
   const counts: Record<string, number> = {}
@@ -218,16 +232,19 @@ function goToTab(tab: ProjectDetailTab) {
   router.replace({ path: route.path, query: { tab } })
 }
 
-const widgetOptions: { id: WidgetId; label: string }[] = [
-  { id: 'kpis', label: 'Métricas principales' },
-  { id: 'chart', label: 'Gráficos' },
-  { id: 'workload', label: 'Carga del equipo' },
-  { id: 'shortcuts', label: 'Accesos rápidos' },
-  { id: 'upcoming', label: 'Próximos vencimientos' },
-  { id: 'budget', label: 'Presupuesto' },
-  { id: 'files', label: 'Archivos recientes' },
-  { id: 'activity', label: 'Actividad reciente' },
-]
+const widgetOptions = computed(() => {
+  const options: { id: WidgetId; label: string }[] = [
+    { id: 'kpis', label: 'Métricas principales' },
+    { id: 'chart', label: 'Gráficos' },
+    { id: 'workload', label: 'Carga del equipo' },
+    { id: 'shortcuts', label: 'Accesos rápidos' },
+    { id: 'upcoming', label: 'Próximos vencimientos' },
+    { id: 'budget', label: 'Presupuesto' },
+    { id: 'files', label: 'Archivos recientes' },
+    { id: 'activity', label: 'Actividad reciente' },
+  ]
+  return financeEnabled.value ? options : options.filter((o) => o.id !== 'budget')
+})
 </script>
 
 <template>
@@ -269,6 +286,9 @@ const widgetOptions: { id: WidgetId; label: string }[] = [
           </div>
         </div>
         <p class="dash-hero__health-caption">Salud del proyecto</p>
+        <p v-if="health.breakdown.length" class="dash-hero__health-caption mt-1 text-[0.6875rem] opacity-80" :title="health.breakdown.map((b) => `${b.detail} (${b.impact >= 0 ? '+' : ''}${b.impact})`).join('\n')">
+          Según {{ health.breakdown.length }} factor{{ health.breakdown.length === 1 ? '' : 'es' }} activo{{ health.breakdown.length === 1 ? '' : 's' }}
+        </p>
       </div>
       <button type="button" class="dash-hero__settings" @click="showWidgetPanel = !showWidgetPanel">
         <Settings2 :size="18" />
@@ -327,7 +347,7 @@ const widgetOptions: { id: WidgetId; label: string }[] = [
           <p class="dash-kpi__label">Hitos ({{ completedMilestones }}/{{ milestones.length }})</p>
         </div>
       </div>
-      <div class="dash-kpi">
+      <div v-if="financeEnabled" class="dash-kpi">
         <div class="dash-kpi__icon dash-kpi__icon--coral"><Wallet :size="20" /></div>
         <div>
           <p class="dash-kpi__value">
@@ -458,7 +478,7 @@ const widgetOptions: { id: WidgetId; label: string }[] = [
         <p v-else class="text-sm text-[#626f86]">No hay tareas pendientes.</p>
       </div>
 
-      <div v-if="widgets.budget" class="dash-chart-card">
+      <div v-if="widgets.budget && financeEnabled" class="dash-chart-card">
         <div class="mb-4 flex items-center justify-between">
           <h3 class="dash-section-title flex items-center gap-2">
             <Wallet :size="18" class="text-[#f4845f]" />
@@ -529,9 +549,8 @@ const widgetOptions: { id: WidgetId; label: string }[] = [
           class="flex gap-4 py-3.5 text-sm first:pt-0 last:pb-0"
         >
           <RelativeTime :iso="act.createdAt" class="w-28 shrink-0 text-xs text-[#626f86]" />
-          <div>
-            <span class="font-medium text-[#172b4d]">{{ userName(act.userId) }}</span>
-            <span class="text-[#626f86]"> — {{ act.action }}: {{ act.details }}</span>
+          <div class="min-w-0 flex-1">
+            <ActivityLine :activity="act" :user-name="userName(act.userId)" class="text-sm" />
           </div>
         </li>
       </ul>

@@ -1,0 +1,23 @@
+/* Tokens compartidos del módulo de mensajes (heredan a hijos) */
+.ql-chat-workspace {
+  --ql-chat-sidebar: #1a2b4a;
+  --ql-chat-sidebar-deep: #0f1c33;
+  --ql-chat-primary: #2d7eb8;
+  --ql-chat-primary-dark: #256da3;
+  --ql-chat-sky: #5bbce4;
+  --ql-chat-accent: #6554c0;
+  --ql-chat-coral: #f4845f;
+  --ql-chat-ink: #172b4d;
+  --ql-chat-muted: #626f86;
+  --ql-chat-subtle: #97a0af;
+  --ql-chat-border: rgba(9, 30, 66, 0.1);
+  --ql-chat-surface: #ffffff;
+  --ql-chat-bg: #f4f7fb;
+  --ql-chat-hover: rgba(45, 126, 184, 0.06);
+  --ql-chat-mention-bg: rgba(45, 126, 184, 0.14);
+  --ql-chat-mention-text: #2d7eb8;
+  --ql-chat-entity-bg: rgba(101, 84, 192, 0.12);
+  --ql-chat-entity-text: #6554c0;
+  --ql-chat-shadow: 0 4px 24px rgba(23, 43, 77, 0.08);
+  --ql-chat-radius: 0.875rem;
+}

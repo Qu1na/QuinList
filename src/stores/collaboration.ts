@@ -96,13 +96,13 @@ export const useCollaborationStore = defineStore('collaboration', () => {
 
     const user = auth.getUserById(activity.userId)
     const userName = user?.name ?? 'Un miembro del equipo'
-    const { message, emoji, accent } = formatActivityToast(activity, userName)
+    const { message, actionType, accent } = formatActivityToast(activity, userName)
 
     if (shouldSkipActivity(activity, message)) return
 
     pushToast({
       message,
-      emoji,
+      actionType,
       accent,
       userId: activity.userId,
       userName,

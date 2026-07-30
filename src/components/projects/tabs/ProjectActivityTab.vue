@@ -4,7 +4,7 @@ import { Activity, Users, Clock } from '@lucide/vue'
 import { useProjectsStore } from '@/stores/projects'
 import UserAvatar from '@/components/projects/shared/UserAvatar.vue'
 import { useProjectUsers } from '@/composables/useProjectUsers'
-import { formatActivityLine } from '@/utils/activityFormat'
+import ActivityLine from '@/components/projects/shared/ActivityLine.vue'
 import { compareInstants } from '@/utils/datetime'
 import RelativeTime from '@/components/ui/RelativeTime.vue'
 
@@ -71,7 +71,7 @@ function userName(id: string) {
           <UserAvatar :user-id="act.userId" size="md" />
           <div class="min-w-0 flex-1">
             <div class="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-              <span class="text-sm text-[#44546f]">{{ formatActivityLine(act, userName(act.userId)) }}</span>
+              <ActivityLine :activity="act" :user-name="userName(act.userId)" class="text-sm" />
             </div>
             <p v-if="act.details && act.entityTitle !== act.details" class="mt-0.5 text-sm text-[#626f86]">{{ act.details }}</p>
             <RelativeTime :iso="act.createdAt" class="mt-1.5 text-xs font-medium text-[#626f86]" />

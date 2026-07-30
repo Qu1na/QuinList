@@ -12,11 +12,35 @@ const router = useRouter()
 
 function handleClick(notification: (typeof notif.userNotifications)[0]) {
   notif.markAsRead(notification.id)
-  if (notification.metadata?.cardId) {
-    if (notification.metadata.boardId) {
-      router.push({ name: 'board', params: { boardId: notification.metadata.boardId } })
+  const meta = notification.metadata
+
+  if (meta?.projectId) {
+    router.push({
+      path: `/app/projects/${meta.projectId}`,
+      query: { tab: meta.tab ?? 'dashboard' },
+    })
+    notif.showPanel = false
+    return
+  }
+
+  if (meta?.boardId) {
+    router.push({
+      name: 'board',
+      params: { boardId: meta.boardId },
+      query: meta.tab === 'messages' ? { view: 'messages' } : undefined,
+    })
+    if (meta.cardId) {
+      ui.openCard(meta.cardId)
     }
-    ui.openCard(notification.metadata.cardId)
+    notif.showPanel = false
+    return
+  }
+
+  if (meta?.cardId) {
+    if (meta.boardId) {
+      router.push({ name: 'board', params: { boardId: meta.boardId } })
+    }
+    ui.openCard(meta.cardId)
     notif.showPanel = false
   }
 }

@@ -7,9 +7,10 @@ export function countWorkspaceEntities(data: ProjectsDataState, workspaceId: str
   const taskCount = data.tasks.filter((t) => projectIds.has(t.projectId)).length
   const milestoneCount = data.milestones.filter((m) => projectIds.has(m.projectId)).length
   const deliverableCount = data.deliverables.filter((d) => projectIds.has(d.projectId)).length
+  const noteCount = (data.notes ?? []).filter((n) => projectIds.has(n.projectId)).length
   return {
     projects: wsProjects.length,
-    entities: taskCount + milestoneCount + deliverableCount,
+    entities: taskCount + milestoneCount + deliverableCount + noteCount,
   }
 }
 
@@ -50,11 +51,6 @@ export function mergeWithBackup(
   const backup = getWorkspaceBackupData(workspaceId)
   if (!backup) return data
 
-  const loaded = countWorkspaceEntities(data, workspaceId)
-  const backupCounts = countWorkspaceEntities(backup, workspaceId)
-  if (backupCounts.projects === 0 || backupCounts.entities === 0) return data
-  if (loaded.projects > 0 && loaded.entities >= backupCounts.entities) return data
-
   const projectById = new Map(data.projects.map((p) => [p.id, p]))
   for (const project of backup.projects) {
     if (!projectById.has(project.id)) projectById.set(project.id, project)
@@ -69,6 +65,7 @@ export function mergeWithBackup(
     milestones: mergeEntityList(data.milestones, backup.milestones, projectIds),
     costs: mergeEntityList(data.costs, backup.costs, projectIds),
     risks: mergeEntityList(data.risks, backup.risks, projectIds),
+    notes: mergeEntityList(data.notes ?? [], backup.notes ?? [], projectIds),
     deliverables: mergeEntityList(data.deliverables, backup.deliverables, projectIds),
     documents: mergeEntityList(data.documents, backup.documents, projectIds),
     folders: mergeEntityList(data.folders ?? [], backup.folders ?? [], projectIds),
@@ -93,6 +90,7 @@ function filterWorkspaceData(
     milestones: backup.milestones.filter((m) => projectIds.has(m.projectId)),
     costs: backup.costs.filter((c) => projectIds.has(c.projectId)),
     risks: backup.risks.filter((r) => projectIds.has(r.projectId)),
+    notes: (backup.notes ?? []).filter((n) => projectIds.has(n.projectId)),
     deliverables: backup.deliverables.filter((d) => projectIds.has(d.projectId)),
     documents: backup.documents.filter((d) => projectIds.has(d.projectId)),
     folders: (backup.folders ?? []).filter((f) => projectIds.has(f.projectId)),

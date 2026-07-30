@@ -118,6 +118,7 @@ export async function uploadProjectFile(
   scope: string,
   entityId: string,
   file: File,
+  options?: { strict?: boolean },
 ): Promise<UploadedFile> {
   if (!isMatuConfigured()) {
     const url = await readAsDataUrl(file)
@@ -129,6 +130,8 @@ export async function uploadProjectFile(
   const { data, error } = await db.storage.upload(originalName, file)
 
   if (error) {
+    const message = `No se pudo subir el archivo a MatuDB: ${error.message}`
+    if (options?.strict) throw new Error(message)
     console.warn('Project storage upload failed, using local URL:', error.message)
     const url = await readAsDataUrl(file)
     return { url, storageFilename: '', original: file.name }
@@ -136,7 +139,9 @@ export async function uploadProjectFile(
 
   const uploaded = parseUploadResponse(data)
   if (!uploaded) {
-    throw new Error('Respuesta de storage inválida')
+    const message = 'Respuesta de storage inválida'
+    if (options?.strict) throw new Error(message)
+    throw new Error(message)
   }
 
   return {
@@ -144,6 +149,22 @@ export async function uploadProjectFile(
     storageFilename: uploaded.filename,
     original: uploaded.original,
   }
+}
+
+/** Evita guardar data URLs enormes en filas de MatuDB. */
+export function attachmentForPersistence<T extends Pick<Attachment, 'url' | 'storageFilename'>>(
+  attachment: T,
+): T {
+  if (!attachment.url.startsWith('data:') && !attachment.url.startsWith('blob:')) {
+    return attachment
+  }
+  if (attachment.storageFilename) {
+    return {
+      ...attachment,
+      url: getAttachmentPublicUrl(attachment as unknown as Attachment),
+    }
+  }
+  return { ...attachment, url: '' }
 }
 
 export async function uploadCardFile(
@@ -239,14 +260,26 @@ const CHAT_ALLOWED_MIME = new Set([
   'image/gif',
   'application/pdf',
   'text/plain',
+  'text/csv',
+  'application/zip',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.ms-powerpoint',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
 ])
 
 export function validateChatFile(file: File): void {
   if (file.size > CHAT_MAX_FILE_BYTES) {
     throw new Error(`El archivo supera el límite de ${CHAT_MAX_FILE_LABEL}`)
   }
-  if (!CHAT_ALLOWED_MIME.has(file.type) && !file.type.startsWith('image/')) {
-    throw new Error('Tipo de archivo no permitido (imágenes o PDF)')
+  const allowed =
+    CHAT_ALLOWED_MIME.has(file.type) ||
+    file.type.startsWith('image/') ||
+    file.type.startsWith('text/')
+  if (!allowed) {
+    throw new Error('Tipo de archivo no permitido. Usa imágenes, PDF u oficina.')
   }
 }
 

@@ -6,6 +6,8 @@ import {
   loadProjectsForUser,
   syncProjectsToMatu,
 } from '@/services/projectMatuData'
+import { mergeWithBackup } from '@/utils/projectRecovery'
+import { clearMissingTablesCache } from '@/lib/matuTables'
 import { todayCalendarDate, nowInstantISO } from '@/utils/datetime'
 
 const STORAGE_KEY = 'quinlist_projects_data_v2'
@@ -54,6 +56,12 @@ export function normalizeProjectsState(raw: Partial<ProjectsDataState>): Project
       probability: r.probability ?? 'medium',
       mitigationPlan: r.mitigationPlan ?? '',
       ownerId: r.ownerId ?? null,
+    })),
+    notes: (raw.notes ?? []).map((n) => ({
+      ...n,
+      style: n.style ?? 'pin-single',
+      rotation: n.rotation ?? 0,
+      position: n.position ?? 0,
     })),
     deliverables: (raw.deliverables ?? []).map((d) => ({
       ...d,
@@ -108,6 +116,56 @@ export function saveProjectsLocal(data: ProjectsDataState): void {
   window.dispatchEvent(new CustomEvent(PROJECTS_LOCAL_SYNC_EVENT))
 }
 
+export function clearProjectsLocalStorage(): void {
+  localStorage.removeItem(STORAGE_KEY)
+  localStorage.removeItem('quinlist_projects_data')
+}
+
+function workspaceItemCount(data: ProjectsDataState, workspaceId: string): number {
+  const projectIds = new Set(
+    data.projects.filter((p) => p.workspaceId === workspaceId).map((p) => p.id),
+  )
+  if (!projectIds.size) return 0
+  let total = projectIds.size
+  const lists: Array<keyof ProjectsDataState> = [
+    'tasks',
+    'milestones',
+    'costs',
+    'risks',
+    'notes',
+    'deliverables',
+    'documents',
+    'folders',
+    'invites',
+    'members',
+    'activities',
+    'timeEntries',
+    'taskComments',
+  ]
+  for (const key of lists) {
+    const items = data[key] as Array<{ projectId: string }> | undefined
+    total += (items ?? []).filter((item) => projectIds.has(item.projectId)).length
+  }
+  return total
+}
+
+async function loadProjectsFromMatu(
+  workspaceId: string,
+  userId: string,
+  isWorkspaceMember: boolean,
+): Promise<ProjectsDataState> {
+  const dbData = await loadProjectsForUser(workspaceId, userId, isWorkspaceMember)
+  const merged = mergeWithBackup(workspaceId, dbData)
+
+  if (workspaceItemCount(merged, workspaceId) > workspaceItemCount(dbData, workspaceId)) {
+    await syncProjectsToMatu(workspaceId, merged)
+  }
+
+  clearProjectsLocalStorage()
+  clearMissingTablesCache()
+  return merged
+}
+
 export async function loadProjectsData(
   workspaceId: string,
   userId: string | null,
@@ -121,6 +179,7 @@ export async function loadProjectsData(
         milestones: [],
         costs: [],
         risks: [],
+        notes: [],
         deliverables: [],
         documents: [],
         folders: [],
@@ -131,7 +190,7 @@ export async function loadProjectsData(
         taskComments: [],
       }
     }
-    return loadProjectsForUser(workspaceId, userId, isWorkspaceMember)
+    return loadProjectsFromMatu(workspaceId, userId, isWorkspaceMember)
   }
   return loadProjectsLocal()
 }
@@ -143,6 +202,7 @@ export async function persistProjectsData(
 ): Promise<void> {
   if (isProjectsMatuEnabled()) {
     await syncProjectsToMatu(workspaceId, data)
+    clearProjectsLocalStorage()
     return
   }
   saveProjectsLocal(data)

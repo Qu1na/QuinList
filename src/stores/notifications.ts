@@ -11,6 +11,10 @@ import {
   markAllNotificationsRead,
   subscribeNotificationsRealtime,
 } from '@/services/matuData'
+import {
+  requestBrowserNotificationPermission,
+  showBrowserNotification,
+} from '@/utils/browserNotifications'
 
 type NotificationInput = {
   type: NotificationType
@@ -54,12 +58,24 @@ export const useNotificationStore = defineStore('notifications', () => {
   async function reloadFromDb() {
     const auth = useAuthStore()
     if (!isMatuConfigured() || !auth.currentUserId) return
-    notifications.value = await loadNotifications(auth.currentUserId)
+    const prevIds = new Set(notifications.value.map((n) => n.id))
+    const loaded = await loadNotifications(auth.currentUserId)
+    for (const n of loaded) {
+      if (
+        !prevIds.has(n.id) &&
+        !n.read &&
+        n.userId === auth.currentUserId
+      ) {
+        notifyUser(n)
+      }
+    }
+    notifications.value = loaded
     persistLocal()
   }
 
   async function init() {
     await reloadFromDb()
+    void requestBrowserNotificationPermission()
     unsubscribeRealtime?.()
     const auth = useAuthStore()
     if (auth.currentUserId && isMatuConfigured()) {
@@ -74,6 +90,13 @@ export const useNotificationStore = defineStore('notifications', () => {
     unsubscribeRealtime = null
   }
 
+  function notifyUser(notification: Notification) {
+    const auth = useAuthStore()
+    if (notification.userId !== auth.currentUserId) return
+    dispatchToast(notification)
+    showBrowserNotification(notification)
+  }
+
   async function push(input: NotificationInput) {
     const notification: Notification = {
       id: generateId(),
@@ -83,7 +106,7 @@ export const useNotificationStore = defineStore('notifications', () => {
     }
     notifications.value.unshift(notification)
     persistLocal()
-    dispatchToast(notification)
+    notifyUser(notification)
 
     if (isMatuConfigured()) {
       try {
