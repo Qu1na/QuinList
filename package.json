@@ -5,9 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/generate-seo.mjs",
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
     "build-only": "vite build",
+    "seo:generate": "node scripts/generate-seo.mjs",
     "start": "serve dist -s -l 3012",
     "type-check": "vue-tsc --build",
     "lint": "run-s \"lint:*\"",

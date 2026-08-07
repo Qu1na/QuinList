@@ -30,6 +30,21 @@ const router = createRouter({
       meta: { guest: true },
     },
     {
+      path: '/ayuda',
+      name: 'help',
+      component: () => import('../views/HelpView.vue'),
+    },
+    {
+      path: '/privacidad',
+      name: 'privacy',
+      component: () => import('../views/PrivacyView.vue'),
+    },
+    {
+      path: '/terminos',
+      name: 'terms',
+      component: () => import('../views/TermsView.vue'),
+    },
+    {
       path: '/share/project/:token',
       name: 'share-project',
       component: () => import('../views/SharedProjectView.vue'),

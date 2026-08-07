@@ -5,6 +5,7 @@ import { createPinia } from 'pinia'
 
 import App from './App.vue'
 import router from './router'
+import { setupRouterSeo } from '@/seo/setupRouterSeo'
 import { useAuthStore } from './stores/auth'
 import { useQuinListStore } from './stores/quinlist'
 import { useNotificationStore } from './stores/notifications'
@@ -15,6 +16,7 @@ const pinia = createPinia()
 
 app.use(pinia)
 app.use(router)
+setupRouterSeo(router)
 
 async function bootstrap() {
   const auth = useAuthStore()

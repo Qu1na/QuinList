@@ -2,10 +2,16 @@
 import { computed } from 'vue'
 import type { ChartPoint } from '@/utils/workspaceStats'
 
-const props = defineProps<{
-  points: ChartPoint[]
-  height?: number
-}>()
+const props = withDefaults(
+  defineProps<{
+    points: ChartPoint[]
+    height?: number
+    emptyText?: string
+  }>(),
+  {
+    emptyText: 'Aún no hay datos para este período',
+  },
+)
 
 const h = computed(() => props.height ?? 160)
 const pad = { t: 16, r: 16, b: 32, l: 36 }
@@ -123,7 +129,7 @@ const areaPath = computed(() => {
     </svg>
 
     <p v-if="!hasData" class="line-chart__empty">
-      Aún no hay tareas completadas en los últimos 7 días
+      {{ emptyText }}
     </p>
   </div>
 </template>

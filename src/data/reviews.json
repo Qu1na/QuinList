@@ -1,0 +1,295 @@
+{
+  "ratingValue": 4.9,
+  "bestRating": 5,
+  "worstRating": 1,
+  "reviews": [
+    {
+      "id": "r01",
+      "name": "María González",
+      "role": "Directora de Operaciones",
+      "company": "Norte Logistics",
+      "rating": 5,
+      "quote": "Pasamos de hojas de cálculo a QuinList y el equipo no volvió atrás. El tablero Kanban nos dio claridad inmediata."
+    },
+    {
+      "id": "r02",
+      "name": "Carlos Mendoza",
+      "role": "Project Manager",
+      "company": "Atlas Digital",
+      "rating": 5,
+      "quote": "Como gestor de proyectos valoro el control de tareas, las prioridades y la colaboración en tiempo real. El equipo sí lo usa."
+    },
+    {
+      "id": "r03",
+      "name": "Ana Ruiz",
+      "role": "Head of People",
+      "company": "Lumen Studio",
+      "rating": 5,
+      "quote": "Workspaces, roles y un dashboard con métricas: todo lo que necesitábamos para la productividad empresarial."
+    },
+    {
+      "id": "r04",
+      "name": "Diego Vargas",
+      "role": "Lead de Producto",
+      "company": "Orbit Soft",
+      "rating": 5,
+      "quote": "La gestión de tareas y las fechas límite quedaron visibles para todos. Entregamos a tiempo sin reuniones interminables."
+    },
+    {
+      "id": "r05",
+      "name": "Valentina Soto",
+      "role": "COO",
+      "company": "Andes Retail",
+      "rating": 5,
+      "quote": "Centralizamos la planificación de proyectos de tres áreas en un solo workspace. QuinList se volvió nuestro sistema operativo."
+    },
+    {
+      "id": "r06",
+      "name": "Javier Palacios",
+      "role": "Scrum Master",
+      "company": "NovaFintech",
+      "rating": 5,
+      "quote": "El tablero Kanban y el seguimiento del sprint son claros. Asignar responsables y prioridades es muy rápido."
+    },
+    {
+      "id": "r07",
+      "name": "Camila Herrera",
+      "role": "Directora de Agencia",
+      "company": "Pixel & Co.",
+      "rating": 5,
+      "quote": "Tenemos un workspace por cliente. Comentarios, archivos adjuntos y notificaciones nos ahorraron caos en Slack."
+    },
+    {
+      "id": "r08",
+      "name": "Andrés Quintero",
+      "role": "Gerente de TI",
+      "company": "Grupo Soluna",
+      "rating": 5,
+      "quote": "Roles y permisos bien pensados. La administración de usuarios nos dio control sin frenar al equipo."
+    },
+    {
+      "id": "r09",
+      "name": "Laura Méndez",
+      "role": "Product Owner",
+      "company": "Kaira Health",
+      "rating": 5,
+      "quote": "El calendario y las fechas límite nos ayudan a ver el roadmap completo. Excelente software colaborativo."
+    },
+    {
+      "id": "r10",
+      "name": "Ricardo Peña",
+      "role": "Fundador",
+      "company": "StarterLab",
+      "rating": 5,
+      "quote": "Empezamos gratis y en una tarde ya teníamos tableros, equipo y métricas. Ideal para startups."
+    },
+    {
+      "id": "r11",
+      "name": "Sofía Navarro",
+      "role": "Operations Lead",
+      "company": "Mercurio Foods",
+      "rating": 5,
+      "quote": "El historial de actividades y la búsqueda rápida nos facilitan auditorías internas sin drama."
+    },
+    {
+      "id": "r12",
+      "name": "Mateo Ríos",
+      "role": "Engineering Manager",
+      "company": "CloudBridge",
+      "rating": 5,
+      "quote": "Colaboración en tiempo real de verdad. Varias personas actualizan el mismo tablero sin pisarse."
+    },
+    {
+      "id": "r13",
+      "name": "Elena Castro",
+      "role": "Directora Comercial",
+      "company": "Vértice Seguros",
+      "rating": 5,
+      "quote": "Pasamos de Excel a un gestor de proyectos serio. El dashboard con métricas es lo que más miro."
+    },
+    {
+      "id": "r14",
+      "name": "Nicolás Bravo",
+      "role": "Delivery Manager",
+      "company": "Hexa Consulting",
+      "rating": 5,
+      "quote": "Control de tareas, prioridades y asignación de responsables en un solo lugar. Nuestros clientes lo notan."
+    },
+    {
+      "id": "r15",
+      "name": "Paula Jiménez",
+      "role": "Marketing Manager",
+      "company": "Brisa Media",
+      "rating": 5,
+      "quote": "Campañas, deadlines y archivos adjuntos juntos. QuinList ordenó la operación del área de marketing."
+    },
+    {
+      "id": "r16",
+      "name": "Felipe Ordóñez",
+      "role": "CTO",
+      "company": "AltaVolt",
+      "rating": 5,
+      "quote": "Software SaaS claro, sin curva absurda. Kanban + proyectos + roles: justo lo que pedía el equipo técnico."
+    },
+    {
+      "id": "r17",
+      "name": "Daniela Paredes",
+      "role": "PMO",
+      "company": "Construcciones Delta",
+      "rating": 5,
+      "quote": "El seguimiento de proyectos y los paneles con estadísticas nos dan visibilidad semanal real."
+    },
+    {
+      "id": "r18",
+      "name": "Hugo Salinas",
+      "role": "Team Lead",
+      "company": "CodeAndes",
+      "rating": 5,
+      "quote": "Las notificaciones y los comentarios en tarjetas redujeron el ruido. Productividad empresarial tangible."
+    },
+    {
+      "id": "r19",
+      "name": "Isabella Torres",
+      "role": "Customer Success",
+      "company": "Nimbo CRM",
+      "rating": 5,
+      "quote": "Organizamos onboarding de clientes por equipos. Espacios de trabajo limpios y fáciles de entender."
+    },
+    {
+      "id": "r20",
+      "name": "Sebastián Rojas",
+      "role": "Director de Proyectos",
+      "company": "InnovaPublica",
+      "rating": 5,
+      "quote": "Planificación de proyectos, hitos y responsables claros. QuinList se siente como plataforma empresarial."
+    },
+    {
+      "id": "r21",
+      "name": "Mariana Vélez",
+      "role": "UX Lead",
+      "company": "Forma Estudio",
+      "rating": 5,
+      "quote": "Diseño limpio y flujo natural. El tablero Kanban no pelea con el equipo creativo: lo acompaña."
+    },
+    {
+      "id": "r22",
+      "name": "Óscar Beltrán",
+      "role": "Gerente General",
+      "company": "TransAndina",
+      "rating": 5,
+      "quote": "Administración de equipos y permisos sin complicaciones. Por fin un software para empresas usable."
+    },
+    {
+      "id": "r23",
+      "name": "Catalina Mora",
+      "role": "Account Manager",
+      "company": "Agencia Norte",
+      "rating": 5,
+      "quote": "Cada cliente en su workspace. Archivos, fechas límite y comentarios: menos correos, más avance."
+    },
+    {
+      "id": "r24",
+      "name": "Pedro Aguilar",
+      "role": "QA Lead",
+      "company": "Sentry Labs",
+      "rating": 4,
+      "quote": "Prioridades y responsables visibles en cada tarjeta. El control de tareas del sprint mejoró mucho."
+    },
+    {
+      "id": "r25",
+      "name": "Lucía Fernández",
+      "role": "People Ops",
+      "company": "CulturaPlus",
+      "rating": 5,
+      "quote": "Roles, permisos e historial de actividades nos dan trazabilidad. Ideal para equipos en crecimiento."
+    },
+    {
+      "id": "r26",
+      "name": "Tomás Guerrero",
+      "role": "Founder",
+      "company": "RutaVerde",
+      "rating": 5,
+      "quote": "Buscábamos project management sin pagar una fortuna. QuinList cumple y se siente premium."
+    },
+    {
+      "id": "r27",
+      "name": "Andrea Castillo",
+      "role": "Ops Manager",
+      "company": "FarmaLink",
+      "rating": 5,
+      "quote": "Calendario + Kanban + métricas. El seguimiento de proyectos dejó de ser un misterio semanal."
+    },
+    {
+      "id": "r28",
+      "name": "Martín Iglesias",
+      "role": "Delivery Lead",
+      "company": "Synergy Latam",
+      "rating": 5,
+      "quote": "Colaboración en tiempo real y notificaciones oportunas. El equipo está alineado desde el día uno."
+    },
+    {
+      "id": "r29",
+      "name": "Patricia León",
+      "role": "Directora de Innovación",
+      "company": "Banco Sierra",
+      "rating": 4,
+      "quote": "Plataforma SaaS estable para administración de equipos. Dashboard con métricas claro y accionable."
+    },
+    {
+      "id": "r30",
+      "name": "Gabriel Núñez",
+      "role": "Tech Lead",
+      "company": "Pulse Analytics",
+      "rating": 5,
+      "quote": "Búsqueda rápida, adjuntos y comentarios junto a la tarea. Menos contexto perdido entre herramientas."
+    },
+    {
+      "id": "r31",
+      "name": "Carolina Díaz",
+      "role": "Project Coordinator",
+      "company": "EduNova",
+      "rating": 5,
+      "quote": "Gestión de tareas sencilla para profesores y ops. Las fechas límite se respetan más que antes."
+    },
+    {
+      "id": "r32",
+      "name": "Iván Cabrera",
+      "role": "CEO",
+      "company": "Montaña Soft",
+      "rating": 5,
+      "quote": "Reemplazamos tres herramientas. QuinList es nuestro software de gestión de proyectos diario."
+    },
+    {
+      "id": "r33",
+      "name": "Natalia Espinoza",
+      "role": "Creative Director",
+      "company": "Onda Creativa",
+      "rating": 5,
+      "quote": "Tableros visuales, prioridades y archivos en un solo sitio. Flujo creativo sin perder organización."
+    },
+    {
+      "id": "r34",
+      "name": "Héctor Ramírez",
+      "role": "Operations Analyst",
+      "company": "LogiSur",
+      "rating": 4,
+      "quote": "Los paneles con estadísticas y el historial nos ayudan a reportar avance a dirección sin Excel."
+    },
+    {
+      "id": "r35",
+      "name": "Jimena Acosta",
+      "role": "HR Business Partner",
+      "company": "Talento360",
+      "rating": 5,
+      "quote": "Organización por equipos y espacios de trabajo claros. Onboarding de nuevos colaboradores más ágil."
+    },
+    {
+      "id": "r36",
+      "name": "Rodrigo Salcedo",
+      "role": "Senior PM",
+      "company": "Apex Solutions",
+      "rating": 5,
+      "quote": "Planificación, seguimiento y colaboración en tiempo real. QuinList se siente de nivel internacional."
+    }
+  ]
+}

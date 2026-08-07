@@ -1,0 +1,84 @@
+{
+  "siteUrl": "https://quinlist.matubyte.com",
+  "siteName": "QuinList",
+  "locale": "es_ES",
+  "language": "es",
+  "contactEmail": "contacto@matubyte.com",
+  "publisher": {
+    "name": "MatuByte S.A.S.",
+    "url": "https://matubyte.com"
+  },
+  "defaultOgImage": "/image/logo/logo-512.png",
+  "keywords": [
+    "software de gestión de proyectos",
+    "gestor de proyectos",
+    "project management software",
+    "software para empresas",
+    "software empresarial",
+    "software SaaS",
+    "plataforma de productividad",
+    "gestión de tareas",
+    "tablero Kanban",
+    "colaboración en tiempo real",
+    "administración de equipos",
+    "planificación de proyectos",
+    "seguimiento de proyectos",
+    "gestión empresarial",
+    "control de tareas",
+    "trabajo colaborativo",
+    "workspace",
+    "project tracker",
+    "team collaboration",
+    "task manager",
+    "project planner",
+    "gestión de equipos",
+    "software de organización",
+    "software para PYMES",
+    "software para empresas grandes",
+    "QuinList"
+  ],
+  "routes": [
+    {
+      "path": "/",
+      "name": "landing",
+      "changefreq": "weekly",
+      "priority": 1.0,
+      "index": true
+    },
+    {
+      "path": "/register",
+      "name": "register",
+      "changefreq": "monthly",
+      "priority": 0.9,
+      "index": true
+    },
+    {
+      "path": "/ayuda",
+      "name": "help",
+      "changefreq": "monthly",
+      "priority": 0.7,
+      "index": true
+    },
+    {
+      "path": "/privacidad",
+      "name": "privacy",
+      "changefreq": "yearly",
+      "priority": 0.3,
+      "index": true
+    },
+    {
+      "path": "/terminos",
+      "name": "terms",
+      "changefreq": "yearly",
+      "priority": 0.3,
+      "index": true
+    },
+    {
+      "path": "/login",
+      "name": "login",
+      "changefreq": "yearly",
+      "priority": 0.1,
+      "index": false
+    }
+  ]
+}

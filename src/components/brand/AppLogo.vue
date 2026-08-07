@@ -8,10 +8,12 @@ const props = withDefaults(
     size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
     class?: string
     rounded?: boolean
+    eager?: boolean
   }>(),
   {
     size: 'md',
     rounded: true,
+    eager: false,
   },
 )
 
@@ -30,9 +32,11 @@ const sizeClass = computed(() => {
 <template>
   <img
     :src="LOGO_SRC"
-    alt="QuinList"
+    alt="QuinList — software de gestión de proyectos"
     class="shrink-0 object-contain"
     :class="[sizeClass, rounded ? 'rounded-[22%]' : '', props.class]"
+    :loading="eager ? 'eager' : 'lazy'"
+    decoding="async"
     draggable="false"
   />
 </template>

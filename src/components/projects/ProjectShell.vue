@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, toRef, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, toRef, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   LayoutDashboard,
@@ -54,7 +54,34 @@ watch(
   { immediate: true },
 )
 
-const mobileNavOpen = ref(false)
+const DESKTOP_NAV_MQ = '(min-width: 768px)'
+const navOpen = ref(
+  typeof window !== 'undefined' ? window.matchMedia(DESKTOP_NAV_MQ).matches : true,
+)
+
+function syncNavToViewport(e: MediaQueryListEvent) {
+  // Al cruzar el breakpoint: abierto en desktop, cerrado en móvil.
+  navOpen.value = e.matches
+}
+
+let desktopNavMq: MediaQueryList | null = null
+
+onMounted(() => {
+  desktopNavMq = window.matchMedia(DESKTOP_NAV_MQ)
+  desktopNavMq.addEventListener('change', syncNavToViewport)
+})
+
+onUnmounted(() => {
+  desktopNavMq?.removeEventListener('change', syncNavToViewport)
+})
+
+function toggleNav() {
+  navOpen.value = !navOpen.value
+}
+
+function closeNav() {
+  navOpen.value = false
+}
 
 const project = computed(() => projectsStore.getProject(props.projectId))
 const progress = computed(() =>
@@ -168,7 +195,10 @@ function badgeLabel(n: number): string {
 }
 
 function setTab(tab: ProjectDetailTab) {
-  mobileNavOpen.value = false
+  // En móvil cerramos el drawer al navegar; en desktop lo dejamos abierto.
+  if (!window.matchMedia(DESKTOP_NAV_MQ).matches) {
+    navOpen.value = false
+  }
   router.replace({ query: { ...route.query, tab } })
 }
 </script>
@@ -179,12 +209,13 @@ function setTab(tab: ProjectDetailTab) {
       <div class="project-chrome__bar">
         <button
           type="button"
-          class="project-chrome__menu-btn md:hidden"
-          aria-label="Menú"
-          @click="mobileNavOpen = !mobileNavOpen"
+          class="project-chrome__menu-btn"
+          :aria-label="navOpen ? 'Cerrar menú' : 'Abrir menú'"
+          :aria-expanded="navOpen"
+          @click="toggleNav"
         >
-          <Menu v-if="!mobileNavOpen" :size="20" />
-          <X v-else :size="20" />
+          <X v-if="navOpen" :size="20" />
+          <Menu v-else :size="20" />
         </button>
 
         <nav class="project-breadcrumb hidden items-center gap-1.5 text-sm md:flex">
@@ -248,14 +279,14 @@ function setTab(tab: ProjectDetailTab) {
 
     <div class="project-detail__body flex min-h-0 flex-1 overflow-hidden">
       <div
-        v-if="mobileNavOpen"
+        v-if="navOpen"
         class="fixed inset-0 z-40 bg-black/30 md:hidden"
-        @click="mobileNavOpen = false"
+        @click="closeNav"
       />
 
       <aside
         class="project-sidebar"
-        :class="{ 'project-sidebar--open': mobileNavOpen }"
+        :class="{ 'project-sidebar--open': navOpen }"
       >
         <nav class="project-sidebar__nav scroll-thin">
           <div v-for="group in visibleTabGroups" :key="group.label" class="mb-4">

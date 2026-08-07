@@ -171,7 +171,16 @@ async function submit() {
 
         <label class="flex cursor-pointer items-center gap-2 text-xs text-[#64748b]">
           <input v-model="acceptTerms" type="checkbox" class="auth-checkbox" />
-          Acepto los términos y la política de privacidad
+          <span>
+            Acepto los
+            <RouterLink to="/terminos" class="font-medium text-[#2563eb] hover:underline"
+              >términos</RouterLink
+            >
+            y la
+            <RouterLink to="/privacidad" class="font-medium text-[#2563eb] hover:underline"
+              >política de privacidad</RouterLink
+            >
+          </span>
         </label>
 
         <p v-if="error" class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{{ error }}</p>

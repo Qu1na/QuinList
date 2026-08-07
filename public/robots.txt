@@ -1,0 +1,87 @@
+# QuinList — https://quinlist.matubyte.com
+# Generado automáticamente por scripts/generate-seo.mjs
+
+User-agent: *
+Allow: /
+Allow: /register
+Allow: /ayuda
+Allow: /privacidad
+Allow: /terminos
+Allow: /sitemap.xml
+Allow: /sitemap-index.xml
+Allow: /robots.txt
+Allow: /manifest.webmanifest
+Allow: /image/
+Disallow: /app
+Disallow: /app/
+Disallow: /login
+Disallow: /join
+Disallow: /join/
+Disallow: /share/
+Disallow: /*?*utm_*
+
+# Motores y crawlers principales
+User-agent: Googlebot
+Allow: /
+Disallow: /app
+Disallow: /app/
+Disallow: /login
+Disallow: /join
+Disallow: /share/
+
+User-agent: Bingbot
+Allow: /
+Disallow: /app
+Disallow: /app/
+Disallow: /login
+Disallow: /join
+Disallow: /share/
+
+User-agent: DuckDuckBot
+Allow: /
+Disallow: /app/
+Disallow: /login
+Disallow: /join/
+Disallow: /share/
+
+User-agent: Slurp
+Allow: /
+Disallow: /app/
+Disallow: /login
+
+User-agent: Yandex
+Allow: /
+Disallow: /app/
+Disallow: /login
+
+User-agent: Baiduspider
+Allow: /
+Disallow: /app/
+Disallow: /login
+
+User-agent: Applebot
+Allow: /
+Disallow: /app/
+Disallow: /login
+
+# Social / previews
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: Discordbot
+Allow: /
+
+User-agent: Slackbot
+Allow: /
+
+User-agent: TelegramBot
+Allow: /
+
+Sitemap: https://quinlist.matubyte.com/sitemap.xml
+Sitemap: https://quinlist.matubyte.com/sitemap-index.xml
