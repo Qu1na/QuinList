@@ -21,8 +21,8 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     target: 'es2022',
-    cssMinify: true,
-    minify: 'esbuild',
+    // Vite 8 + Rolldown minifica con Oxc por defecto (esbuild ya no viene embebido).
+    minify: true,
     sourcemap: false,
     assetsInlineLimit: 4096,
     rollupOptions: {
