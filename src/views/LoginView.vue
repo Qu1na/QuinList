@@ -14,7 +14,7 @@ import {
   AUTH_LOGIN_FAIL_TITLE,
   localizeAuthError,
 } from '@/utils/authMessages'
-import { isGoogleAuthConfigured } from '@/lib/googleAuth'
+import { isGoogleAuthConfigured, preloadGoogleAuth } from '@/lib/googleAuth'
 
 const auth = useAuthStore()
 const store = useQuinListStore()
@@ -42,6 +42,7 @@ const demoUsers = [
 
 onMounted(() => {
   document.documentElement.classList.add('auth-screen')
+  preloadGoogleAuth()
   const saved = localStorage.getItem('quinlist_remember_email')
   if (saved) email.value = saved
   else if (!auth.useDatabase) email.value = demoUsers[0]!.email

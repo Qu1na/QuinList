@@ -123,9 +123,16 @@ export async function signInWithGoogleCredential(
             'MatuDB aún no expone OAuth Google (POST /auth/oauth/google). Habilítalo en el servidor MatuDB y vuelve a intentar.',
         }
       }
+      if (res.status === 401 || res.status === 403) {
+        return {
+          data: null,
+          error:
+            'MatuDB rechazó el inicio con Google. Verifica que el endpoint OAuth esté activo y acepte este Client ID.',
+        }
+      }
       return {
         data: null,
-        error: json.message || `Error OAuth Google (${res.status})`,
+        error: json.message || `No pudimos completar el inicio con Google (${res.status}).`,
       }
     }
 

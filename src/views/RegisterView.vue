@@ -9,7 +9,7 @@ import { useQuinListStore } from '@/stores/quinlist'
 import { useProjectsStore } from '@/stores/projects'
 import { REDIRECT_KEY } from '@/router'
 import { localizeAuthError } from '@/utils/authMessages'
-import { isGoogleAuthConfigured } from '@/lib/googleAuth'
+import { isGoogleAuthConfigured, preloadGoogleAuth } from '@/lib/googleAuth'
 
 const auth = useAuthStore()
 const store = useQuinListStore()
@@ -30,7 +30,10 @@ const noticeTitle = ref('')
 const noticeMessage = ref('')
 const noticeVariant = ref<'info' | 'error' | 'success'>('error')
 
-onMounted(() => document.documentElement.classList.add('auth-screen'))
+onMounted(() => {
+  document.documentElement.classList.add('auth-screen')
+  preloadGoogleAuth()
+})
 onUnmounted(() => document.documentElement.classList.remove('auth-screen'))
 
 function showNotice(title: string, message: string, variant: 'info' | 'error' | 'success' = 'error') {

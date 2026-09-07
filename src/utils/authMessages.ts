@@ -46,6 +46,16 @@ const PATTERNS: Array<{ test: RegExp; message: string }> = [
       'El enlace de recuperación no es válido o ya caducó. Solicita uno nuevo desde el inicio de sesión.',
   },
   {
+    test: /401|403|unauthorized|forbidden|oauth/i,
+    message:
+      'No pudimos completar el inicio con Google. Verifica la configuración OAuth en MatuDB e inténtalo de nuevo.',
+  },
+  {
+    test: /tardó demasiado|timeout|timed?\s*out/i,
+    message:
+      'Google tardó demasiado en responder. Cierra la ventana de Google si sigue abierta e inténtalo de nuevo.',
+  },
+  {
     test: /network|failed to fetch|cors/i,
     message: 'No pudimos conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.',
   },
