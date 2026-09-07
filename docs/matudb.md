@@ -1,6 +1,6 @@
 @devjuanes/matuclient
 TypeScript icon, indicating that this package has built-in type declarations
-2.2.3 • Public • Published 4 months ago
+2.3.0 • Public • Published a month ago
 @devjuanes/matuclient
 npm version MIT License TypeScript Node.js
 
@@ -25,38 +25,75 @@ Or use locally (within the MatuDB monorepo):
 npm install ../matu-db-api/packages/matuclient
 Features
 PostgreSQL Database — Full relational database power
+Multi-schema projects — Query main, shop, or any schema slug via config or db.schema()
 Real-time Subscriptions — WebSocket-based live updates via Socket.io
 Authentication — JWT-based auth system
 File Storage — Upload, download, and manage files
+Email templates — db.templates for programmed emails
+
+Password recovery (QuinList):
+- Login calls `db.auth.resetPasswordForEmail(email)` → MatuDB `POST …/recover`
+- Configure the recovery email template so the link points to
+  `https://<your-app>/reset-password?token={{token}}` (or the placeholder MatuDB uses)
+- Reset page calls `db.auth.updateUser({ password }, { token })` → `POST …/reset`
+- Remind users to check spam if the email is delayed
+
 TypeScript Support — Full type definitions included
 Supabase-compatible API — Familiar patterns for developers
 Quick Start
 import { createClient } from '@devjuanes/matuclient';
 
 const db = createClient({
-  url: 'http://localhost:3001',
+  url: 'https://api.matudb.dev', // or your MatuDB API URL
   projectId: 'my-project',
   apiKey: 'anon_xxxx',
 });
 
-// Query data
+// Query data (default / main schema)
 const { data, error } = await db.from('users').select('*').eq('active', true);
 Configuration
 Automatic Configuration (Environment Variables)
-MATUDB_URL=http://localhost:3001
+MATUDB_URL=https://api.matudb.dev
 MATUDB_PROJECT_ID=my-project
 MATUDB_API_KEY=anon_xxxx...
+MATUDB_SCHEMA=main
 MATUDB_USE_SUPABASE=false
+
+# Vite / frontend
+VITE_MATUDB_URL=...
+VITE_MATUDB_API_KEY=...
+VITE_MATUDB_SCHEMA=shop
 Manual Configuration
 import { createClient } from '@devjuanes/matuclient';
 
 const db = createClient({
-  url: 'http://localhost:3001',
+  url: 'https://api.matudb.dev',
   projectId: 'my-project',
   apiKey: 'anon_xxxx',
-  useSupabase: false
+  schema: 'main', // optional project schema slug
+  useSupabase: false,
 });
+Schemas (multi-tenant / multi-app data)
+In the MatuDB console each schema has a slug (e.g. main, shop, ops). The client sends that slug as:
+
+Header: X-MatuDB-Schema
+Query: ?schema=shop
+so reads, writes and raw SQL hit the correct PostgreSQL schema.
+
+const db = createClient({ url, projectId, apiKey });
+
+// Option A — default schema for the whole client
+const shop = createClient({ url, projectId, apiKey, schema: 'shop' });
+await shop.from('products').select('*');
+
+// Option B — scoped client from an existing instance
+const ops = db.schema('ops');
+await ops.from('tickets').insert({ title: 'New issue' });
+await ops.rpc('SELECT count(*) FROM tickets');
 API Reference
+db.schema(slug) — Schema-scoped client
+const shopDb = db.schema('shop');
+const { data } = await shopDb.from('orders').select('*').limit(20);
 db.from(table) — Query Builder
 // SELECT with filters
 const { data, error } = await db
@@ -99,6 +136,15 @@ const { data, error } = await db.auth.signUp({ email, password });
 // Sign in
 const { data, error } = await db.auth.signInWithPassword({ email, password });
 // data = { user, session: { access_token, expires_at, user } }
+
+// Request password recovery email (MatuDB sends a link with token)
+const { data: recoverData, error: recoverError } = await db.auth.resetPasswordForEmail(email);
+
+// Complete reset from the emailed link token
+const { data: resetData, error: resetError } = await db.auth.updateUser(
+  { password: 'nueva-contraseña' },
+  { token: 'token-from-email-link' },
+);
 
 // Sign out
 await db.auth.signOut();
@@ -149,28 +195,9 @@ db.channel('orders')
 db.removeChannel(channel);
 db.removeAllChannels();
 db.rpc() — Raw SQL
-const { data, error } = await db.rpc('SELECT * FROM users WHERE created_at > NOW()');
-
-## Migraciones SQL (QuinList)
-
-Ejecuta en la **consola SQL** de tu proyecto MatuDB, en este orden:
-
-1. `docs/migration-project-modules.sql` — tablas base de proyectos (si aún no las tienes)
-2. `docs/migration-collaboration.sql` — colaboración en tiempo real (comentarios, presencia, actividad)
-3. `docs/migration-realtime.sql` — **habilitar triggers realtime** en cada tabla (sin esto no hay eventos en vivo)
-
-### Realtime en MatuDB
-
-QuinList se suscribe con `db.channel('nombre_tabla')` — el nombre del canal **debe ser la tabla PostgreSQL real** (ej. `project_tasks`, no `quinlist:project_tasks`).
-
-Cada tabla necesita `matudb_enable_realtime(schema, tabla, project_uuid)`. Usa `docs/migration-realtime.sql` reemplazando `SCHEMA` y `PROJECT_ID`.
-
-El `MATUDB_PROJECT_ID` de tu `.env` debe coincidir con el UUID del proyecto en MatuDB.
-
-Tras ejecutar la migración de colaboración, **recarga la página** (Ctrl+F5). Si los comentarios no aparecen, abre la consola del navegador y ejecuta:
-
-```js
-sessionStorage.removeItem('quinlist_matu_missing_tables')
-```
-
-Luego recarga de nuevo.
+const { data, error } = await db.rpc('SELECT * FROM users WHERE created_at > NOW() - INTERVAL \'7 days\'');
+Related Packages
+matu-db-api — The MatuDB backend server
+matudeploy — Deployment tools
+License
+MIT License — Developed with ❤️ in Cali, Colombia by DevJuanes

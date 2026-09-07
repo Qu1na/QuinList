@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import {
   Crown,
   Trash2,
@@ -8,23 +8,29 @@ import {
   Users,
   Shield,
   Mail,
+  Ban,
+  MoreHorizontal,
+  CalendarClock,
+  Activity,
+  UserRound,
+  ShieldOff,
+  Loader2,
 } from '@lucide/vue'
-import type { UserRole } from '@/types'
+import type { UserRole, User } from '@/types'
 import type { ProjectMember } from '@/types/projects'
-import type { User } from '@/types'
 import ProjectModal from '@/components/projects/shared/ProjectModal.vue'
 import UserAvatar from '@/components/projects/shared/UserAvatar.vue'
-import { roleLabel } from '@/utils/permissions'
+import {
+  roleLabel,
+  canSuspendUsers,
+  isUserSuspended,
+} from '@/utils/permissions'
 import { formatLoggedHours } from '@/utils/projectReports'
+import type { TeamMemberWorkload } from '@/components/projects/shared/teamMemberTypes'
+import type { SuspendDuration } from '@/services/userModeration'
+import { formatLastSeen } from '@/utils/chatTime'
 
-export interface TeamMemberWorkload {
-  tasksDone: number
-  tasksTotal: number
-  deliverablesApproved: number
-  deliverablesTotal: number
-  minutesLogged: number
-  recentActivity: number
-}
+export type { TeamMemberWorkload }
 
 const props = defineProps<{
   open: boolean
@@ -33,6 +39,9 @@ const props = defineProps<{
   presenceLabel: string
   presenceOnline: boolean
   workload?: TeamMemberWorkload | null
+  /** Workspace role of the current actor (for platform suspend). */
+  workspaceActorRole?: UserRole
+  actorUserId?: string | null
 }>()
 
 const emit = defineEmits<{
@@ -40,10 +49,40 @@ const emit = defineEmits<{
   remove: []
   'update:role': [role: UserRole]
   'update:perm': [key: 'canManageTasks' | 'canViewFinance' | 'canManageTeam', value: boolean]
+  suspend: [payload: { days: SuspendDuration; reason: string }]
+  unsuspend: []
 }>()
 
+const menuOpen = ref(false)
+const showSuspendForm = ref(false)
+const suspendDays = ref<SuspendDuration>(7)
+const suspendReason = ref('')
+const busy = ref(false)
+
+watch(
+  () => props.open,
+  (open) => {
+    if (!open) {
+      menuOpen.value = false
+      showSuspendForm.value = false
+      suspendReason.value = ''
+      busy.value = false
+    }
+  },
+)
+
 const isOwner = computed(() => props.member?.role === 'owner')
+const isSelf = computed(() => props.member?.userId === props.actorUserId)
 const canEdit = computed(() => props.canManage && !isOwner.value)
+const suspended = computed(() => isUserSuspended(props.member?.user))
+
+const canPlatformSuspend = computed(
+  () =>
+    canSuspendUsers(props.workspaceActorRole ?? 'viewer') &&
+    props.member != null &&
+    !isOwner.value &&
+    !isSelf.value,
+)
 
 const assignableRoles: { value: UserRole; label: string }[] = [
   { value: 'admin', label: 'Administrador' },
@@ -56,6 +95,22 @@ const taskProgress = computed(() => {
   if (!w || !w.tasksTotal) return 0
   return Math.round((w.tasksDone / w.tasksTotal) * 100)
 })
+
+const lastLoginLabel = computed(() => {
+  const at = props.member?.user?.lastLoginAt
+  if (!at) return 'Sin accesos registrados'
+  return formatLastSeen(at)
+})
+
+async function confirmSuspend() {
+  busy.value = true
+  try {
+    emit('suspend', { days: suspendDays.value, reason: suspendReason.value })
+    showSuspendForm.value = false
+  } finally {
+    busy.value = false
+  }
+}
 </script>
 
 <template>
@@ -81,6 +136,55 @@ const taskProgress = computed(() => {
             {{ member.user.email }}
           </p>
           <p class="team-member-modal__presence">{{ presenceLabel }}</p>
+          <p class="team-member-modal__presence">
+            <CalendarClock :size="12" class="inline" />
+            Último acceso · {{ lastLoginLabel }}
+          </p>
+          <p v-if="suspended" class="team-member-modal__banned">
+            <Ban :size="13" />
+            Cuenta suspendida
+            <span v-if="member.user?.suspendedReason"> · {{ member.user.suspendedReason }}</span>
+          </p>
+        </div>
+
+        <div v-if="canEdit || canPlatformSuspend" class="team-member-modal__menu-wrap">
+          <button
+            type="button"
+            class="team-member-modal__menu-btn"
+            aria-label="Acciones"
+            @click="menuOpen = !menuOpen"
+          >
+            <MoreHorizontal :size="18" />
+          </button>
+          <div v-if="menuOpen" class="team-member-modal__menu">
+            <button
+              v-if="canEdit"
+              type="button"
+              class="team-member-modal__menu-item team-member-modal__menu-item--danger"
+              @click="menuOpen = false; emit('remove')"
+            >
+              <Trash2 :size="14" />
+              Quitar del proyecto
+            </button>
+            <button
+              v-if="canPlatformSuspend && !suspended"
+              type="button"
+              class="team-member-modal__menu-item team-member-modal__menu-item--danger"
+              @click="menuOpen = false; showSuspendForm = true"
+            >
+              <Ban :size="14" />
+              Suspender cuenta
+            </button>
+            <button
+              v-if="canPlatformSuspend && suspended"
+              type="button"
+              class="team-member-modal__menu-item"
+              @click="menuOpen = false; emit('unsuspend')"
+            >
+              <ShieldOff :size="14" />
+              Reactivar cuenta
+            </button>
+          </div>
         </div>
       </div>
 
@@ -104,12 +208,87 @@ const taskProgress = computed(() => {
         </div>
         <div class="team-member-modal__stat">
           <span class="team-member-modal__stat-value">{{ workload.recentActivity }}</span>
-          <span class="team-member-modal__stat-label">Actividad</span>
+          <span class="team-member-modal__stat-label">Actividad 7d</span>
         </div>
       </div>
 
       <div v-if="workload" class="team-member-modal__progress">
         <div class="team-member-modal__progress-fill" :style="{ width: `${taskProgress}%` }" />
+      </div>
+
+      <div v-if="workload" class="team-member-modal__detail-grid">
+        <div class="team-member-modal__chip">
+          <Activity :size="14" />
+          {{ workload.activeDays }} días activos (30d)
+        </div>
+      </div>
+
+      <div
+        v-if="workload?.collaborators?.length"
+        class="team-member-modal__section"
+      >
+        <h4 class="team-member-modal__section-title">Trabaja con</h4>
+        <div class="team-member-modal__collabs">
+          <span
+            v-for="c in workload.collaborators"
+            :key="c.userId"
+            class="team-member-modal__collab"
+          >
+            <UserRound :size="12" />
+            {{ c.name }}
+            <em>{{ c.sharedTasks }}</em>
+          </span>
+        </div>
+      </div>
+
+      <div
+        v-if="workload?.recentEvents?.length"
+        class="team-member-modal__section"
+      >
+        <h4 class="team-member-modal__section-title">Actividad reciente</h4>
+        <ul class="team-member-modal__events">
+          <li v-for="ev in workload.recentEvents" :key="ev.id">
+            <span class="team-member-modal__event-action">{{ ev.action }}</span>
+            <span class="team-member-modal__event-detail">{{ ev.details || '—' }}</span>
+            <span class="team-member-modal__event-time">{{ formatLastSeen(ev.createdAt) }}</span>
+          </li>
+        </ul>
+      </div>
+
+      <div v-if="showSuspendForm && canPlatformSuspend" class="team-member-modal__suspend">
+        <h4 class="team-member-modal__section-title">Suspender acceso a la plataforma</h4>
+        <label class="team-member-modal__label">
+          Duración
+          <select v-model="suspendDays" class="team-member-modal__input">
+            <option :value="7">7 días</option>
+            <option :value="30">30 días</option>
+            <option :value="null">Indefinido</option>
+          </select>
+        </label>
+        <label class="team-member-modal__label">
+          Motivo (opcional)
+          <input
+            v-model="suspendReason"
+            type="text"
+            maxlength="200"
+            class="team-member-modal__input"
+            placeholder="Motivo de la suspensión"
+          />
+        </label>
+        <div class="team-member-modal__suspend-actions">
+          <button type="button" class="btn-brand-ghost" @click="showSuspendForm = false">
+            Cancelar
+          </button>
+          <button
+            type="button"
+            class="btn-brand btn-brand--danger"
+            :disabled="busy"
+            @click="confirmSuspend"
+          >
+            <Loader2 v-if="busy" :size="14" class="animate-spin" />
+            Confirmar
+          </button>
+        </div>
       </div>
 
       <template v-if="canEdit">
@@ -211,6 +390,7 @@ const taskProgress = computed(() => {
   display: flex;
   align-items: center;
   gap: 1rem;
+  position: relative;
 }
 
 .team-member-modal__avatar-wrap {
@@ -247,6 +427,66 @@ const taskProgress = computed(() => {
   margin: 0.25rem 0 0;
   font-size: 0.8125rem;
   color: #626f86;
+}
+
+.team-member-modal__banned {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0.35rem 0 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #b91c1c;
+}
+
+.team-member-modal__menu-wrap {
+  margin-left: auto;
+  position: relative;
+}
+
+.team-member-modal__menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  color: #626f86;
+  background: #f1f5f9;
+}
+
+.team-member-modal__menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.25rem);
+  z-index: 5;
+  min-width: 11rem;
+  padding: 0.35rem;
+  border-radius: 0.5rem;
+  background: #fff;
+  border: 1px solid rgba(9, 30, 66, 0.12);
+  box-shadow: 0 8px 24px rgba(9, 30, 66, 0.12);
+}
+
+.team-member-modal__menu-item {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.625rem;
+  border-radius: 0.375rem;
+  font-size: 0.8125rem;
+  color: #172b4d;
+  text-align: left;
+}
+
+.team-member-modal__menu-item:hover {
+  background: #f4f7fb;
+}
+
+.team-member-modal__menu-item--danger {
+  color: #b91c1c;
 }
 
 .team-member-modal__owner-note {
@@ -304,6 +544,118 @@ const taskProgress = computed(() => {
   height: 100%;
   border-radius: 999px;
   background: #2d7eb8;
+}
+
+.team-member-modal__detail-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.team-member-modal__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.625rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #44546f;
+  background: #f1f5f9;
+}
+
+.team-member-modal__collabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.team-member-modal__collab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #2d7eb8;
+  background: rgba(45, 126, 184, 0.1);
+}
+
+.team-member-modal__collab em {
+  font-style: normal;
+  font-weight: 700;
+  opacity: 0.75;
+}
+
+.team-member-modal__events {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.team-member-modal__events li {
+  display: grid;
+  gap: 0.1rem;
+  padding: 0.5rem 0.625rem;
+  border-radius: 0.5rem;
+  background: #f8fafc;
+  border: 1px solid rgba(9, 30, 66, 0.06);
+}
+
+.team-member-modal__event-action {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #172b4d;
+}
+
+.team-member-modal__event-detail {
+  font-size: 0.75rem;
+  color: #626f86;
+}
+
+.team-member-modal__event-time {
+  font-size: 0.6875rem;
+  color: #97a0af;
+}
+
+.team-member-modal__suspend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.875rem;
+  border-radius: 0.625rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.team-member-modal__label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #172b4d;
+}
+
+.team-member-modal__input {
+  width: 100%;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(9, 30, 66, 0.13);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  outline: none;
+  background: #fff;
+}
+
+.team-member-modal__suspend-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
 }
 
 .team-member-modal__section-title {

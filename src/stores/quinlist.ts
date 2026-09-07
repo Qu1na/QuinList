@@ -23,6 +23,8 @@ import {
 import { useAuthStore } from './auth'
 import { useNotificationStore } from './notifications'
 import { useIntegrationsStore } from './integrations'
+import { useEventsStore } from './events'
+import { useOkrsStore } from './okrs'
 import { isMatuConfigured } from '@/lib/matu'
 import {
   loadUserData,
@@ -467,6 +469,8 @@ export const useQuinListStore = defineStore('quinlist', () => {
     currentWorkspaceId.value = id
     const firstBoard = boards.value.find((b) => b.workspaceId === id)
     if (firstBoard) currentBoardId.value = firstBoard.id
+    useEventsStore().load(id)
+    useOkrsStore().load(id)
   }
 
   function setCurrentBoard(id: string) {
@@ -1058,6 +1062,48 @@ export const useQuinListStore = defineStore('quinlist', () => {
     saveLocal()
   }
 
+  async function updateWorkspaceMemberRole(userId: string, role: UserRole) {
+    const auth = useAuthStore()
+    const ws = currentWorkspace.value
+    if (!ws || !auth.currentUserId) throw new Error('No hay espacio activo')
+
+    const target = ws.members.find((m) => m.userId === userId)
+    if (!target) throw new Error('Miembro no encontrado')
+    if (target.role === 'owner') throw new Error('No se puede cambiar el rol del propietario')
+    if (role === 'owner') throw new Error('No se puede asignar el rol de propietario')
+
+    if (isMatuConfigured()) {
+      const { updateWorkspaceMemberRole: updateRole } = await import('@/services/matuData')
+      await updateRole(ws.id, userId, role)
+      await reloadFromDb()
+      return
+    }
+
+    target.role = role
+    saveLocal()
+  }
+
+  async function removeWorkspaceMember(userId: string) {
+    const auth = useAuthStore()
+    const ws = currentWorkspace.value
+    if (!ws || !auth.currentUserId) throw new Error('No hay espacio activo')
+    if (userId === auth.currentUserId) throw new Error('No puedes quitarte a ti mismo del espacio')
+
+    const target = ws.members.find((m) => m.userId === userId)
+    if (!target) throw new Error('Miembro no encontrado')
+    if (target.role === 'owner') throw new Error('No se puede quitar al propietario')
+
+    if (isMatuConfigured()) {
+      const { removeWorkspaceMember: removeMember } = await import('@/services/matuData')
+      await removeMember(ws.id, userId)
+      await reloadFromDb()
+      return
+    }
+
+    ws.members = ws.members.filter((m) => m.userId !== userId)
+    saveLocal()
+  }
+
   return {
     workspaces,
     boards,
@@ -1120,6 +1166,8 @@ export const useQuinListStore = defineStore('quinlist', () => {
     setIntegrationConfig,
     getStarredBoards,
     inviteTeamMember,
+    updateWorkspaceMemberRole,
+    removeWorkspaceMember,
     save: saveLocal,
   }
 })

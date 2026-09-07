@@ -1,4 +1,19 @@
-import { createClient, type MatuDBClient } from '@devjuanes/matuclient'
+import { createClient, type AuthUser, type MatuDBClient } from '@devjuanes/matuclient'
+
+const SESSION_KEY = 'matudb_session'
+
+interface StoredSession {
+  access_token?: string
+  expires_at?: number
+  user?: AuthUser
+  token_type?: string
+  [k: string]: unknown
+}
+
+export interface MatuOAuthResult {
+  user: AuthUser
+  token: string
+}
 
 let client: MatuDBClient | null = null
 
@@ -12,6 +27,28 @@ export function isMatuConfigured(): boolean {
 
 export function getMatuUrl(): string {
   return (import.meta.env.VITE_MATUDB_URL ?? '').replace(/\/$/, '')
+}
+
+export function getMatuProjectId(): string {
+  return import.meta.env.VITE_MATUDB_PROJECT_ID ?? ''
+}
+
+export function getMatuApiKey(): string {
+  return import.meta.env.VITE_MATUDB_API_KEY ?? ''
+}
+
+function getStoredAccessToken(): string | null {
+  if (typeof localStorage === 'undefined') return null
+  try {
+    const raw = localStorage.getItem(SESSION_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as StoredSession
+    if (!parsed.access_token) return null
+    if (parsed.expires_at && Date.now() / 1000 >= parsed.expires_at) return null
+    return parsed.access_token
+  } catch {
+    return null
+  }
 }
 
 export function formatMatuNetworkError(err: unknown): string {
@@ -34,15 +71,175 @@ export function getMatuClient(): MatuDBClient {
     throw new Error('MatuDB no está configurado. Revisa las variables VITE_MATUDB_* en .env')
   }
   if (!client) {
-    client = createClient({
+    const matu = createClient({
       url: getMatuUrl(),
       projectId: import.meta.env.VITE_MATUDB_PROJECT_ID,
       apiKey: import.meta.env.VITE_MATUDB_API_KEY,
+      schema: import.meta.env.VITE_MATUDB_SCHEMA || undefined,
     })
+    patchMatuClient(matu)
+    client = matu
   }
   return client
 }
 
 export function resetMatuClient() {
   client = null
+}
+
+/**
+ * Exchange a Google ID token for a MatuDB session.
+ * Expects MatuDB: POST /api/projects/:id/auth/oauth/google
+ * Body: { credential } (GIS JWT) — same response shape as /login ({ data: { user, token } }).
+ */
+export async function signInWithGoogleCredential(
+  credential: string,
+): Promise<{ data: MatuOAuthResult | null; error: string | null }> {
+  if (!isMatuConfigured()) {
+    return { data: null, error: 'MatuDB no está configurado' }
+  }
+
+  const url = `${getMatuUrl()}/api/projects/${getMatuProjectId()}/auth/oauth/google`
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: getMatuApiKey(),
+      },
+      body: JSON.stringify({ credential, provider: 'google' }),
+    })
+
+    const json = (await res.json().catch(() => ({}))) as {
+      message?: string
+      data?: { user?: AuthUser; token?: string }
+    }
+
+    if (!res.ok) {
+      if (res.status === 404) {
+        return {
+          data: null,
+          error:
+            'MatuDB aún no expone OAuth Google (POST /auth/oauth/google). Habilítalo en el servidor MatuDB y vuelve a intentar.',
+        }
+      }
+      return {
+        data: null,
+        error: json.message || `Error OAuth Google (${res.status})`,
+      }
+    }
+
+    const user = json.data?.user
+    const token = json.data?.token
+    if (!user?.id || !token) {
+      return { data: null, error: 'Respuesta OAuth inválida desde MatuDB' }
+    }
+
+    applyMatuAuthSession(user, token, { emit: false })
+    return { data: { user, token }, error: null }
+  } catch (err) {
+    return { data: null, error: formatMatuNetworkError(err) }
+  }
+}
+
+/** Persist JWT into matuclient AuthManager + localStorage (same shape as email login). */
+export function applyMatuAuthSession(
+  user: AuthUser,
+  token: string,
+  options?: { emit?: boolean },
+): void {
+  const db = getMatuClient()
+  const auth = db.auth as unknown as {
+    _buildSession?: (user: AuthUser, token: string) => StoredSession
+    _saveSession?: (session: StoredSession | null) => void
+    _emit?: (event: string) => void
+  }
+
+  let expiresAt = Math.floor(Date.now() / 1000) + 86400
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]!)) as { exp?: number }
+    if (payload.exp) expiresAt = payload.exp
+  } catch {
+    /* ignore */
+  }
+
+  const session: StoredSession =
+    typeof auth._buildSession === 'function'
+      ? auth._buildSession(user, token)
+      : {
+          access_token: token,
+          token_type: 'bearer',
+          expires_at: expiresAt,
+          user,
+        }
+
+  if (typeof auth._saveSession === 'function') {
+    auth._saveSession(session)
+  } else {
+    localStorage.setItem(SESSION_KEY, JSON.stringify(session))
+  }
+
+  if (options?.emit !== false && typeof auth._emit === 'function') {
+    auth._emit('SIGNED_IN')
+  }
+}
+
+/**
+ * Parche runtime para `@devjuanes/matuclient` v2.x:
+ * el QueryBuilder no inyecta el JWT del AuthManager en las peticiones a `/data`,
+ * por lo que el servidor responde 401 "Missing or invalid Authorization header"
+ * para cualquier mutación (insert/update/delete).
+ *
+ * Sobreescribimos `_fetch` en cada QueryBuilder para añadir `Authorization: Bearer <jwt>`
+ * cuando hay sesión activa. El parche se aplica una sola vez por builder.
+ */
+function patchMatuClient(matu: MatuDBClient) {
+  const patched = new WeakSet<object>()
+  const originalFrom = matu.from.bind(matu)
+
+  function resolveAccessToken(): string | null {
+    try {
+      const fromAuth = matu.auth.getAccessToken?.()
+      if (fromAuth) return fromAuth
+    } catch {
+      /* ignore */
+    }
+    return getStoredAccessToken()
+  }
+
+  function wrapBuilder(table: string) {
+    const builder = originalFrom(table) as Record<string, unknown>
+    if (patched.has(builder)) return builder
+
+    const originalFetch = (
+      builder._fetch as (url: string, init?: RequestInit) => Promise<Response>
+    ).bind(builder)
+    if (typeof originalFetch !== 'function') return builder
+
+    builder._fetch = async (url: string, init?: RequestInit) => {
+      const headers: Record<string, string> = {
+        ...((init?.headers ?? {}) as Record<string, string>),
+      }
+      const token = resolveAccessToken()
+      if (token) headers.Authorization = `Bearer ${token}`
+      return originalFetch(url, { ...init, headers })
+    }
+
+    patched.add(builder)
+    return builder
+  }
+
+  matu.from = ((table: string) => wrapBuilder(table)) as typeof matu.from
+
+  // Storage: añade Authorization si hay sesión (mismo problema que /data)
+  const storage = matu.storage as unknown as Record<string, unknown>
+  const originalAuthHeader = storage._authHeader as () => Record<string, string>
+  if (typeof originalAuthHeader === 'function') {
+    storage._authHeader = () => {
+      const base = originalAuthHeader.call(storage)
+      const token = resolveAccessToken()
+      if (token) base.Authorization = `Bearer ${token}`
+      return base
+    }
+  }
 }

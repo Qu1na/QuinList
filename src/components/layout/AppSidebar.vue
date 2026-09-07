@@ -11,6 +11,8 @@ import {
   Users,
   Settings,
   Plus,
+  CalendarClock,
+  Target,
 } from '@lucide/vue'
 import { useQuinListStore } from '@/stores/quinlist'
 import { useUiStore } from '@/stores/ui'
@@ -24,6 +26,8 @@ const route = useRoute()
 const navItems = computed(() => [
   { icon: LayoutDashboard, label: 'Inicio', to: '/app' },
   { icon: Calendar, label: 'Calendario', to: '/app/calendar' },
+  { icon: CalendarClock, label: 'Eventos', to: '/app/events' },
+  { icon: Target, label: 'Objetivos', to: '/app/okrs' },
   { icon: BarChart3, label: 'Reportes', to: '/app/reports' },
   { icon: Bug, label: 'Issues', to: '/app/issues' },
   { icon: Rocket, label: 'Releases', to: '/app/releases' },

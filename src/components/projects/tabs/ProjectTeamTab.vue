@@ -17,7 +17,7 @@ import { useProjectsStore } from '@/stores/projects'
 import { useAuthStore } from '@/stores/auth'
 import { useQuinListStore } from '@/stores/quinlist'
 import { useUiStore } from '@/stores/ui'
-import { roleLabel } from '@/utils/permissions'
+import { roleLabel, canRemoveMember } from '@/utils/permissions'
 import type { UserRole } from '@/types'
 import type { ProjectTeamInvite } from '@/types/projects'
 import UserAvatar from '@/components/projects/shared/UserAvatar.vue'
@@ -36,6 +36,13 @@ import {
 } from '@/services/projectInvite'
 import BarChart from '@/components/charts/BarChart.vue'
 import { memberWorkload, tasksByAssignee, formatLoggedHours } from '@/utils/projectReports'
+import {
+  suspendUser,
+  unsuspendUser,
+  type SuspendDuration,
+} from '@/services/userModeration'
+import { loadProfilesByIds } from '@/services/boardShare'
+import { isMatuConfigured } from '@/lib/matu'
 
 const props = defineProps<{ projectId: string }>()
 
@@ -62,6 +69,12 @@ const selectedMemberId = ref<string | null>(null)
 let unsubscribeRealtime: (() => void) | null = null
 
 const project = computed(() => projectsStore.getProject(props.projectId))
+
+const workspaceActorRole = computed(() => {
+  const wsId = project.value?.workspaceId
+  if (!wsId) return 'viewer' as UserRole
+  return quinlist.getUserRole(wsId)
+})
 
 const members = computed(() =>
   projectsStore.getProjectMembers(props.projectId).map((m) => ({
@@ -152,10 +165,23 @@ async function refreshInvites() {
 
 onMounted(() => {
   void refreshInvites()
+  void refreshMemberProfiles()
   unsubscribeRealtime = subscribeProjectTeamInvitesRealtime(props.projectId, () => {
     void refreshInvites()
   })
 })
+
+async function refreshMemberProfiles() {
+  if (!isMatuConfigured()) return
+  const ids = members.value.map((m) => m.userId)
+  if (!ids.length) return
+  try {
+    const profiles = await loadProfilesByIds(ids)
+    for (const user of profiles) auth.addUser(user)
+  } catch (err) {
+    console.error('[ProjectTeamTab] profiles:', err)
+  }
+}
 
 onUnmounted(() => {
   unsubscribeRealtime?.()
@@ -202,6 +228,9 @@ async function revokeInvite(inviteId: string) {
 async function removeMember(memberId: string, name: string) {
   const member = members.value.find((m) => m.id === memberId)
   if (!member || member.role === 'owner') return
+  if (!canRemoveMember(workspaceActorRole.value, member.role) && !access.canManageTeam.value) {
+    return
+  }
   const ok = await ui.confirm({
     title: 'Quitar del proyecto',
     message: `¿Quitar a ${name} del equipo de este proyecto?`,
@@ -237,6 +266,37 @@ function onUpdatePerm(
 async function onRemoveSelected() {
   if (!selectedMember.value) return
   await removeMember(selectedMember.value.id, selectedMember.value.user?.name ?? 'este usuario')
+}
+
+async function onSuspendMember(payload: { days: SuspendDuration; reason: string }) {
+  if (!selectedMember.value || !auth.currentUserId) return
+  const name = selectedMember.value.user?.name ?? 'este usuario'
+  const ok = await ui.confirm({
+    title: 'Suspender cuenta',
+    message: `¿Suspender a ${name}? No podrá iniciar sesión en QuinList.`,
+    confirmText: 'Suspender',
+    variant: 'danger',
+  })
+  if (!ok) return
+  try {
+    const updated = await suspendUser(selectedMember.value.userId, auth.currentUserId, {
+      days: payload.days,
+      reason: payload.reason,
+    })
+    auth.addUser(updated)
+  } catch (err) {
+    console.error('[ProjectTeamTab] suspend:', err)
+  }
+}
+
+async function onUnsuspendMember() {
+  if (!selectedMember.value) return
+  try {
+    const updated = await unsuspendUser(selectedMember.value.userId)
+    auth.addUser(updated)
+  } catch (err) {
+    console.error('[ProjectTeamTab] unsuspend:', err)
+  }
 }
 </script>
 
@@ -461,10 +521,14 @@ async function onRemoveSelected() {
       :presence-label="selectedMember ? memberPresence(selectedMember.userId).label : ''"
       :presence-online="selectedMember ? memberPresence(selectedMember.userId).online : false"
       :workload="selectedWorkload"
+      :workspace-actor-role="workspaceActorRole"
+      :actor-user-id="auth.currentUserId"
       @close="closeMember"
       @remove="onRemoveSelected"
       @update:role="onUpdateRole"
       @update:perm="onUpdatePerm"
+      @suspend="onSuspendMember"
+      @unsuspend="onUnsuspendMember"
     />
 
     <ProjectInviteModal

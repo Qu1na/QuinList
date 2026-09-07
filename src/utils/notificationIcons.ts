@@ -8,6 +8,8 @@ import {
   UserPlus,
   AtSign,
   Bell,
+  CalendarCheck,
+  AlertTriangle,
 } from '@lucide/vue'
 
 export const notificationIconMap: Record<NotificationType, Component> = {
@@ -20,6 +22,8 @@ export const notificationIconMap: Record<NotificationType, Component> = {
   task_assigned: Pin,
   task_commented: MessageSquare,
   project_chat: MessageSquare,
+  event_rsvp: CalendarCheck,
+  sync_failed: AlertTriangle,
 }
 
 export function getNotificationIcon(type: NotificationType): Component {

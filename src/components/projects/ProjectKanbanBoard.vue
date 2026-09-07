@@ -96,13 +96,16 @@ function onChange(
   },
 ) {
   if (evt.added) {
-    pendingMove = projectsStore.moveTaskToColumn(evt.added.element.id, col)
+    pendingMove = projectsStore
+      .moveTaskToColumn(evt.added.element.id, col)
+      .catch(() => undefined)
     return
   }
   if (evt.moved) {
     pendingMove = projectsStore
       .updateTask(evt.moved.element.id, { position: evt.moved.newIndex })
       .then(() => undefined)
+      .catch(() => undefined)
   }
 }
 

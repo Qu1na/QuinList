@@ -43,6 +43,9 @@ export interface MemberWorkloadRow {
   deliverablesApproved: number
   minutesLogged: number
   recentActivity: number
+  recentEvents: { id: string; action: string; details: string; createdAt: string }[]
+  collaborators: { userId: string; name: string; sharedTasks: number }[]
+  activeDays: number
 }
 
 function colorAt(index: number): string {
@@ -192,6 +195,7 @@ export function memberWorkload(
   resolveName: (userId: string) => string,
 ): MemberWorkloadRow[] {
   const cutoff = Date.now() - 7 * 86_400_000
+  const activityWindow = Date.now() - 30 * 86_400_000
 
   return members.map((member) => {
     const userTasks = tasks.filter((t) => t.assigneeIds.includes(member.userId))
@@ -199,9 +203,40 @@ export function memberWorkload(
     const userMinutes = timeEntries
       .filter((e) => e.userId === member.userId)
       .reduce((sum, e) => sum + e.minutes, 0)
-    const recentActivity = activities.filter(
-      (a) => a.userId === member.userId && new Date(a.createdAt).getTime() >= cutoff,
-    ).length
+    const userRecent = activities
+      .filter(
+        (a) => a.userId === member.userId && new Date(a.createdAt).getTime() >= cutoff,
+      )
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+
+    const collabCounts = new Map<string, number>()
+    for (const task of userTasks) {
+      for (const otherId of task.assigneeIds) {
+        if (otherId === member.userId) continue
+        collabCounts.set(otherId, (collabCounts.get(otherId) ?? 0) + 1)
+      }
+    }
+    const collaborators = Array.from(collabCounts.entries())
+      .map(([userId, sharedTasks]) => ({
+        userId,
+        name: resolveName(userId),
+        sharedTasks,
+      }))
+      .sort((a, b) => b.sharedTasks - a.sharedTasks)
+      .slice(0, 5)
+
+    const dayKeys = new Set<string>()
+    for (const a of activities) {
+      if (a.userId !== member.userId) continue
+      if (new Date(a.createdAt).getTime() < activityWindow) continue
+      dayKeys.add(instantToCalendarDate(a.createdAt))
+    }
+    for (const e of timeEntries) {
+      if (e.userId !== member.userId) continue
+      const when = e.entryDate || e.createdAt
+      if (!when || new Date(when).getTime() < activityWindow) continue
+      dayKeys.add(instantToCalendarDate(when))
+    }
 
     return {
       userId: member.userId,
@@ -211,7 +246,15 @@ export function memberWorkload(
       deliverablesTotal: userDeliverables.length,
       deliverablesApproved: userDeliverables.filter((d) => d.status === 'approved').length,
       minutesLogged: userMinutes,
-      recentActivity,
+      recentActivity: userRecent.length,
+      recentEvents: userRecent.slice(0, 5).map((a) => ({
+        id: a.id,
+        action: a.action,
+        details: a.details,
+        createdAt: a.createdAt,
+      })),
+      collaborators,
+      activeDays: dayKeys.size,
     }
   })
 }

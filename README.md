@@ -48,7 +48,10 @@ Abre [http://localhost:5173](http://localhost:5173) e inicia sesión con uno de 
 VITE_MATUDB_URL=http://matudb.com:3001
 VITE_MATUDB_PROJECT_ID=tu-project-id
 VITE_MATUDB_API_KEY=mb_xxxx
+VITE_GOOGLE_CLIENT_ID=tu-google-oauth-client-id.apps.googleusercontent.com
 ```
+
+> **Google:** crea un OAuth Client ID (tipo Web) en Google Cloud Console, agrega `http://localhost:5173` (y tu dominio de prod) en *Authorized JavaScript origins*, y asegúrate de que MatuDB exponga `POST /api/projects/:id/auth/oauth/google` con body `{ credential }` (JWT de Google Identity Services). Facebook sigue deshabilitado.
 
 > **Importante:** `app.matudb.com` no resuelve en DNS. Usa `http://matudb.com:3001` (cloud) o `http://localhost:3001` (local).
 

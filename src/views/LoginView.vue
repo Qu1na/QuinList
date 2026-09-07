@@ -3,10 +3,18 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter, RouterLink } from 'vue-router'
 import { Eye, EyeOff, Loader2, Mail, Lock } from '@lucide/vue'
 import AuthLayout from '@/components/auth/AuthLayout.vue'
+import AuthNoticeModal from '@/components/auth/AuthNoticeModal.vue'
+import ForgotPasswordModal from '@/components/auth/ForgotPasswordModal.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useQuinListStore } from '@/stores/quinlist'
 import { useProjectsStore } from '@/stores/projects'
 import { REDIRECT_KEY } from '@/router'
+import {
+  AUTH_LOGIN_FAIL_MESSAGE,
+  AUTH_LOGIN_FAIL_TITLE,
+  localizeAuthError,
+} from '@/utils/authMessages'
+import { isGoogleAuthConfigured } from '@/lib/googleAuth'
 
 const auth = useAuthStore()
 const store = useQuinListStore()
@@ -17,8 +25,14 @@ const email = ref('')
 const password = ref('')
 const showPassword = ref(false)
 const remember = ref(true)
-const error = ref('')
 const loading = ref(false)
+const socialLoading = ref(false)
+const showForgot = ref(false)
+
+const noticeOpen = ref(false)
+const noticeTitle = ref('')
+const noticeMessage = ref('')
+const noticeVariant = ref<'info' | 'error' | 'success'>('error')
 
 const demoUsers = [
   { email: 'alula@quinlist.app', name: 'Alula García (Propietario)' },
@@ -35,13 +49,36 @@ onMounted(() => {
 
 onUnmounted(() => document.documentElement.classList.remove('auth-screen'))
 
+function showNotice(title: string, message: string, variant: 'info' | 'error' | 'success' = 'error') {
+  noticeTitle.value = title
+  noticeMessage.value = message
+  noticeVariant.value = variant
+  noticeOpen.value = true
+}
+
+async function afterAuthSuccess() {
+  await store.init()
+  await projectsStore.init()
+
+  const redirect = sessionStorage.getItem(REDIRECT_KEY)
+  if (redirect) {
+    sessionStorage.removeItem(REDIRECT_KEY)
+    router.push(redirect)
+  } else {
+    router.push({ name: 'home' })
+  }
+}
+
 async function submit() {
-  error.value = ''
   loading.value = true
   try {
     const result = await auth.login(email.value, password.value)
     if (!result.ok) {
-      error.value = result.error ?? 'Credenciales inválidas'
+      showNotice(
+        AUTH_LOGIN_FAIL_TITLE,
+        localizeAuthError(result.error, AUTH_LOGIN_FAIL_MESSAGE),
+        'error',
+      )
       return
     }
 
@@ -51,27 +88,56 @@ async function submit() {
       localStorage.removeItem('quinlist_remember_email')
     }
 
-    await store.init()
-    await projectsStore.init()
-
-    const redirect = sessionStorage.getItem(REDIRECT_KEY)
-    if (redirect) {
-      sessionStorage.removeItem(REDIRECT_KEY)
-      router.push(redirect)
-    } else {
-      router.push({ name: 'home' })
-    }
+    await afterAuthSuccess()
   } finally {
     loading.value = false
   }
+}
+
+async function loginWithGoogle() {
+  if (!isGoogleAuthConfigured()) {
+    showNotice(
+      'Google aún no está listo',
+      'Agrega VITE_GOOGLE_CLIENT_ID en tu archivo .env (Client ID de Google Cloud, tipo Web) y reinicia npm run dev.',
+      'info',
+    )
+    return
+  }
+
+  socialLoading.value = true
+  try {
+    const result = await auth.loginWithGoogle()
+    if (!result.ok) {
+      showNotice(
+        'No pudimos conectar con Google',
+        localizeAuthError(result.error, 'Inténtalo de nuevo en unos momentos.'),
+        'error',
+      )
+      return
+    }
+    await afterAuthSuccess()
+  } finally {
+    socialLoading.value = false
+  }
+}
+
+function openForgot() {
+  showForgot.value = true
 }
 </script>
 
 <template>
   <AuthLayout title="Inicia sesión" subtitle="¡Bienvenido! Elige cómo quieres entrar:">
     <div v-if="auth.useDatabase" class="mb-5 grid grid-cols-2 gap-3">
-      <button type="button" class="auth-social-btn" disabled title="Próximamente">
-        <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24">
+      <button
+        type="button"
+        class="auth-social-btn"
+        :disabled="socialLoading || loading"
+        title="Continuar con Google"
+        @click="loginWithGoogle"
+      >
+        <Loader2 v-if="socialLoading" :size="18" class="animate-spin text-[#64748b]" />
+        <svg v-else class="h-[18px] w-[18px]" viewBox="0 0 24 24">
           <path
             fill="#4285F4"
             d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
@@ -148,17 +214,20 @@ async function submit() {
           <input v-model="remember" type="checkbox" class="auth-checkbox" />
           Recordarme
         </label>
-        <button type="button" class="font-medium text-[#2563eb] hover:underline">
+        <button
+          type="button"
+          class="font-medium text-[#2563eb] hover:underline"
+          @click="openForgot"
+        >
           ¿Olvidaste tu contraseña?
         </button>
       </div>
 
-      <p v-if="error" class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{{ error }}</p>
       <p v-if="!auth.useDatabase" class="text-xs text-[#94a3b8]">
         Modo demo · configura MatuDB en <code>.env</code> para login real.
       </p>
 
-      <button type="submit" :disabled="loading" class="auth-submit">
+      <button type="submit" :disabled="loading || socialLoading" class="auth-submit">
         <Loader2 v-if="loading" :size="17" class="animate-spin" />
         Iniciar sesión
       </button>
@@ -171,4 +240,18 @@ async function submit() {
       </RouterLink>
     </p>
   </AuthLayout>
+
+  <ForgotPasswordModal
+    :open="showForgot"
+    :initial-email="email"
+    @close="showForgot = false"
+  />
+
+  <AuthNoticeModal
+    :open="noticeOpen"
+    :title="noticeTitle"
+    :message="noticeMessage"
+    :variant="noticeVariant"
+    @close="noticeOpen = false"
+  />
 </template>

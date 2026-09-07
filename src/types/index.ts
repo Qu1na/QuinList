@@ -10,6 +10,8 @@ export type NotificationType =
   | 'task_assigned'
   | 'task_commented'
   | 'project_chat'
+  | 'event_rsvp'
+  | 'sync_failed'
 
 export interface User {
   id: string
@@ -17,6 +19,13 @@ export interface User {
   email: string
   avatar: string
   initials: string
+  /** Platform suspension start (ISO). Null = not suspended. */
+  suspendedAt?: string | null
+  /** When suspension ends. Null with suspendedAt = indefinite. */
+  suspendedUntil?: string | null
+  suspendedReason?: string | null
+  suspendedBy?: string | null
+  lastLoginAt?: string | null
 }
 
 export interface WorkspaceMember {

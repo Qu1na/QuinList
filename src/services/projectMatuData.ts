@@ -17,9 +17,11 @@ import type {
 } from '@/types/projects'
 import type { Attachment } from '@/types'
 import { getMatuClient, isMatuConfigured } from '@/lib/matu'
+import { mapPool, withNetworkRetry } from '@/lib/concurrency'
 import { attachmentForPersistence } from '@/services/storage'
 import { fromJsonb, toJsonb } from '@/lib/dbJson'
 import { DEFAULT_CURRENCY } from '@/utils/currency'
+import type { ProjectsSyncCollection } from '@/utils/projectOptimistic'
 import {
   clearTableMissing,
   isGracefulMissingTable,
@@ -34,6 +36,31 @@ import {
   payloadBelongsToProject,
 } from '@/lib/matuRealtime'
 
+/** Browser ≈6 connections/host; keep headroom for realtime + UI fetches. */
+const SAVE_CONCURRENCY = 4
+
+const knownRecordIds = new Map<string, Set<string>>()
+
+function markKnownRecord(table: string, id: string) {
+  let set = knownRecordIds.get(table)
+  if (!set) {
+    set = new Set()
+    knownRecordIds.set(table, set)
+  }
+  set.add(id)
+}
+
+function isKnownRecord(table: string, id: string): boolean {
+  return knownRecordIds.get(table)?.has(id) ?? false
+}
+
+function markKnownRows(table: string, rows: Array<{ id?: unknown }> | Record<string, unknown>[]) {
+  for (const row of rows) {
+    const id = (row as { id?: unknown }).id
+    if (typeof id === 'string') markKnownRecord(table, id)
+  }
+}
+
 function isDuplicateKeyError(message: string): boolean {
   return /already exists|duplicate key|unique constraint|409/i.test(message)
 }
@@ -43,33 +70,52 @@ async function saveRecord(
   id: string,
   data: Record<string, unknown>,
 ): Promise<void> {
-  const db = getMatuClient()
-  const { data: existing, error: findErr } = await db
-    .from(table)
-    .select('id')
-    .eq('id', id)
-    .maybeSingle()
+  await withNetworkRetry(async () => {
+    const db = getMatuClient()
+    const { id: _id, ...updateData } = data
 
-  if (findErr) throw new Error(findErr.message)
+    // Known rows (loaded or previously saved) → single UPDATE, no SELECT.
+    if (isKnownRecord(table, id)) {
+      const { error } = await db.from(table).eq('id', id).update(updateData)
+      if (error) throw new Error(error.message)
+      return
+    }
 
-  const { id: _id, ...updateData } = data
+    const { data: existing, error: findErr } = await db
+      .from(table)
+      .select('id')
+      .eq('id', id)
+      .maybeSingle()
 
-  if (existing) {
-    const { error } = await db.from(table).eq('id', id).update(updateData)
-    if (error) throw new Error(error.message)
-    return
-  }
+    if (findErr) throw new Error(findErr.message)
 
-  const { error: insertErr } = await db.from(table).insert(data)
-  if (!insertErr) return
+    if (existing) {
+      const { error } = await db.from(table).eq('id', id).update(updateData)
+      if (error) throw new Error(error.message)
+      markKnownRecord(table, id)
+      return
+    }
 
-  if (isDuplicateKeyError(insertErr.message)) {
-    const { error: retryErr } = await db.from(table).eq('id', id).update(updateData)
-    if (retryErr) throw new Error(retryErr.message)
-    return
-  }
+    const { error: insertErr } = await db.from(table).insert(data)
+    if (!insertErr) {
+      markKnownRecord(table, id)
+      return
+    }
 
-  throw new Error(insertErr.message)
+    if (isDuplicateKeyError(insertErr.message)) {
+      const { error: retryErr } = await db.from(table).eq('id', id).update(updateData)
+      if (retryErr) throw new Error(retryErr.message)
+      markKnownRecord(table, id)
+      return
+    }
+
+    throw new Error(insertErr.message)
+  })
+}
+
+async function runSaveOps(ops: Array<() => Promise<void>>): Promise<void> {
+  if (ops.length === 0) return
+  await mapPool(ops, SAVE_CONCURRENCY, (op) => op())
 }
 
 async function deleteOrphans(
@@ -111,7 +157,9 @@ async function queryRowsByProjectIds(
     throw new Error(error.message)
   }
   if (isGracefulMissingTable(table)) clearTableMissing(table)
-  return (data as Record<string, unknown>[]) ?? []
+  const rows = (data as Record<string, unknown>[]) ?? []
+  markKnownRows(table, rows)
+  return rows
 }
 
 async function queryRowsByProjectId(
@@ -626,7 +674,9 @@ async function loadProjectRowsByIds(projectIds: string[]): Promise<Project[]> {
   const db = getMatuClient()
   const { data, error } = await db.from('projects').select('*').in('id', projectIds)
   if (error) throw new Error(error.message)
-  return ((data as Record<string, unknown>[]) ?? []).map(toProject)
+  const rows = (data as Record<string, unknown>[]) ?? []
+  markKnownRows('projects', rows)
+  return rows.map(toProject)
 }
 
 export async function loadProjectById(projectId: string): Promise<Project | null> {
@@ -759,15 +809,94 @@ export async function syncProjectChatUpload(
     activities: ProjectActivity[]
   },
 ): Promise<void> {
-  const ops: Promise<void>[] = []
+  const ops: Array<() => Promise<void>> = []
   if (payload.folder) {
-    ops.push(saveRecord('project_folders', payload.folder.id, folderToDb(payload.folder)))
+    ops.push(() => saveRecord('project_folders', payload.folder!.id, folderToDb(payload.folder!)))
   }
-  ops.push(saveRecord('project_documents', payload.document.id, documentToDb(payload.document)))
+  ops.push(() => saveRecord('project_documents', payload.document.id, documentToDb(payload.document)))
   for (const activity of payload.activities) {
-    ops.push(saveRecord('project_activities', activity.id, activityToDb(activity)))
+    ops.push(() => saveRecord('project_activities', activity.id, activityToDb(activity)))
   }
-  await Promise.all(ops)
+  await runSaveOps(ops)
+}
+
+const COLLECTION_TO_TABLE: Record<ProjectsSyncCollection, string> = {
+  projects: 'projects',
+  tasks: 'project_tasks',
+  milestones: 'project_milestones',
+  costs: 'project_costs',
+  risks: 'project_risks',
+  notes: 'project_notes',
+  deliverables: 'project_deliverables',
+  documents: 'project_documents',
+  folders: 'project_folders',
+  invites: 'project_invites',
+  members: 'project_members',
+  activities: 'project_activities',
+  timeEntries: 'project_time_entries',
+  taskComments: 'project_task_comments',
+}
+
+type DirtyProjectsPatch = Partial<Record<ProjectsSyncCollection, Array<{ id: string }>>>
+
+function rowForCollection(
+  key: ProjectsSyncCollection,
+  item: { id: string },
+): Record<string, unknown> {
+  switch (key) {
+    case 'projects':
+      return projectToDb(item as Project)
+    case 'tasks':
+      return taskToDb(item as ProjectTask)
+    case 'milestones':
+      return milestoneToDb(item as ProjectMilestone)
+    case 'costs':
+      return costToDb(item as ProjectCost)
+    case 'risks':
+      return riskToDb(item as ProjectRisk)
+    case 'notes':
+      return noteToDb(item as ProjectNote)
+    case 'deliverables':
+      return deliverableToDb(item as ProjectDeliverable)
+    case 'documents':
+      return documentToDb(item as ProjectDocument)
+    case 'folders':
+      return folderToDb(item as ProjectFolder)
+    case 'invites':
+      return inviteToDb(item as ProjectInvite)
+    case 'members':
+      return memberToDb(item as ProjectMember)
+    case 'activities':
+      return activityToDb(item as ProjectActivity)
+    case 'timeEntries':
+      return timeEntryToDb(item as ProjectTimeEntry)
+    case 'taskComments':
+      return taskCommentToDb(item as ProjectTaskComment)
+  }
+}
+
+/**
+ * Upsert only the records that changed — used for routine UI saves
+ * (e.g. moving one task should not rewrite every milestone/activity).
+ */
+export async function syncDirtyProjectsToMatu(dirty: DirtyProjectsPatch): Promise<void> {
+  const ops: Array<() => Promise<void>> = []
+
+  for (const key of Object.keys(COLLECTION_TO_TABLE) as ProjectsSyncCollection[]) {
+    const items = dirty[key]
+    if (!items?.length) continue
+    const table = COLLECTION_TO_TABLE[key]
+    for (const item of items) {
+      const row = rowForCollection(key, item)
+      if (key === 'taskComments') {
+        ops.push(() => saveRecordSafe(table, item.id, row))
+      } else {
+        ops.push(() => saveRecord(table, item.id, row))
+      }
+    }
+  }
+
+  await runSaveOps(ops)
 }
 
 export async function syncProjectToMatu(
@@ -798,39 +927,39 @@ export async function syncProjectToMatu(
   const taskComments = byProject(data.taskComments ?? [])
   const projectIds = [projectId]
 
-  await Promise.all([
-    ...tasks.map((t) => saveRecord('project_tasks', t.id, taskToDb(t))),
-    ...milestones.map((m) => saveRecord('project_milestones', m.id, milestoneToDb(m))),
-    ...costs.map((c) => saveRecord('project_costs', c.id, costToDb(c))),
-    ...risks.map((r) => saveRecord('project_risks', r.id, riskToDb(r))),
-    ...deliverables.map((d) => saveRecord('project_deliverables', d.id, deliverableToDb(d))),
-    ...documents.map((d) => saveRecord('project_documents', d.id, documentToDb(d))),
-    ...folders.map((f) => saveRecord('project_folders', f.id, folderToDb(f))),
-    ...invites.map((i) => saveRecord('project_invites', i.id, inviteToDb(i))),
-    ...members.map((m) => saveRecord('project_members', m.id, memberToDb(m))),
-    ...activities.map((a) => saveRecord('project_activities', a.id, activityToDb(a))),
-    ...timeEntries.map((e) => saveRecord('project_time_entries', e.id, timeEntryToDb(e))),
-    ...notes.map((n) => saveRecord('project_notes', n.id, noteToDb(n))),
-    ...taskComments.map((c) => saveRecordSafe('project_task_comments', c.id, taskCommentToDb(c))),
+  await runSaveOps([
+    ...tasks.map((t) => () => saveRecord('project_tasks', t.id, taskToDb(t))),
+    ...milestones.map((m) => () => saveRecord('project_milestones', m.id, milestoneToDb(m))),
+    ...costs.map((c) => () => saveRecord('project_costs', c.id, costToDb(c))),
+    ...risks.map((r) => () => saveRecord('project_risks', r.id, riskToDb(r))),
+    ...deliverables.map((d) => () => saveRecord('project_deliverables', d.id, deliverableToDb(d))),
+    ...documents.map((d) => () => saveRecord('project_documents', d.id, documentToDb(d))),
+    ...folders.map((f) => () => saveRecord('project_folders', f.id, folderToDb(f))),
+    ...invites.map((i) => () => saveRecord('project_invites', i.id, inviteToDb(i))),
+    ...members.map((m) => () => saveRecord('project_members', m.id, memberToDb(m))),
+    ...activities.map((a) => () => saveRecord('project_activities', a.id, activityToDb(a))),
+    ...timeEntries.map((e) => () => saveRecord('project_time_entries', e.id, timeEntryToDb(e))),
+    ...notes.map((n) => () => saveRecord('project_notes', n.id, noteToDb(n))),
+    ...taskComments.map((c) => () => saveRecordSafe('project_task_comments', c.id, taskCommentToDb(c))),
   ])
 
   // Never prune on routine upsert — incomplete in-memory state was deleting DB rows.
   if (!options?.prune) return
 
-  await Promise.all([
-    deleteOrphans('project_tasks', projectIds, tasks.map((t) => t.id)),
-    deleteOrphans('project_milestones', projectIds, milestones.map((m) => m.id)),
-    deleteOrphans('project_costs', projectIds, costs.map((c) => c.id)),
-    deleteOrphans('project_risks', projectIds, risks.map((r) => r.id)),
-    deleteOrphans('project_deliverables', projectIds, deliverables.map((d) => d.id)),
-    deleteOrphans('project_documents', projectIds, documents.map((d) => d.id)),
-    deleteOrphans('project_folders', projectIds, folders.map((f) => f.id)),
-    deleteOrphans('project_invites', projectIds, invites.map((i) => i.id)),
-    deleteOrphans('project_members', projectIds, members.map((m) => m.id)),
-    deleteOrphans('project_activities', projectIds, activities.map((a) => a.id)),
-    deleteOrphans('project_time_entries', projectIds, timeEntries.map((e) => e.id)),
-    deleteOrphans('project_notes', projectIds, notes.map((n) => n.id)),
-    deleteOrphansSafe('project_task_comments', projectIds, taskComments.map((c) => c.id)),
+  await runSaveOps([
+    () => deleteOrphans('project_tasks', projectIds, tasks.map((t) => t.id)),
+    () => deleteOrphans('project_milestones', projectIds, milestones.map((m) => m.id)),
+    () => deleteOrphans('project_costs', projectIds, costs.map((c) => c.id)),
+    () => deleteOrphans('project_risks', projectIds, risks.map((r) => r.id)),
+    () => deleteOrphans('project_deliverables', projectIds, deliverables.map((d) => d.id)),
+    () => deleteOrphans('project_documents', projectIds, documents.map((d) => d.id)),
+    () => deleteOrphans('project_folders', projectIds, folders.map((f) => f.id)),
+    () => deleteOrphans('project_invites', projectIds, invites.map((i) => i.id)),
+    () => deleteOrphans('project_members', projectIds, members.map((m) => m.id)),
+    () => deleteOrphans('project_activities', projectIds, activities.map((a) => a.id)),
+    () => deleteOrphans('project_time_entries', projectIds, timeEntries.map((e) => e.id)),
+    () => deleteOrphans('project_notes', projectIds, notes.map((n) => n.id)),
+    () => deleteOrphansSafe('project_task_comments', projectIds, taskComments.map((c) => c.id)),
   ])
 }
 
@@ -858,10 +987,11 @@ export async function syncProjectsToMatu(
   data: ProjectsDataState,
 ): Promise<void> {
   const projectIds = collectProjectIdsFromState(data)
-  await Promise.all(projectIds.map((id) => syncProjectToMatu(id, data)))
+  await mapPool(projectIds, 2, (id) => syncProjectToMatu(id, data))
 
   // Do not auto-delete projects from MatuDB based on local workspace view —
   // invited users and partial loads could wipe other teams' data.
+  void workspaceId
 }
 
 const PROJECT_TABLES = [
@@ -949,6 +1079,7 @@ export async function loadSingleProject(projectId: string): Promise<ProjectsData
   if (pErr) throw new Error(pErr.message)
   if (!projectRow) return null
 
+  markKnownRecord('projects', projectId)
   const project = toProject(projectRow as Record<string, unknown>)
 
   const [

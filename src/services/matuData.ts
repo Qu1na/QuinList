@@ -13,7 +13,7 @@ import { getMatuClient, isMatuConfigured } from '@/lib/matu'
 import { toJsonb, fromJsonb } from '@/lib/dbJson'
 import { generateId } from '@/utils/permissions'
 import { todayCalendarDate } from '@/utils/datetime'
-import { loadBoardIdsForUser } from '@/services/boardShare'
+import { loadBoardIdsForUser, acceptPendingBoardInvites } from '@/services/boardShare'
 import {
   defaultBoardIntegrations,
 } from '@/utils/boardDefaults'
@@ -24,6 +24,11 @@ interface DbProfile {
   email: string
   avatar: string
   initials: string
+  suspended_at?: string | null
+  suspended_until?: string | null
+  suspended_reason?: string | null
+  suspended_by?: string | null
+  last_login_at?: string | null
 }
 
 interface DbWorkspace {
@@ -105,6 +110,11 @@ function toUser(row: DbProfile): User {
     email: row.email,
     avatar: row.avatar ?? '',
     initials: row.initials,
+    suspendedAt: row.suspended_at ?? null,
+    suspendedUntil: row.suspended_until ?? null,
+    suspendedReason: row.suspended_reason ?? null,
+    suspendedBy: row.suspended_by ?? null,
+    lastLoginAt: row.last_login_at ?? null,
   }
 }
 
@@ -736,6 +746,51 @@ export async function inviteMember(
   if (error) throw new Error(error.message)
 }
 
+export async function updateWorkspaceMemberRole(
+  workspaceId: string,
+  userId: string,
+  role: UserRole,
+): Promise<void> {
+  const db = getMatuClient()
+  const { data: existing, error: findErr } = await db
+    .from('workspace_members')
+    .select('id, role')
+    .eq('workspace_id', workspaceId)
+    .eq('user_id', userId)
+    .maybeSingle()
+
+  if (findErr) throw new Error(findErr.message)
+  if (!existing) throw new Error('Miembro no encontrado')
+
+  const row = existing as { id: string; role: UserRole }
+  if (row.role === 'owner') throw new Error('No se puede cambiar el rol del propietario')
+
+  const { error } = await db.from('workspace_members').eq('id', row.id).update({ role })
+  if (error) throw new Error(error.message)
+}
+
+export async function removeWorkspaceMember(
+  workspaceId: string,
+  userId: string,
+): Promise<void> {
+  const db = getMatuClient()
+  const { data: existing, error: findErr } = await db
+    .from('workspace_members')
+    .select('id, role')
+    .eq('workspace_id', workspaceId)
+    .eq('user_id', userId)
+    .maybeSingle()
+
+  if (findErr) throw new Error(findErr.message)
+  if (!existing) return
+
+  const row = existing as { id: string; role: UserRole }
+  if (row.role === 'owner') throw new Error('No se puede quitar al propietario del espacio')
+
+  const { error } = await db.from('workspace_members').eq('id', row.id).delete()
+  if (error) throw new Error(error.message)
+}
+
 export async function acceptPendingInvites(userId: string, email: string): Promise<void> {
   const db = getMatuClient()
   const normalized = email.trim().toLowerCase()
@@ -899,13 +954,44 @@ export function profileFromAuth(
   userId: string,
   email: string,
   name?: string | null,
+  avatar?: string | null,
 ): User {
   const displayName = name?.trim() || email.split('@')[0] || 'Usuario'
   return {
     id: userId,
     name: displayName,
     email,
-    avatar: '',
+    avatar: avatar?.trim() || '',
     initials: initialsFromName(displayName),
   }
+}
+
+/**
+ * After MatuDB auth (email or OAuth): upsert profiles row, accept invites,
+ * and create the default workspace when the user has none yet.
+ */
+export async function bootstrapAppUser(
+  userId: string,
+  email: string,
+  name?: string | null,
+  avatar?: string | null,
+): Promise<User> {
+  const profile = profileFromAuth(userId, email, name, avatar)
+  await upsertProfile(profile)
+  await acceptPendingInvites(userId, profile.email)
+  await acceptPendingBoardInvites(userId, profile.email)
+
+  const db = getMatuClient()
+  const { data: memberships } = await db
+    .from('workspace_members')
+    .select('id')
+    .eq('user_id', userId)
+    .limit(1)
+
+  const hasWorkspace = Array.isArray(memberships) && memberships.length > 0
+  if (!hasWorkspace) {
+    await createDefaultWorkspace(userId, profile.name)
+  }
+
+  return profile
 }

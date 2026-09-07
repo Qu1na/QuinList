@@ -44,6 +44,11 @@ interface DbProfile {
   email: string
   avatar: string
   initials: string
+  suspended_at?: string | null
+  suspended_until?: string | null
+  suspended_reason?: string | null
+  suspended_by?: string | null
+  last_login_at?: string | null
 }
 
 export class InviteError extends Error {
@@ -279,6 +284,11 @@ export async function loadProfilesByIds(userIds: string[]): Promise<User[]> {
     email: p.email,
     avatar: p.avatar ?? '',
     initials: p.initials,
+    suspendedAt: p.suspended_at ?? null,
+    suspendedUntil: p.suspended_until ?? null,
+    suspendedReason: p.suspended_reason ?? null,
+    suspendedBy: p.suspended_by ?? null,
+    lastLoginAt: p.last_login_at ?? null,
   }))
 }
 

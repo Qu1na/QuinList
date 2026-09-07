@@ -41,3 +41,18 @@ SELECT matudb_enable_realtime('SCHEMA', 'project_presence', 'PROJECT_ID'::uuid);
 SELECT matudb_enable_realtime('SCHEMA', 'project_team_invites', 'PROJECT_ID'::uuid);
 SELECT matudb_enable_realtime('SCHEMA', 'project_team_invite_uses', 'PROJECT_ID'::uuid);
 SELECT matudb_enable_realtime('SCHEMA', 'project_share_links', 'PROJECT_ID'::uuid);
+
+-- v3 — eventos, recurrencia, dependencias, custom fields, reacciones, OKRs
+SELECT matudb_enable_realtime('SCHEMA', 'workspace_events', 'PROJECT_ID'::uuid);
+SELECT matudb_enable_realtime('SCHEMA', 'event_attendees', 'PROJECT_ID'::uuid);
+SELECT matudb_enable_realtime('SCHEMA', 'recurring_rules', 'PROJECT_ID'::uuid);
+SELECT matudb_enable_realtime('SCHEMA', 'task_dependencies', 'PROJECT_ID'::uuid);
+SELECT matudb_enable_realtime('SCHEMA', 'custom_field_definitions', 'PROJECT_ID'::uuid);
+SELECT matudb_enable_realtime('SCHEMA', 'custom_field_values', 'PROJECT_ID'::uuid);
+SELECT matudb_enable_realtime('SCHEMA', 'reactions', 'PROJECT_ID'::uuid);
+SELECT matudb_enable_realtime('SCHEMA', 'automation_rules', 'PROJECT_ID'::uuid);
+SELECT matudb_enable_realtime('SCHEMA', 'automation_logs', 'PROJECT_ID'::uuid);
+SELECT matudb_enable_realtime('SCHEMA', 'saved_views', 'PROJECT_ID'::uuid);
+SELECT matudb_enable_realtime('SCHEMA', 'okrs', 'PROJECT_ID'::uuid);
+SELECT matudb_enable_realtime('SCHEMA', 'key_results', 'PROJECT_ID'::uuid);
+SELECT matudb_enable_realtime('SCHEMA', 'key_result_updates', 'PROJECT_ID'::uuid);

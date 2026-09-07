@@ -1,4 +1,4 @@
-import type { UserRole } from '@/types'
+import type { User, UserRole } from '@/types'
 
 const ROLE_HIERARCHY: Record<UserRole, number> = {
   owner: 4,
@@ -15,8 +15,34 @@ export function canManageMembers(role: UserRole): boolean {
   return ROLE_HIERARCHY[role] >= ROLE_HIERARCHY.admin
 }
 
+export function canSuspendUsers(role: UserRole): boolean {
+  return role === 'owner'
+}
+
 export function canDeleteWorkspace(role: UserRole): boolean {
   return role === 'owner'
+}
+
+/** Owner can remove anyone except owner; admin only member/viewer. */
+export function canRemoveMember(actorRole: UserRole, targetRole: UserRole): boolean {
+  if (targetRole === 'owner') return false
+  if (actorRole === 'owner') return true
+  if (actorRole === 'admin') return targetRole === 'member' || targetRole === 'viewer'
+  return false
+}
+
+/** Owner/admin can change roles except owner; admin cannot change other admins. */
+export function canChangeMemberRole(actorRole: UserRole, targetRole: UserRole): boolean {
+  if (targetRole === 'owner') return false
+  if (actorRole === 'owner') return true
+  if (actorRole === 'admin') return targetRole === 'member' || targetRole === 'viewer'
+  return false
+}
+
+export function isUserSuspended(user: Pick<User, 'suspendedAt' | 'suspendedUntil'> | null | undefined): boolean {
+  if (!user?.suspendedAt) return false
+  if (!user.suspendedUntil) return true
+  return new Date(user.suspendedUntil).getTime() > Date.now()
 }
 
 export function roleLabel(role: UserRole): string {

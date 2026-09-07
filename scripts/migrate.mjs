@@ -47,24 +47,44 @@ if (!url || !projectId || !apiKey) {
 }
 
 const db = createClient({ url, projectId, apiKey })
-const schemaPath = resolve(root, 'docs', 'schema.sql')
-const sql = readFileSync(schemaPath, 'utf8')
-const statements = splitSqlStatements(sql)
+
+const migrations = [
+  resolve(root, 'docs', 'schema.sql'),
+  resolve(root, 'docs', 'migration-v2-features.sql'),
+  resolve(root, 'docs', 'migration-chat-complete.sql'),
+  resolve(root, 'docs', 'migration-collaboration.sql'),
+  resolve(root, 'docs', 'migration-project-modules.sql'),
+  resolve(root, 'docs', 'migration-project-notes.sql'),
+  resolve(root, 'docs', 'migration-realtime.sql'),
+  resolve(root, 'docs', 'migration-v3-features.sql'),
+  resolve(root, 'docs', 'migration-user-moderation.sql'),
+].filter((p) => existsSync(p))
+
+const allStatements = []
+for (const file of migrations) {
+  const sql = readFileSync(file, 'utf8')
+  for (const stmt of splitSqlStatements(sql)) allStatements.push({ file, stmt })
+}
 
 console.log(`Migrando QuinList en ${url} (proyecto ${projectId})...\n`)
 
 let ok = 0
 let failed = 0
+let currentFile = ''
 
-for (const statement of statements) {
-  const preview = statement.replace(/\s+/g, ' ').slice(0, 72)
-  process.stdout.write(`→ ${preview}... `)
+for (const { file, stmt } of allStatements) {
+  if (file !== currentFile) {
+    console.log(`\n📄 ${file.replace(root + '\\', '')}`)
+    currentFile = file
+  }
+  const preview = stmt.replace(/\s+/g, ' ').slice(0, 72)
+  process.stdout.write(`  → ${preview}... `)
 
-  const { error } = await db.rpc(`${statement};`)
+  const { error } = await db.rpc(`${stmt};`)
 
   if (error) {
     const msg = error.message ?? String(error)
-    if (msg.includes('already exists')) {
+    if (msg.includes('already exists') || msg.includes('duplicate')) {
       console.log('ya existe ✓')
       ok++
     } else {

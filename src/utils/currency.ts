@@ -60,7 +60,7 @@ export function formatCurrencyInput(amount: number, currency = DEFAULT_CURRENCY)
 export function parseCurrencyInput(text: string, currency = DEFAULT_CURRENCY): number {
   const sep = thousandSeparator(currency)
   const cleaned = text
-    .replace(/[^\d.,\-]/g, '')
+    .replace(/[^\d.,-]/g, '')
     .replace(new RegExp(`\\${sep}`, 'g'), '')
     .replace(',', '.')
   const n = parseFloat(cleaned)

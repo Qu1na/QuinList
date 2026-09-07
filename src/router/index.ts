@@ -24,6 +24,12 @@ const router = createRouter({
       meta: { guest: true },
     },
     {
+      path: '/reset-password',
+      name: 'reset-password',
+      component: () => import('../views/ResetPasswordView.vue'),
+      meta: { publicShare: true },
+    },
+    {
       path: '/register',
       name: 'register',
       component: RegisterView,
@@ -70,6 +76,8 @@ const router = createRouter({
         { path: '', name: 'home', component: () => import('../views/HomeView.vue') },
         { path: 'board/:boardId', name: 'board', component: () => import('../views/BoardView.vue') },
         { path: 'calendar', name: 'calendar', component: () => import('../views/CalendarView.vue') },
+        { path: 'events', name: 'events', component: () => import('../views/EventsView.vue') },
+        { path: 'okrs', name: 'okrs', component: () => import('../views/OkrsView.vue') },
         { path: 'reports', name: 'reports', component: () => import('../views/ReportsView.vue') },
         { path: 'issues', name: 'issues', component: () => import('../views/IssuesView.vue') },
         { path: 'releases', name: 'releases', component: () => import('../views/ReleasesView.vue') },
@@ -86,6 +94,8 @@ const router = createRouter({
     // Redirecciones de rutas antiguas
     { path: '/board/:boardId', redirect: (to) => `/app/board/${to.params.boardId}` },
     { path: '/calendar', redirect: '/app/calendar' },
+    { path: '/events', redirect: '/app/events' },
+    { path: '/okrs', redirect: '/app/okrs' },
     { path: '/reports', redirect: '/app/reports' },
     { path: '/issues', redirect: '/app/issues' },
     { path: '/releases', redirect: '/app/releases' },

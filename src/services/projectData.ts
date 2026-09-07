@@ -4,11 +4,13 @@ import { PROJECT_SEED } from '@/utils/projectSeed'
 import {
   isProjectsMatuEnabled,
   loadProjectsForUser,
+  syncDirtyProjectsToMatu,
   syncProjectsToMatu,
 } from '@/services/projectMatuData'
 import { mergeWithBackup } from '@/utils/projectRecovery'
 import { clearMissingTablesCache } from '@/lib/matuTables'
 import { todayCalendarDate, nowInstantISO } from '@/utils/datetime'
+import { countDirtyRecords, diffProjectsState } from '@/utils/projectOptimistic'
 
 const STORAGE_KEY = 'quinlist_projects_data_v2'
 export const PROJECTS_LOCAL_STORAGE_KEY = STORAGE_KEY
@@ -198,10 +200,16 @@ export async function loadProjectsData(
 export async function persistProjectsData(
   workspaceId: string,
   data: ProjectsDataState,
-  _options?: { forceBackup?: boolean },
+  options?: { forceBackup?: boolean; previous?: ProjectsDataState | null },
 ): Promise<void> {
   if (isProjectsMatuEnabled()) {
-    await syncProjectsToMatu(workspaceId, data)
+    if (options?.previous) {
+      const dirty = diffProjectsState(options.previous, data)
+      if (countDirtyRecords(dirty) === 0) return
+      await syncDirtyProjectsToMatu(dirty)
+    } else {
+      await syncProjectsToMatu(workspaceId, data)
+    }
     clearProjectsLocalStorage()
     return
   }

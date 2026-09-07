@@ -91,3 +91,63 @@ export function writeProjectsState(
   target.timeEntries.value = data.timeEntries
   target.taskComments.value = data.taskComments
 }
+
+export type ProjectsCollectionKey = Exclude<keyof ProjectsDataState, never>
+
+/** Collections that map 1:1 to MatuDB tables (id-keyed upserts). */
+export const PROJECTS_SYNC_COLLECTIONS = [
+  'projects',
+  'tasks',
+  'milestones',
+  'costs',
+  'risks',
+  'notes',
+  'deliverables',
+  'documents',
+  'folders',
+  'invites',
+  'members',
+  'activities',
+  'timeEntries',
+  'taskComments',
+] as const satisfies readonly ProjectsCollectionKey[]
+
+export type ProjectsSyncCollection = (typeof PROJECTS_SYNC_COLLECTIONS)[number]
+
+function itemFingerprint(item: { id: string }): string {
+  return JSON.stringify(item)
+}
+
+/** Items present in `after` that are new or changed vs `before`. */
+export function diffProjectsCollection<T extends { id: string }>(
+  before: T[],
+  after: T[],
+): T[] {
+  const prev = new Map(before.map((item) => [item.id, itemFingerprint(item)]))
+  return after.filter((item) => prev.get(item.id) !== itemFingerprint(item))
+}
+
+export function diffProjectsState(
+  before: ProjectsDataState,
+  after: ProjectsDataState,
+): Partial<Record<ProjectsSyncCollection, Array<{ id: string }>>> {
+  const dirty: Partial<Record<ProjectsSyncCollection, Array<{ id: string }>>> = {}
+  for (const key of PROJECTS_SYNC_COLLECTIONS) {
+    const changed = diffProjectsCollection(
+      (before[key] ?? []) as Array<{ id: string }>,
+      (after[key] ?? []) as Array<{ id: string }>,
+    )
+    if (changed.length) dirty[key] = changed
+  }
+  return dirty
+}
+
+export function countDirtyRecords(
+  dirty: Partial<Record<ProjectsSyncCollection, Array<{ id: string }>>>,
+): number {
+  let total = 0
+  for (const key of PROJECTS_SYNC_COLLECTIONS) {
+    total += dirty[key]?.length ?? 0
+  }
+  return total
+}

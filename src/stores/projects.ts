@@ -40,6 +40,7 @@ import type { RealtimeChangePayload } from '@/types/collaboration'
 import { useCollaborationStore } from './collaboration'
 import { useQuinListStore } from './quinlist'
 import { useAuthStore } from './auth'
+import { useNotificationStore } from './notifications'
 import { isWorkspaceMember } from '@/utils/projectAccess'
 import { generateId } from '@/utils/permissions'
 import {
@@ -68,7 +69,13 @@ import { findTodoList, getDefaultBoardLists } from '@/utils/boardDefaults'
 import { formatMoney, DEFAULT_CURRENCY } from '@/utils/currency'
 import { uploadProjectFile } from '@/services/storage'
 import { isMatuConfigured } from '@/lib/matu'
-import { cloneProjectsState, readProjectsState, writeProjectsState } from '@/utils/projectOptimistic'
+import {
+  cloneProjectsState,
+  countDirtyRecords,
+  diffProjectsState,
+  readProjectsState,
+  writeProjectsState,
+} from '@/utils/projectOptimistic'
 
 export const DASHBOARD_ACTIVITY_LIMIT = 7
 
@@ -93,6 +100,8 @@ export const useProjectsStore = defineStore('projects', () => {
   let saveTimer: ReturnType<typeof setTimeout> | null = null
   let saveChain: Promise<void> = Promise.resolve()
   let saveWaiters: Array<{ resolve: () => void; reject: (err: unknown) => void }> = []
+  /** Last successfully synced snapshot — enables incremental Matu writes. */
+  let lastSyncedSnapshot: ProjectsDataState | null = null
   const suppressedRealtimeKeys = new Map<string, number>()
   const REALTIME_SUPPRESS_MS = 4000
   let loadedWorkspaceId: string | null = null
@@ -327,12 +336,8 @@ export const useProjectsStore = defineStore('projects', () => {
     return collectProjectFiles(state, projectId)
   }
 
-  async function flushSave() {
-    const quinlist = useQuinListStore()
-    const wsId = quinlist.currentWorkspaceId
-    if (!wsId) return
-
-    await persistProjectsData(wsId, {
+  function currentProjectsState(): ProjectsDataState {
+    return readProjectsState({
       projects: projects.value,
       tasks: tasks.value,
       milestones: milestones.value,
@@ -348,6 +353,27 @@ export const useProjectsStore = defineStore('projects', () => {
       timeEntries: timeEntries.value,
       taskComments: taskComments.value,
     })
+  }
+
+  function markSyncedFromCurrent() {
+    lastSyncedSnapshot = cloneProjectsState(currentProjectsState())
+  }
+
+  async function flushSave() {
+    const quinlist = useQuinListStore()
+    const wsId = quinlist.currentWorkspaceId
+    if (!wsId) return
+
+    const current = currentProjectsState()
+    const previous = lastSyncedSnapshot
+
+    // Nothing changed since last successful sync.
+    if (previous && countDirtyRecords(diffProjectsState(previous, current)) === 0) {
+      return
+    }
+
+    await persistProjectsData(wsId, current, { previous })
+    lastSyncedSnapshot = cloneProjectsState(current)
   }
 
   function captureSnapshot(): ProjectsDataState {
@@ -400,6 +426,20 @@ export const useProjectsStore = defineStore('projects', () => {
     void save().catch((err) => {
       console.error('[projects] Error guardando, revirtiendo cambios:', err)
       restoreSnapshot(snapshot)
+      const message =
+        err instanceof Error && err.message ? err.message : 'Error desconocido al guardar'
+      const friendly = /Failed to fetch|NetworkError/i.test(message)
+        ? 'Sin conexión con la base de datos. Cambios revertidos.'
+        : /401|Unauthorized|Authorization/i.test(message)
+          ? 'Sesión expirada o sin permisos. Vuelve a iniciar sesión.'
+          : message
+      const notif = useNotificationStore()
+      notif.push({
+        type: 'sync_failed',
+        title: 'No se pudo guardar',
+        message: friendly,
+        userId: useAuthStore().currentUserId ?? 'system',
+      })
     })
   }
 
@@ -516,6 +556,7 @@ export const useProjectsStore = defineStore('projects', () => {
     mergeList(activities, data.activities)
     mergeList(timeEntries, data.timeEntries ?? [])
     mergeList(taskComments, data.taskComments ?? [])
+    markSyncedFromCurrent()
   }
 
   async function reloadProject(projectId: string) {
@@ -580,6 +621,7 @@ export const useProjectsStore = defineStore('projects', () => {
     replaceForIncoming(timeEntries, data.timeEntries ?? [])
     replaceForIncoming(taskComments, data.taskComments ?? [])
     loadedWorkspaceId = workspaceId
+    markSyncedFromCurrent()
   }
 
   async function waitForQuinListReady() {
@@ -755,6 +797,7 @@ export const useProjectsStore = defineStore('projects', () => {
     workspaceWatchStop?.()
     workspaceWatchStop = null
     loadedWorkspaceId = null
+    lastSyncedSnapshot = null
     stopWorkspaceRealtime()
     if (saveTimer) clearTimeout(saveTimer)
     saveWaiters = []
@@ -979,6 +1022,19 @@ export const useProjectsStore = defineStore('projects', () => {
       } catch (err) {
         console.error('[projects] Error moviendo tarea, revirtiendo:', err)
         restoreSnapshot(snapshot)
+        const message =
+          err instanceof Error && err.message ? err.message : 'Error desconocido al guardar'
+        const friendly = /Failed to fetch|NetworkError|ERR_FAILED/i.test(message)
+          ? 'Sin conexión con la base de datos. El cambio se revirtió.'
+          : /401|Unauthorized|Authorization/i.test(message)
+            ? 'Sesión expirada o sin permisos. Vuelve a iniciar sesión.'
+            : message
+        useNotificationStore().push({
+          type: 'sync_failed',
+          title: 'No se pudo mover la tarea',
+          message: friendly,
+          userId: useAuthStore().currentUserId ?? 'system',
+        })
         throw err
       }
     }

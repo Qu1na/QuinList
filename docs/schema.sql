@@ -7,6 +7,11 @@
     email TEXT NOT NULL UNIQUE,
     avatar TEXT DEFAULT '',
     initials TEXT NOT NULL,
+    suspended_at TIMESTAMPTZ,
+    suspended_until TIMESTAMPTZ,
+    suspended_reason TEXT,
+    suspended_by TEXT,
+    last_login_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW()
   );
 
