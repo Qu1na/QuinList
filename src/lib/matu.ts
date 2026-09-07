@@ -89,8 +89,7 @@ export function resetMatuClient() {
 
 /**
  * Exchange a Google ID token for a MatuDB session.
- * Expects MatuDB: POST /api/projects/:id/auth/oauth/google
- * Body: { credential } (GIS JWT) — same response shape as /login ({ data: { user, token } }).
+ * Tries common MatuDB OAuth routes / body shapes (server must verify the JWT).
  */
 export async function signInWithGoogleCredential(
   credential: string,
@@ -99,51 +98,90 @@ export async function signInWithGoogleCredential(
     return { data: null, error: 'MatuDB no está configurado' }
   }
 
-  const url = `${getMatuUrl()}/api/projects/${getMatuProjectId()}/auth/oauth/google`
-  try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        apikey: getMatuApiKey(),
-      },
-      body: JSON.stringify({ credential, provider: 'google' }),
-    })
+  const projectId = getMatuProjectId()
+  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim() || ''
+  const base = `${getMatuUrl()}/api/projects/${projectId}/auth`
+  const headers = {
+    'Content-Type': 'application/json',
+    apikey: getMatuApiKey(),
+  }
 
-    const json = (await res.json().catch(() => ({}))) as {
-      message?: string
-      data?: { user?: AuthUser; token?: string }
+  // Aliases so MatuDB can accept whichever field name the server expects.
+  const body = {
+    provider: 'google',
+    credential,
+    id_token: credential,
+    idToken: credential,
+    token: credential,
+    client_id: clientId,
+    clientId,
+  }
+
+  const paths = [`${base}/oauth/google`, `${base}/google`, `${base}/oauth`]
+
+  let lastStatus = 0
+  let lastMessage = ''
+
+  try {
+    for (const url of paths) {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(body),
+      })
+
+      const json = (await res.json().catch(() => ({}))) as {
+        message?: string
+        error?: string
+        data?: { user?: AuthUser; token?: string }
+      }
+
+      lastStatus = res.status
+      lastMessage = json.message || json.error || ''
+
+      if (res.status === 404) continue
+
+      if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          return {
+            data: null,
+            error:
+              lastMessage ||
+              'MatuDB rechazó Google (401). En el panel de MatuDB activa OAuth Google y pega el mismo Client ID que VITE_GOOGLE_CLIENT_ID.',
+          }
+        }
+        return {
+          data: null,
+          error:
+            lastMessage ||
+            `No pudimos completar el inicio con Google (${res.status}).`,
+        }
+      }
+
+      const user = json.data?.user
+      const token = json.data?.token
+      if (!user?.id || !token) {
+        return { data: null, error: 'Respuesta OAuth inválida desde MatuDB' }
+      }
+
+      applyMatuAuthSession(user, token, { emit: false })
+      return { data: { user, token }, error: null }
     }
 
-    if (!res.ok) {
-      if (res.status === 404) {
-        return {
-          data: null,
-          error:
-            'MatuDB aún no expone OAuth Google (POST /auth/oauth/google). Habilítalo en el servidor MatuDB y vuelve a intentar.',
-        }
-      }
-      if (res.status === 401 || res.status === 403) {
-        return {
-          data: null,
-          error:
-            'MatuDB rechazó el inicio con Google. Verifica que el endpoint OAuth esté activo y acepte este Client ID.',
-        }
-      }
+    if (lastStatus === 404 || lastStatus === 0) {
       return {
         data: null,
-        error: json.message || `No pudimos completar el inicio con Google (${res.status}).`,
+        error:
+          'MatuDB no tiene endpoint OAuth Google. Actívalo en el servidor (POST /auth/oauth/google) con el Client ID de Google.',
       }
     }
 
-    const user = json.data?.user
-    const token = json.data?.token
-    if (!user?.id || !token) {
-      return { data: null, error: 'Respuesta OAuth inválida desde MatuDB' }
+    return {
+      data: null,
+      error:
+        lastMessage ||
+        `No pudimos completar el inicio con Google (${lastStatus || 'sin respuesta'}).`,
     }
-
-    applyMatuAuthSession(user, token, { emit: false })
-    return { data: { user, token }, error: null }
   } catch (err) {
     return { data: null, error: formatMatuNetworkError(err) }
   }

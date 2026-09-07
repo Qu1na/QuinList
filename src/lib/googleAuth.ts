@@ -44,6 +44,8 @@ declare global {
 }
 
 let scriptPromise: Promise<void> | null = null
+let gisInitialized = false
+let credentialCallback: ((credential: string | null, error?: string) => void) | null = null
 
 function loadGisScript(): Promise<void> {
   if (typeof window === 'undefined') {
@@ -78,10 +80,44 @@ function loadGisScript(): Promise<void> {
   return scriptPromise
 }
 
+function ensureGisInitialized(clientId: string): GoogleAccountsId {
+  const googleId = window.google?.accounts?.id
+  if (!googleId) {
+    throw new Error('Google Identity Services no está disponible')
+  }
+
+  if (!gisInitialized) {
+    googleId.initialize({
+      client_id: clientId,
+      callback: (response) => {
+        const cb = credentialCallback
+        credentialCallback = null
+        if (!cb) return
+        if (response.credential) cb(response.credential)
+        else cb(null, 'Google no devolvió la credencial de la cuenta')
+      },
+      auto_select: false,
+      cancel_on_tap_outside: true,
+      context: 'signin',
+      ux_mode: 'popup',
+      use_fedcm_for_prompt: false,
+      itp_support: true,
+    })
+    gisInitialized = true
+  }
+
+  return googleId
+}
+
 /** Call from login/register mount so the first click feels instant. */
 export function preloadGoogleAuth(): void {
   if (!isGoogleAuthConfigured()) return
-  void loadGisScript().catch(() => {})
+  void loadGisScript()
+    .then(() => {
+      const clientId = getGoogleClientId()
+      if (clientId) ensureGisInitialized(clientId)
+    })
+    .catch(() => {})
 }
 
 /**
@@ -97,12 +133,8 @@ export async function requestGoogleIdToken(): Promise<string> {
   }
 
   await loadGisScript()
-  const googleId = window.google?.accounts?.id
-  if (!googleId) {
-    throw new Error('Google Identity Services no está disponible')
-  }
+  const googleId = ensureGisInitialized(clientId)
 
-  // Kill any leftover One Tap / FedCM bubble from a previous attempt.
   try {
     googleId.cancel()
     googleId.disableAutoSelect?.()
@@ -124,6 +156,7 @@ export async function requestGoogleIdToken(): Promise<string> {
       }
       if (host?.parentNode) host.parentNode.removeChild(host)
       host = null
+      if (credentialCallback) credentialCallback = null
     }
 
     const finish = (credential: string | null, error?: string) => {
@@ -134,6 +167,8 @@ export async function requestGoogleIdToken(): Promise<string> {
       else reject(new Error(error ?? 'Inicio de sesión con Google cancelado'))
     }
 
+    credentialCallback = finish
+
     timeoutId = window.setTimeout(() => {
       finish(
         null,
@@ -141,22 +176,6 @@ export async function requestGoogleIdToken(): Promise<string> {
       )
     }, POPUP_TIMEOUT_MS)
 
-    googleId.initialize({
-      client_id: clientId,
-      callback: (response) => {
-        if (response.credential) finish(response.credential)
-        else finish(null, 'Google no devolvió la credencial de la cuenta')
-      },
-      // Never use One Tap here — popup account chooser only.
-      auto_select: false,
-      cancel_on_tap_outside: true,
-      context: 'signin',
-      ux_mode: 'popup',
-      use_fedcm_for_prompt: false,
-      itp_support: true,
-    })
-
-    // Temporary official GIS button: a user-gesture click opens the centered Google popup.
     host = document.createElement('div')
     host.setAttribute('aria-hidden', 'true')
     host.style.cssText = [
@@ -183,7 +202,6 @@ export async function requestGoogleIdToken(): Promise<string> {
       width: 280,
     })
 
-    // Give GIS a frame to mount the iframe button, then click (still within user gesture tick+).
     const tryClick = (attempt: number) => {
       if (settled) return
       const btn =

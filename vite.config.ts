@@ -43,6 +43,8 @@ export default defineConfig(({ mode }) => ({
   server: {
     headers: {
       'Cache-Control': 'no-store',
+      // Allows Google OAuth popup ↔ opener postMessage (avoids noisy COOP blocks).
+      'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
     },
   },
 }))
