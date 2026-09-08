@@ -36,15 +36,18 @@ export async function loadProfileById(userId: string): Promise<User | null> {
   if (!isMatuConfigured()) return null
   const db = getMatuClient()
   const { data, error } = await db.from('profiles').select('*').eq('id', userId).maybeSingle()
-  if (error || !data) return null
+  if (error) {
+    console.warn('[auth] loadProfileById:', error.message)
+    return null
+  }
+  if (!data) return null
   return profileToUser(data as DbProfileModeration)
 }
 
-export async function touchLastLogin(userId: string): Promise<void> {
-  if (!isMatuConfigured()) return
-  const db = getMatuClient()
-  const now = new Date().toISOString()
-  await db.from('profiles').eq('id', userId).update({ last_login_at: now })
+export async function touchLastLogin(_userId: string): Promise<void> {
+  // Desactivado: MatuDB en db.matudb.com responde 404 "Project not found or access denied"
+  // en updates a /data/profiles (PUT/PATCH). No bloquear ni ensuciar el login.
+  return
 }
 
 export async function suspendUser(

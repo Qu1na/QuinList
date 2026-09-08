@@ -209,7 +209,16 @@ async function saveRecord(
     .eq('id', id)
     .maybeSingle()
 
-  if (findErr) throw new Error(findErr.message)
+  if (findErr) {
+    const msg = findErr.message || 'Error al consultar MatuDB'
+    // Acceso al proyecto / tabla: no tratar como “no existe la fila”
+    if (/project not found|access denied|unauthorized|forbidden/i.test(msg)) {
+      throw new Error(
+        'No hay acceso a los datos de MatuDB (proyecto o permisos). Revisa VITE_MATUDB_PROJECT_ID, la API key y que exista la tabla profiles.',
+      )
+    }
+    throw new Error(msg)
+  }
 
   if (existing) {
     const { id: _rowId, ...updateData } = data
@@ -977,20 +986,39 @@ export async function bootstrapAppUser(
   avatar?: string | null,
 ): Promise<User> {
   const profile = profileFromAuth(userId, email, name, avatar)
-  await upsertProfile(profile)
-  await acceptPendingInvites(userId, profile.email)
-  await acceptPendingBoardInvites(userId, profile.email)
 
-  const db = getMatuClient()
-  const { data: memberships } = await db
-    .from('workspace_members')
-    .select('id')
-    .eq('user_id', userId)
-    .limit(1)
+  try {
+    await upsertProfile(profile)
+  } catch (err) {
+    console.warn('[matuData] bootstrap upsertProfile:', err)
+  }
 
-  const hasWorkspace = Array.isArray(memberships) && memberships.length > 0
-  if (!hasWorkspace) {
-    await createDefaultWorkspace(userId, profile.name)
+  try {
+    await acceptPendingInvites(userId, profile.email)
+    await acceptPendingBoardInvites(userId, profile.email)
+  } catch (err) {
+    console.warn('[matuData] bootstrap invites:', err)
+  }
+
+  try {
+    const db = getMatuClient()
+    const { data: memberships, error } = await db
+      .from('workspace_members')
+      .select('id')
+      .eq('user_id', userId)
+      .limit(1)
+
+    if (error) {
+      console.warn('[matuData] bootstrap memberships:', error.message)
+      return profile
+    }
+
+    const hasWorkspace = Array.isArray(memberships) && memberships.length > 0
+    if (!hasWorkspace) {
+      await createDefaultWorkspace(userId, profile.name)
+    }
+  } catch (err) {
+    console.warn('[matuData] bootstrap workspace:', err)
   }
 
   return profile

@@ -14,7 +14,6 @@ import {
   AUTH_LOGIN_FAIL_TITLE,
   localizeAuthError,
 } from '@/utils/authMessages'
-import { isGoogleAuthConfigured, preloadGoogleAuth } from '@/lib/googleAuth'
 
 const auth = useAuthStore()
 const store = useQuinListStore()
@@ -26,7 +25,6 @@ const password = ref('')
 const showPassword = ref(false)
 const remember = ref(true)
 const loading = ref(false)
-const socialLoading = ref(false)
 const showForgot = ref(false)
 
 const noticeOpen = ref(false)
@@ -42,7 +40,6 @@ const demoUsers = [
 
 onMounted(() => {
   document.documentElement.classList.add('auth-screen')
-  preloadGoogleAuth()
   const saved = localStorage.getItem('quinlist_remember_email')
   if (saved) email.value = saved
   else if (!auth.useDatabase) email.value = demoUsers[0]!.email
@@ -58,15 +55,17 @@ function showNotice(title: string, message: string, variant: 'info' | 'error' | 
 }
 
 async function afterAuthSuccess() {
-  await store.init()
-  await projectsStore.init()
+  // No bloquear el redirect: AppLayout ya muestra “Cargando workspace…”
+  // hasta que quinlist.isReady. Esperar aquí alargaba mucho el botón de login.
+  void store.init().catch((err) => console.error('[login] quinlist.init:', err))
+  void projectsStore.init().catch((err) => console.error('[login] projects.init:', err))
 
   const redirect = sessionStorage.getItem(REDIRECT_KEY)
   if (redirect) {
     sessionStorage.removeItem(REDIRECT_KEY)
-    router.push(redirect)
+    await router.push(redirect)
   } else {
-    router.push({ name: 'home' })
+    await router.push({ name: 'home' })
   }
 }
 
@@ -95,33 +94,6 @@ async function submit() {
   }
 }
 
-async function loginWithGoogle() {
-  if (!isGoogleAuthConfigured()) {
-    showNotice(
-      'Google aún no está listo',
-      'Agrega VITE_GOOGLE_CLIENT_ID en tu archivo .env (Client ID de Google Cloud, tipo Web) y reinicia npm run dev.',
-      'info',
-    )
-    return
-  }
-
-  socialLoading.value = true
-  try {
-    const result = await auth.loginWithGoogle()
-    if (!result.ok) {
-      showNotice(
-        'No pudimos conectar con Google',
-        localizeAuthError(result.error, 'Inténtalo de nuevo en unos momentos.'),
-        'error',
-      )
-      return
-    }
-    await afterAuthSuccess()
-  } finally {
-    socialLoading.value = false
-  }
-}
-
 function openForgot() {
   showForgot.value = true
 }
@@ -130,15 +102,8 @@ function openForgot() {
 <template>
   <AuthLayout title="Inicia sesión" subtitle="¡Bienvenido! Elige cómo quieres entrar:">
     <div v-if="auth.useDatabase" class="mb-5 grid grid-cols-2 gap-3">
-      <button
-        type="button"
-        class="auth-social-btn"
-        :disabled="socialLoading || loading"
-        title="Continuar con Google"
-        @click="loginWithGoogle"
-      >
-        <Loader2 v-if="socialLoading" :size="18" class="animate-spin text-[#64748b]" />
-        <svg v-else class="h-[18px] w-[18px]" viewBox="0 0 24 24">
+      <button type="button" class="auth-social-btn" disabled title="Próximamente">
+        <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24">
           <path
             fill="#4285F4"
             d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
@@ -228,7 +193,7 @@ function openForgot() {
         Modo demo · configura MatuDB en <code>.env</code> para login real.
       </p>
 
-      <button type="submit" :disabled="loading || socialLoading" class="auth-submit">
+      <button type="submit" :disabled="loading" class="auth-submit">
         <Loader2 v-if="loading" :size="17" class="animate-spin" />
         Iniciar sesión
       </button>

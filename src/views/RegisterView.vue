@@ -9,7 +9,6 @@ import { useQuinListStore } from '@/stores/quinlist'
 import { useProjectsStore } from '@/stores/projects'
 import { REDIRECT_KEY } from '@/router'
 import { localizeAuthError } from '@/utils/authMessages'
-import { isGoogleAuthConfigured, preloadGoogleAuth } from '@/lib/googleAuth'
 
 const auth = useAuthStore()
 const store = useQuinListStore()
@@ -23,17 +22,13 @@ const confirmPassword = ref('')
 const showPassword = ref(false)
 const acceptTerms = ref(false)
 const loading = ref(false)
-const socialLoading = ref(false)
 
 const noticeOpen = ref(false)
 const noticeTitle = ref('')
 const noticeMessage = ref('')
 const noticeVariant = ref<'info' | 'error' | 'success'>('error')
 
-onMounted(() => {
-  document.documentElement.classList.add('auth-screen')
-  preloadGoogleAuth()
-})
+onMounted(() => document.documentElement.classList.add('auth-screen'))
 onUnmounted(() => document.documentElement.classList.remove('auth-screen'))
 
 function showNotice(title: string, message: string, variant: 'info' | 'error' | 'success' = 'error') {
@@ -44,15 +39,15 @@ function showNotice(title: string, message: string, variant: 'info' | 'error' | 
 }
 
 async function afterAuthSuccess() {
-  await store.init()
-  await projectsStore.init()
+  void store.init().catch((err) => console.error('[register] quinlist.init:', err))
+  void projectsStore.init().catch((err) => console.error('[register] projects.init:', err))
 
   const redirect = sessionStorage.getItem(REDIRECT_KEY)
   if (redirect) {
     sessionStorage.removeItem(REDIRECT_KEY)
-    router.push(redirect)
+    await router.push(redirect)
   } else {
-    router.push({ name: 'home' })
+    await router.push({ name: 'home' })
   }
 }
 
@@ -92,36 +87,6 @@ async function submit() {
   }
 }
 
-async function registerWithGoogle() {
-  if (!acceptTerms.value) {
-    showNotice('Términos', 'Acepta los términos y la política de privacidad para continuar con Google.', 'info')
-    return
-  }
-  if (!isGoogleAuthConfigured()) {
-    showNotice(
-      'Google aún no está listo',
-      'Agrega VITE_GOOGLE_CLIENT_ID en tu archivo .env (Client ID de Google Cloud, tipo Web) y reinicia npm run dev.',
-      'info',
-    )
-    return
-  }
-
-  socialLoading.value = true
-  try {
-    const result = await auth.loginWithGoogle()
-    if (!result.ok) {
-      showNotice(
-        'No pudimos conectar con Google',
-        localizeAuthError(result.error, 'Inténtalo de nuevo en unos momentos.'),
-        'error',
-      )
-      return
-    }
-    await afterAuthSuccess()
-  } finally {
-    socialLoading.value = false
-  }
-}
 </script>
 
 <template>
@@ -138,15 +103,8 @@ async function registerWithGoogle() {
 
     <template v-else>
       <div class="mb-4 grid grid-cols-2 gap-3">
-        <button
-          type="button"
-          class="auth-social-btn"
-          :disabled="socialLoading || loading"
-          title="Continuar con Google"
-          @click="registerWithGoogle"
-        >
-          <Loader2 v-if="socialLoading" :size="18" class="animate-spin text-[#64748b]" />
-          <svg v-else class="h-[18px] w-[18px]" viewBox="0 0 24 24">
+        <button type="button" class="auth-social-btn" disabled title="Próximamente">
+          <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24">
             <path
               fill="#4285F4"
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
@@ -245,7 +203,7 @@ async function registerWithGoogle() {
           </span>
         </label>
 
-        <button type="submit" :disabled="loading || socialLoading" class="auth-submit">
+        <button type="submit" :disabled="loading" class="auth-submit">
           <Loader2 v-if="loading" :size="17" class="animate-spin" />
           Crear cuenta
         </button>

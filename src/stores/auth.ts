@@ -14,7 +14,6 @@ import { acceptPendingBoardInvites } from '@/services/boardShare'
 import {
   loadProfileById,
   suspensionMessage,
-  touchLastLogin,
 } from '@/services/userModeration'
 import { isUserSuspended } from '@/utils/permissions'
 import { isGoogleAuthConfigured, peekGoogleIdToken, requestGoogleIdToken } from '@/lib/googleAuth'
@@ -47,58 +46,98 @@ export const useAuthStore = defineStore('auth', () => {
     else users.value[idx] = { ...users.value[idx], ...profile }
   }
 
-  async function enforceActiveProfile(userId: string, email: string, name?: string | null): Promise<{ ok: boolean; error?: string; profile?: User }> {
-    let profile = await loadProfileById(userId)
-    if (!profile) {
-      profile = profileFromAuth(userId, email, name)
-      await upsertProfile(profile)
-      profile = (await loadProfileById(userId)) ?? profile
-    }
+  let initPromise: Promise<void> | null = null
+  /** Evita que onAuthStateChange repita el bootstrap mientras login/register ya lo hacen. */
+  let suppressAuthBootstrap = false
 
-    if (isUserSuspended(profile)) {
-      await getMatuClient().auth.signOut()
-      currentUserId.value = null
-      return { ok: false, error: suspensionMessage(profile) }
-    }
+  async function enforceActiveProfile(
+    userId: string,
+    email: string,
+    name?: string | null,
+  ): Promise<{ ok: boolean; error?: string; profile?: User }> {
+    try {
+      let profile = await loadProfileById(userId)
+      if (!profile) {
+        profile = profileFromAuth(userId, email, name)
+        try {
+          await upsertProfile(profile)
+          profile = (await loadProfileById(userId)) ?? profile
+        } catch (err) {
+          console.warn('[auth] No se pudo guardar el perfil en MatuDB:', err)
+        }
+      }
 
-    await touchLastLogin(userId)
-    profile = { ...profile, lastLoginAt: new Date().toISOString() }
-    mergeUser(profile)
-    currentUserId.value = userId
-    return { ok: true, profile }
+      if (isUserSuspended(profile)) {
+        await getMatuClient().auth.signOut()
+        currentUserId.value = null
+        return { ok: false, error: suspensionMessage(profile) }
+      }
+
+      mergeUser(profile)
+      currentUserId.value = userId
+      return { ok: true, profile }
+    } catch (err) {
+      console.warn('[auth] enforceActiveProfile falló, usando perfil de sesión:', err)
+      const profile = profileFromAuth(userId, email, name)
+      mergeUser(profile)
+      currentUserId.value = userId
+      return { ok: true, profile }
+    }
   }
 
   async function init(): Promise<void> {
-    if (!isMatuConfigured()) {
-      const saved = localStorage.getItem('quinlist_user')
-      currentUserId.value = saved ?? 'u1'
+    if (isReady.value) return
+    if (initPromise) return initPromise
+
+    initPromise = (async () => {
+      if (!isMatuConfigured()) {
+        const saved = localStorage.getItem('quinlist_user')
+        currentUserId.value = saved ?? 'u1'
+        isReady.value = true
+        return
+      }
+
+      const db = getMatuClient()
+      const { data } = await db.auth.getSession()
+
+      let ignoreNextSignedIn = Boolean(data.session?.user)
+
+      if (data.session?.user) {
+        const result = await enforceActiveProfile(
+          data.session.user.id,
+          data.session.user.email,
+          data.session.user.name,
+        )
+        if (!result.ok) {
+          authError.value = result.error ?? null
+        }
+      }
+
+      db.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_IN' && session?.user) {
+          if (ignoreNextSignedIn || suppressAuthBootstrap) {
+            ignoreNextSignedIn = false
+            return
+          }
+          void enforceActiveProfile(
+            session.user.id,
+            session.user.email,
+            session.user.name,
+          ).catch((err) => console.warn('[auth] onAuthStateChange:', err))
+        }
+        if (event === 'SIGNED_OUT') {
+          currentUserId.value = null
+        }
+      })
+
       isReady.value = true
-      return
+    })()
+
+    try {
+      await initPromise
+    } finally {
+      if (!isReady.value) initPromise = null
     }
-
-    const db = getMatuClient()
-    const { data } = await db.auth.getSession()
-    if (data.session?.user) {
-      const result = await enforceActiveProfile(
-        data.session.user.id,
-        data.session.user.email,
-        data.session.user.name,
-      )
-      if (!result.ok) {
-        authError.value = result.error ?? null
-      }
-    }
-
-    db.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session?.user) {
-        void enforceActiveProfile(session.user.id, session.user.email, session.user.name)
-      }
-      if (event === 'SIGNED_OUT') {
-        currentUserId.value = null
-      }
-    })
-
-    isReady.value = true
   }
 
   async function register(
@@ -114,6 +153,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     const db = getMatuClient()
     try {
+      suppressAuthBootstrap = true
       const { data, error } = await db.auth.signUp({
         email: email.trim().toLowerCase(),
         password,
@@ -129,17 +169,25 @@ export const useAuthStore = defineStore('auth', () => {
       }
 
       const profile = profileFromAuth(data.user.id, data.user.email, name.trim())
-      await upsertProfile(profile)
-      await acceptPendingInvites(data.user.id, profile.email)
-      await acceptPendingBoardInvites(data.user.id, profile.email)
-      await createDefaultWorkspace(data.user.id, profile.name)
-      await touchLastLogin(data.user.id)
-
       currentUserId.value = data.user.id
-      users.value = [{ ...profile, lastLoginAt: new Date().toISOString() }]
+      users.value = [profile]
+
+      try {
+        await upsertProfile(profile)
+        await Promise.all([
+          acceptPendingInvites(data.user.id, profile.email),
+          acceptPendingBoardInvites(data.user.id, profile.email),
+        ])
+        await createDefaultWorkspace(data.user.id, profile.name)
+      } catch (err) {
+        console.warn('[auth] register bootstrap parcial:', err)
+      }
+
       return { ok: true }
     } catch (err) {
       return fail(formatMatuNetworkError(err))
+    } finally {
+      suppressAuthBootstrap = false
     }
   }
 
@@ -167,6 +215,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     const db = getMatuClient()
     try {
+      suppressAuthBootstrap = true
       const { data, error } = await db.auth.signInWithPassword({
         email: email.trim().toLowerCase(),
         password,
@@ -183,17 +232,25 @@ export const useAuthStore = defineStore('auth', () => {
         )
       }
 
+      // Marcar sesión al instante para que el router no bloquee
+      currentUserId.value = data.user.id
+
       const result = await enforceActiveProfile(data.user.id, data.user.email, data.user.name)
       if (!result.ok) {
         return fail(result.error)
       }
 
-      await acceptPendingInvites(data.user.id, result.profile!.email)
-      await acceptPendingBoardInvites(data.user.id, result.profile!.email)
+      // Invitaciones en paralelo; no bloquean la UX crítica
+      void Promise.all([
+        acceptPendingInvites(data.user.id, result.profile!.email),
+        acceptPendingBoardInvites(data.user.id, result.profile!.email),
+      ]).catch((err) => console.warn('[auth] invitaciones pendientes:', err))
 
       return { ok: true }
     } catch (err) {
       return fail(formatMatuNetworkError(err))
+    } finally {
+      suppressAuthBootstrap = false
     }
   }
 
@@ -215,6 +272,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     try {
+      suppressAuthBootstrap = true
       const credential = await requestGoogleIdToken()
       const googleClaims = peekGoogleIdToken(credential)
 
@@ -232,6 +290,7 @@ export const useAuthStore = defineStore('auth', () => {
       const name = data.user.name || googleClaims.name || null
       const avatar = googleClaims.picture || null
 
+      currentUserId.value = data.user.id
       const profile = await bootstrapAppUser(data.user.id, email, name, avatar)
       const moderated = (await loadProfileById(data.user.id)) ?? profile
 
@@ -241,13 +300,12 @@ export const useAuthStore = defineStore('auth', () => {
         return fail(suspensionMessage(moderated))
       }
 
-      await touchLastLogin(data.user.id)
-      mergeUser({ ...moderated, ...profile, lastLoginAt: new Date().toISOString() })
-      currentUserId.value = data.user.id
-
+      mergeUser(moderated)
       return { ok: true }
     } catch (err) {
       return fail(formatMatuNetworkError(err))
+    } finally {
+      suppressAuthBootstrap = false
     }
   }
 

@@ -87,6 +87,12 @@ export function resetMatuClient() {
   client = null
 }
 
+/** Force a fresh MatuDB client (clears stale JWT/header patch state). */
+export function refreshMatuClient(): MatuDBClient {
+  resetMatuClient()
+  return getMatuClient()
+}
+
 /**
  * Exchange a Google ID token for a MatuDB session.
  * Tries common MatuDB OAuth routes / body shapes (server must verify the JWT).
@@ -106,7 +112,6 @@ export async function signInWithGoogleCredential(
     apikey: getMatuApiKey(),
   }
 
-  // Aliases so MatuDB can accept whichever field name the server expects.
   const body = {
     provider: 'google',
     credential,
@@ -229,18 +234,24 @@ export function applyMatuAuthSession(
   }
 }
 
+type BuilderFilter = { column: string; operator: string; value: unknown }
+
 /**
- * Parche runtime para `@devjuanes/matuclient` v2.x:
- * el QueryBuilder no inyecta el JWT del AuthManager en las peticiones a `/data`,
- * por lo que el servidor responde 401 "Missing or invalid Authorization header"
- * para cualquier mutación (insert/update/delete).
+ * Parche runtime para `@devjuanes/matuclient` v2.x contra db.matudb.com:
  *
- * Sobreescribimos `_fetch` en cada QueryBuilder para añadir `Authorization: Bearer <jwt>`
- * cuando hay sesión activa. El parche se aplica una sola vez por builder.
+ * El endpoint `/data` autentica con `apikey`. Un `Authorization: Bearer` (sesión
+ * vieja, JWT inválido o de otro proyecto) hace fallar lecturas/escrituras con
+ * 401/404 tipo "Project not found or access denied" / "Invalid token".
+ *
+ * Por eso en `/data` solo mandamos apikey (nunca Bearer). Storage sí puede
+ * llevar JWT si hay sesión.
  */
 function patchMatuClient(matu: MatuDBClient) {
   const patched = new WeakSet<object>()
   const originalFrom = matu.from.bind(matu)
+  const apiKey = import.meta.env.VITE_MATUDB_API_KEY ?? ''
+  const projectId = import.meta.env.VITE_MATUDB_PROJECT_ID ?? ''
+  const rootUrl = getMatuUrl()
 
   function resolveAccessToken(): string | null {
     try {
@@ -252,22 +263,95 @@ function patchMatuClient(matu: MatuDBClient) {
     return getStoredAccessToken()
   }
 
+  function dataHeaders(extra?: HeadersInit): Record<string, string> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      apikey: apiKey,
+    }
+    const schema = import.meta.env.VITE_MATUDB_SCHEMA
+    if (schema) headers['X-MatuDB-Schema'] = schema
+
+    if (extra && typeof extra === 'object') {
+      if (extra instanceof Headers) {
+        extra.forEach((value, key) => {
+          if (key.toLowerCase() === 'authorization') return
+          headers[key] = value
+        })
+      } else {
+        for (const [k, v] of Object.entries(extra as Record<string, string>)) {
+          if (v == null) continue
+          if (k.toLowerCase() === 'authorization') continue
+          headers[k] = String(v)
+        }
+      }
+    }
+
+    // Nunca Bearer en /data (ni Authorization ni authorization).
+    for (const key of Object.keys(headers)) {
+      if (key.toLowerCase() === 'authorization') delete headers[key]
+    }
+    return headers
+  }
+
   function wrapBuilder(table: string) {
-    const builder = originalFrom(table) as Record<string, unknown>
+    const builder = originalFrom(table) as Record<string, unknown> & {
+      _filters?: BuilderFilter[]
+      update?: (data: Record<string, unknown>) => Promise<{
+        data: unknown
+        error: { message: string } | null
+      }>
+    }
     if (patched.has(builder)) return builder
 
     const originalFetch = (
       builder._fetch as (url: string, init?: RequestInit) => Promise<Response>
     ).bind(builder)
-    if (typeof originalFetch !== 'function') return builder
-
-    builder._fetch = async (url: string, init?: RequestInit) => {
-      const headers: Record<string, string> = {
-        ...((init?.headers ?? {}) as Record<string, string>),
+    if (typeof originalFetch === 'function') {
+      builder._fetch = async (url: string, init?: RequestInit) => {
+        return originalFetch(url, {
+          ...init,
+          headers: dataHeaders(init?.headers),
+        })
       }
-      const token = resolveAccessToken()
-      if (token) headers.Authorization = `Bearer ${token}`
-      return originalFetch(url, { ...init, headers })
+    }
+
+    builder.update = async (data: Record<string, unknown>) => {
+      try {
+        const filters: Record<string, unknown> = {}
+        for (const f of builder._filters ?? []) {
+          if (f.operator === 'eq') filters[f.column] = f.value
+        }
+
+        const params = new URLSearchParams({ apikey: apiKey })
+        const schema = import.meta.env.VITE_MATUDB_SCHEMA
+        if (schema) params.set('schema', schema)
+
+        const url = `${rootUrl}/api/projects/${projectId}/data/${table}?${params}`
+        const res = await fetch(url, {
+          method: 'PUT',
+          headers: dataHeaders(),
+          body: JSON.stringify({ data, filters }),
+        })
+        const json = (await res.json().catch(() => ({}))) as {
+          message?: string
+          data?: { rows?: unknown[] } | unknown[]
+        }
+        if (!res.ok) {
+          return {
+            data: null,
+            error: { message: json.message || `Update failed (${res.status})` },
+          }
+        }
+        const rows = Array.isArray(json.data)
+          ? json.data
+          : ((json.data as { rows?: unknown[] } | undefined)?.rows ?? [])
+        return { data: rows, error: null }
+      } catch (err) {
+        return {
+          data: null,
+          error: { message: err instanceof Error ? err.message : 'Update failed' },
+        }
+      }
     }
 
     patched.add(builder)
@@ -276,7 +360,6 @@ function patchMatuClient(matu: MatuDBClient) {
 
   matu.from = ((table: string) => wrapBuilder(table)) as typeof matu.from
 
-  // Storage: añade Authorization si hay sesión (mismo problema que /data)
   const storage = matu.storage as unknown as Record<string, unknown>
   const originalAuthHeader = storage._authHeader as () => Record<string, string>
   if (typeof originalAuthHeader === 'function') {
