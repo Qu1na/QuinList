@@ -6,6 +6,8 @@ import { useAuthStore } from '@/stores/auth'
 import { useProjectsStore } from '@/stores/projects'
 import { useQuinListStore } from '@/stores/quinlist'
 import { acceptProjectTeamInvite, ProjectInviteError } from '@/services/projectInvite'
+import { ensureUserProfile, profileFromAuth } from '@/services/matuData'
+import { getMatuClient, isMatuConfigured } from '@/lib/matu'
 import { isWorkspaceMember } from '@/utils/projectAccess'
 import { REDIRECT_KEY } from '@/router'
 
@@ -18,6 +20,17 @@ const quinlist = useQuinListStore()
 const loading = ref(true)
 const error = ref('')
 const errorCode = ref('')
+
+async function resolveInviteUser() {
+  if (auth.currentUser?.email) return auth.currentUser
+  if (!isMatuConfigured() || !auth.currentUserId) return null
+
+  const { data } = await getMatuClient().auth.getSession()
+  const email = data.session?.user?.email
+  if (!email) return null
+
+  return profileFromAuth(auth.currentUserId, email, data.session?.user?.name)
+}
 
 onMounted(async () => {
   const projectId = route.params.projectId as string
@@ -36,6 +49,17 @@ onMounted(async () => {
   }
 
   try {
+    const draft = await resolveInviteUser()
+    if (!draft?.email) {
+      error.value = 'Debes iniciar sesión para aceptar la invitación'
+      loading.value = false
+      return
+    }
+
+    // Asegura fila en profiles antes de project_members (FK user_id)
+    const profile = await ensureUserProfile(draft)
+    auth.addUser(profile)
+
     await quinlist.init()
     await projectsStore.init()
 

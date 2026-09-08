@@ -14,6 +14,7 @@ import { toJsonb, fromJsonb } from '@/lib/dbJson'
 import { generateId } from '@/utils/permissions'
 import { todayCalendarDate } from '@/utils/datetime'
 import { loadBoardIdsForUser, acceptPendingBoardInvites } from '@/services/boardShare'
+import { loadProfileById } from '@/services/userModeration'
 import {
   defaultBoardIntegrations,
 } from '@/utils/boardDefaults'
@@ -552,7 +553,7 @@ export async function saveProfile(user: User): Promise<void> {
   await saveRecord('profiles', user.id, {
     id: user.id,
     name: user.name,
-    email: user.email,
+    email: user.email.trim().toLowerCase(),
     avatar: user.avatar ?? '',
     initials: user.initials,
   })
@@ -560,6 +561,46 @@ export async function saveProfile(user: User): Promise<void> {
 
 /** @deprecated use saveProfile */
 export const upsertProfile = saveProfile
+
+/**
+ * Garantiza que exista la fila en `profiles` para el userId de auth.
+ * Sin esto, inserts en project_members / workspace_members fallan por FK.
+ */
+export async function ensureUserProfile(user: User): Promise<User> {
+  if (!isMatuConfigured()) return user
+
+  const existing = await loadProfileById(user.id)
+  if (existing) return existing
+
+  const normalized: User = {
+    ...user,
+    email: user.email.trim().toLowerCase(),
+  }
+
+  const byEmail = await searchProfileByEmail(normalized.email)
+  if (byEmail && byEmail.id !== normalized.id) {
+    throw new Error(
+      'Ya existe un perfil con este correo bajo otro usuario. Cierra sesión e inicia con la cuenta correcta, o contacta al administrador.',
+    )
+  }
+
+  try {
+    await saveProfile(normalized)
+  } catch (err) {
+    // Si otro proceso creó el perfil en paralelo, re-leer
+    const raced = await loadProfileById(normalized.id)
+    if (raced) return raced
+    throw err instanceof Error ? err : new Error(String(err))
+  }
+
+  const verified = await loadProfileById(normalized.id)
+  if (!verified) {
+    throw new Error(
+      'No se pudo crear tu perfil en la base de datos. Cierra sesión, vuelve a entrar e inténtalo de nuevo.',
+    )
+  }
+  return verified
+}
 
 export async function createDefaultWorkspace(
   userId: string,
@@ -965,11 +1006,12 @@ export function profileFromAuth(
   name?: string | null,
   avatar?: string | null,
 ): User {
-  const displayName = name?.trim() || email.split('@')[0] || 'Usuario'
+  const normalizedEmail = email.trim().toLowerCase()
+  const displayName = name?.trim() || normalizedEmail.split('@')[0] || 'Usuario'
   return {
     id: userId,
     name: displayName,
-    email,
+    email: normalizedEmail,
     avatar: avatar?.trim() || '',
     initials: initialsFromName(displayName),
   }
@@ -985,13 +1027,8 @@ export async function bootstrapAppUser(
   name?: string | null,
   avatar?: string | null,
 ): Promise<User> {
-  const profile = profileFromAuth(userId, email, name, avatar)
-
-  try {
-    await upsertProfile(profile)
-  } catch (err) {
-    console.warn('[matuData] bootstrap upsertProfile:', err)
-  }
+  const draft = profileFromAuth(userId, email, name, avatar)
+  const profile = await ensureUserProfile(draft)
 
   try {
     await acceptPendingInvites(userId, profile.email)

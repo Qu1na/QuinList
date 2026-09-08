@@ -283,6 +283,19 @@ export async function acceptProjectTeamInvite(
   const memberId = (existingMember?.id as string | undefined) ?? generateId()
   const joinedAt = todayCalendarDate()
 
+  // Defensa: profiles debe existir antes del insert (FK project_members_user_id_fkey)
+  const { data: profileRow } = await db
+    .from('profiles')
+    .select('id')
+    .eq('id', userId)
+    .maybeSingle()
+
+  if (!profileRow) {
+    throw new Error(
+      'Tu perfil aún no está listo en la base de datos. Cierra sesión, vuelve a entrar e intenta de nuevo con el enlace.',
+    )
+  }
+
   if (existingMember) {
     await db.from('project_members').eq('id', memberId).update({
       role: invite.role,

@@ -7,8 +7,8 @@ import {
   acceptPendingInvites,
   bootstrapAppUser,
   createDefaultWorkspace,
+  ensureUserProfile,
   profileFromAuth,
-  upsertProfile,
 } from '@/services/matuData'
 import { acceptPendingBoardInvites } from '@/services/boardShare'
 import {
@@ -58,12 +58,17 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       let profile = await loadProfileById(userId)
       if (!profile) {
-        profile = profileFromAuth(userId, email, name)
         try {
-          await upsertProfile(profile)
-          profile = (await loadProfileById(userId)) ?? profile
+          profile = await ensureUserProfile(profileFromAuth(userId, email, name))
         } catch (err) {
           console.warn('[auth] No se pudo guardar el perfil en MatuDB:', err)
+          return {
+            ok: false,
+            error:
+              err instanceof Error
+                ? err.message
+                : 'No se pudo crear tu perfil. Inténtalo de nuevo.',
+          }
         }
       }
 
@@ -77,11 +82,14 @@ export const useAuthStore = defineStore('auth', () => {
       currentUserId.value = userId
       return { ok: true, profile }
     } catch (err) {
-      console.warn('[auth] enforceActiveProfile falló, usando perfil de sesión:', err)
-      const profile = profileFromAuth(userId, email, name)
-      mergeUser(profile)
-      currentUserId.value = userId
-      return { ok: true, profile }
+      console.warn('[auth] enforceActiveProfile falló:', err)
+      return {
+        ok: false,
+        error:
+          err instanceof Error
+            ? err.message
+            : 'No se pudo verificar tu perfil. Inténtalo de nuevo.',
+      }
     }
   }
 
@@ -110,6 +118,8 @@ export const useAuthStore = defineStore('auth', () => {
         )
         if (!result.ok) {
           authError.value = result.error ?? null
+          await db.auth.signOut()
+          currentUserId.value = null
         }
       }
 
@@ -173,14 +183,22 @@ export const useAuthStore = defineStore('auth', () => {
       users.value = [profile]
 
       try {
-        await upsertProfile(profile)
+        const saved = await ensureUserProfile(profile)
+        mergeUser(saved)
         await Promise.all([
-          acceptPendingInvites(data.user.id, profile.email),
-          acceptPendingBoardInvites(data.user.id, profile.email),
+          acceptPendingInvites(data.user.id, saved.email),
+          acceptPendingBoardInvites(data.user.id, saved.email),
         ])
-        await createDefaultWorkspace(data.user.id, profile.name)
+        await createDefaultWorkspace(data.user.id, saved.name)
       } catch (err) {
         console.warn('[auth] register bootstrap parcial:', err)
+        await db.auth.signOut()
+        currentUserId.value = null
+        users.value = []
+        return fail(
+          err instanceof Error ? err.message : null,
+          'Tu cuenta se creó, pero no se pudo guardar el perfil. Intenta iniciar sesión de nuevo.',
+        )
       }
 
       return { ok: true }
@@ -237,6 +255,8 @@ export const useAuthStore = defineStore('auth', () => {
 
       const result = await enforceActiveProfile(data.user.id, data.user.email, data.user.name)
       if (!result.ok) {
+        await db.auth.signOut()
+        currentUserId.value = null
         return fail(result.error)
       }
 
