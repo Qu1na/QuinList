@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { PROJECTS_MODULE_ENABLED } from '@/config/features'
+import { isEmbedMode, isProjectsModuleVisible } from '@/config/features'
 import AppLayout from '@/layouts/AppLayout.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
@@ -22,6 +22,12 @@ const router = createRouter({
       name: 'login',
       component: LoginView,
       meta: { guest: true },
+    },
+    {
+      path: '/conectar-sizor',
+      name: 'conectar-sizor',
+      component: () => import('../views/auth/ConnectSizorView.vue'),
+      meta: { publicShare: true },
     },
     {
       path: '/reset-password',
@@ -130,8 +136,13 @@ router.beforeEach(async (to) => {
     return { name: 'home' }
   }
 
-  if (!PROJECTS_MODULE_ENABLED && (to.name === 'projects' || to.name === 'project-detail')) {
+  if (!isProjectsModuleVisible() && (to.name === 'projects' || to.name === 'project-detail')) {
     return { name: 'home' }
+  }
+
+  // Persist embed flag from query for subsequent navigations
+  if (typeof window !== 'undefined' && to.query.embed === '1') {
+    isEmbedMode()
   }
 })
 

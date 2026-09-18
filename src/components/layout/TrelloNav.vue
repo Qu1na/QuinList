@@ -14,7 +14,7 @@ import { canManageMembers } from '@/utils/permissions'
 import NotificationPanel from './NotificationPanel.vue'
 import AppWindow from '@/components/ui/AppWindow.vue'
 import { useProjectsStore } from '@/stores/projects'
-import { PROJECTS_MODULE_ENABLED } from '@/config/features'
+import { isProjectsModuleVisible } from '@/config/features'
 import { searchGlobally, groupLabel, type GlobalSearchResult } from '@/utils/globalSearch'
 
 defineOptions({ inheritAttrs: false })
@@ -31,6 +31,8 @@ const boardShare = useBoardShareStore()
 const presence = useBoardPresenceStore()
 const projectsStore = useProjectsStore()
 
+const projectsVisible = computed(() => isProjectsModuleVisible())
+
 const isBoard = computed(() => route.name === 'board')
 const boardId = computed(() => route.params.boardId as string | undefined)
 
@@ -42,7 +44,7 @@ const showAccountMenu = ref(false)
 
 const searchResults = computed((): GlobalSearchResult[] => {
   if (!ui.searchQuery.trim()) return []
-  if (!PROJECTS_MODULE_ENABLED) {
+  if (!projectsVisible.value) {
     return store.searchCards(ui.searchQuery).map((card) => ({
       id: `card-${card.id}`,
       group: 'card' as const,
@@ -337,7 +339,7 @@ onUnmounted(() => {
             Perfil y visibilidad
           </RouterLink>
           <RouterLink
-            v-if="PROJECTS_MODULE_ENABLED"
+            v-if="projectsVisible"
             to="/app/projects"
             class="flex items-center gap-2 px-4 py-2 text-sm text-[#172b4d] hover:bg-[#091e420a]"
             @click="showAccountMenu = false"

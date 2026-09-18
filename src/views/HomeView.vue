@@ -8,7 +8,7 @@ import { useUiStore } from '@/stores/ui'
 import { canEdit } from '@/utils/permissions'
 import { getBoardBackgroundThumbStyle } from '@/utils/boardBackgrounds'
 import { calcProjectProgress } from '@/utils/projectStats'
-import { PROJECTS_MODULE_ENABLED } from '@/config/features'
+import { isProjectsModuleVisible } from '@/config/features'
 import ProjectFolderIcon from '@/components/projects/shared/ProjectFolderIcon.vue'
 import DesktopContextMenu from '@/components/workspace/DesktopContextMenu.vue'
 import type { DesktopMenuItem } from '@/components/workspace/DesktopContextMenu.vue'
@@ -18,10 +18,12 @@ const projectsStore = useProjectsStore()
 const ui = useUiStore()
 const router = useRouter()
 
+const projectsVisible = computed(() => isProjectsModuleVisible())
+
 const contextMenu = ref<{ x: number; y: number } | null>(null)
 
 onMounted(async () => {
-  if (!PROJECTS_MODULE_ENABLED) return
+  if (!projectsVisible.value) return
   await projectsStore.init()
   const shared = projectsStore.getSharedOnlyProjects()
   if (shared.length === 1) {
@@ -41,7 +43,7 @@ const contextMenuItems = computed((): DesktopMenuItem[] => [
     id: 'new-project',
     label: 'Nuevo proyecto',
     icon: FolderPlus,
-    disabled: !canCreate.value || !PROJECTS_MODULE_ENABLED,
+    disabled: !canCreate.value || !projectsVisible.value,
   },
   { id: 'refresh', label: 'Actualizar', icon: RefreshCw },
 ])
@@ -103,7 +105,7 @@ async function onContextMenuSelect(id: string) {
   else if (id === 'new-project') await router.push({ path: '/app/projects', query: { create: '1' } })
   else if (id === 'refresh') {
     await store.init()
-    if (PROJECTS_MODULE_ENABLED) await projectsStore.reloadForWorkspace(store.currentWorkspaceId)
+    if (projectsVisible.value) await projectsStore.reloadForWorkspace(store.currentWorkspaceId)
   }
 }
 </script>
@@ -122,7 +124,7 @@ async function onContextMenuSelect(id: string) {
       </div>
       <div class="flex flex-wrap gap-2">
         <button
-          v-if="canCreate && PROJECTS_MODULE_ENABLED"
+          v-if="canCreate && projectsVisible"
           class="flex items-center gap-1.5 rounded-lg border border-[#091e4229] bg-white px-4 py-2 text-sm font-medium text-[#172b4d] hover:bg-[#091e4208]"
           @click="router.push('/app/projects')"
         >
@@ -192,7 +194,7 @@ async function onContextMenuSelect(id: string) {
       </div>
     </section>
 
-    <section v-if="PROJECTS_MODULE_ENABLED" class="mb-10">
+    <section v-if="projectsVisible" class="mb-10">
       <div class="mb-4 flex items-center justify-between">
         <h2 class="flex items-center gap-2 text-xs font-semibold tracking-wide text-[#44546f] uppercase">
           <FolderKanban :size="14" />

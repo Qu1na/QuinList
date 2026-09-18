@@ -45,6 +45,15 @@ export default defineConfig(({ mode }) => ({
       'Cache-Control': 'no-store',
       // Allows Google OAuth popup ↔ opener postMessage (avoids noisy COOP blocks).
       'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+      // Embeber QuinList dentro de Sizor (Tableros)
+      'Content-Security-Policy':
+        "frame-ancestors 'self' https://sizor.online https://*.sizor.online http://localhost:5173 http://127.0.0.1:5173",
+    },
+  },
+  preview: {
+    headers: {
+      'Content-Security-Policy':
+        "frame-ancestors 'self' https://sizor.online https://*.sizor.online http://localhost:5173 http://127.0.0.1:5173",
     },
   },
 }))
