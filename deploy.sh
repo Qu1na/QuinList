@@ -73,6 +73,20 @@ ensure_env() {
   fi
 }
 
+# Evita Mixed Content: iframe HTTPS no puede llamar a http://sizor.online
+ensure_sizor_https() {
+  if [[ ! -f .env ]]; then
+    return 0
+  fi
+  if grep -qE '^VITE_SIZOR_URL=http://' .env; then
+    echo "==> Corrigiendo VITE_SIZOR_URL a https..."
+    sed -i 's|^VITE_SIZOR_URL=http://|VITE_SIZOR_URL=https://|' .env
+  fi
+  if ! grep -qE '^VITE_SIZOR_URL=' .env; then
+    echo 'VITE_SIZOR_URL=https://sizor.online' >> .env
+  fi
+}
+
 prepare_env_for_build() {
   if [[ -f .env.production ]]; then
     if [[ ! -f .env.production.disabled ]]; then
@@ -85,6 +99,7 @@ prepare_env_for_build() {
 
   echo "==> Variables MatuDB para el build:"
   grep -E '^VITE_MATUDB_' .env | sed 's/\(API_KEY=\).*/\1***oculto***/' || true
+  grep -E '^VITE_SIZOR_URL=' .env || true
 }
 
 install_deps() {
@@ -150,41 +165,31 @@ install_nginx() {
 git_pull() {
   if [[ -d .git ]] && command -v git >/dev/null 2>&1; then
     echo "==> git pull..."
-    # Conservar .env del servidor (no debe pisarse con el del repo)
-    local stashed=false
-    if ! git diff --quiet -- .env 2>/dev/null || ! git diff --cached --quiet -- .env 2>/dev/null; then
-      echo "==> Guardando cambios locales de .env (stash)..."
-      git stash push -m "deploy-preserve-env-$(date +%s)" -- .env || true
-      stashed=true
-    elif [[ -f .env ]] && git ls-files --error-unmatch .env >/dev/null 2>&1; then
-      # tracked pero sin diff raro: igual protege por si el pull trae cambios
-      :
-    fi
-
-    if ! git pull --ff-only; then
-      echo "==> ff-only falló; intentando stash de todo lo local y pull..."
-      git stash push -u -m "deploy-auto-$(date +%s)" || true
-      stashed=true
-      git pull --ff-only
-    fi
-
-    if $stashed; then
-      echo "==> Restaurando .env del servidor..."
-      # Preferir el .env que había en el servidor antes del pull
-      git checkout stash -- .env 2>/dev/null || git stash pop 2>/dev/null || true
-      # Si quedó un stash, no lo forzamos a aplicar todo (evitar conflictos de código)
-      git stash list | head -3 || true
-    fi
-
-    # Forzar HTTPS en VITE_SIZOR_URL (evita Mixed Content en iframe)
+    # Preservar .env del servidor (secretos locales no deben perderse)
+    local env_backup=""
     if [[ -f .env ]]; then
-      if grep -qE '^VITE_SIZOR_URL=http://' .env; then
-        echo "==> Corrigiendo VITE_SIZOR_URL a https..."
-        sed -i 's|^VITE_SIZOR_URL=http://|VITE_SIZOR_URL=https://|' .env
+      env_backup="$(mktemp)"
+      cp .env "$env_backup"
+      echo "==> Backup de .env → $env_backup"
+    fi
+
+    # Si .env está trackeado y tiene cambios locales, sacarlo del camino
+    if git ls-files --error-unmatch .env >/dev/null 2>&1; then
+      git update-index --assume-unchanged .env 2>/dev/null || true
+      git checkout --ours .env 2>/dev/null || true
+      # Descartar solo el conflicto de .env sin perder el archivo en disco
+      if ! git diff --quiet -- .env 2>/dev/null; then
+        git stash push -m "deploy-env-$(date +%s)" -- .env || true
       fi
-      if ! grep -qE '^VITE_SIZOR_URL=' .env; then
-        echo 'VITE_SIZOR_URL=https://sizor.online' >> .env
-      fi
+    fi
+
+    git pull --ff-only
+
+    # Restaurar .env del servidor (prioridad a secretos locales)
+    if [[ -n "$env_backup" && -f "$env_backup" ]]; then
+      cp "$env_backup" .env
+      rm -f "$env_backup"
+      echo "==> .env del servidor restaurado"
     fi
   else
     echo "==> Sin repo git, omitiendo pull."
@@ -199,6 +204,7 @@ fi
 
 require_package_json
 ensure_env
+ensure_sizor_https
 
 if $DO_SETUP; then
   echo "==> Setup inicial QuinList en $APP_DIR"
@@ -220,6 +226,7 @@ if $DO_PULL; then
   git_pull
 fi
 
+ensure_sizor_https
 install_deps
 build_app
 restart_pm2
