@@ -5,6 +5,7 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import LandingView from '../views/LandingView.vue'
+import ConnectSizorView from '../views/auth/ConnectSizorView.vue'
 
 const REDIRECT_KEY = 'quinlist_redirect'
 
@@ -26,7 +27,7 @@ const router = createRouter({
     {
       path: '/conectar-sizor',
       name: 'conectar-sizor',
-      component: () => import('../views/auth/ConnectSizorView.vue'),
+      component: ConnectSizorView,
       meta: { publicShare: true },
     },
     {

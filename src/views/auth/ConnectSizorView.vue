@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { Loader2 } from '@lucide/vue'
@@ -41,10 +41,14 @@ async function exchangeAndSignIn() {
     body: JSON.stringify({ token, companyId }),
   })
 
-  const payload = await res.json().catch(() => ({}))
-  if (!res.ok || !payload?.email || !payload?.password) {
+  const payload = (await res.json().catch(() => ({}))) as {
+    email?: string
+    password?: string
+    error?: string
+  }
+  if (!res.ok || !payload.email || !payload.password) {
     failed.value = true
-    status.value = payload?.error || 'No se pudo validar el acceso SSO'
+    status.value = payload.error || 'No se pudo validar el acceso SSO'
     return
   }
 
@@ -61,16 +65,15 @@ async function exchangeAndSignIn() {
     void projectsStore.init().catch((err) => console.error('[conectar-sizor] projects:', err))
   }
 
-  const dest = embed ? '/app?embed=1' : '/app'
-  await router.replace(dest)
+  await router.replace(embed ? '/app?embed=1' : '/app')
 }
 
 onMounted(async () => {
   try {
     await exchangeAndSignIn()
-  } catch (e) {
+  } catch (e: unknown) {
     failed.value = true
-    status.value = e?.message || 'Error al conectar con Sizor'
+    status.value = e instanceof Error ? e.message : 'Error al conectar con Sizor'
   }
 })
 </script>

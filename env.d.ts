@@ -11,6 +11,7 @@ interface ImportMetaEnv {
   readonly VITE_MATUDB_API_KEY?: string
   readonly VITE_MATUDB_SCHEMA?: string
   readonly VITE_GOOGLE_CLIENT_ID?: string
+  readonly VITE_SIZOR_URL?: string
 }
 
 interface ImportMeta {
