@@ -150,7 +150,42 @@ install_nginx() {
 git_pull() {
   if [[ -d .git ]] && command -v git >/dev/null 2>&1; then
     echo "==> git pull..."
-    git pull --ff-only
+    # Conservar .env del servidor (no debe pisarse con el del repo)
+    local stashed=false
+    if ! git diff --quiet -- .env 2>/dev/null || ! git diff --cached --quiet -- .env 2>/dev/null; then
+      echo "==> Guardando cambios locales de .env (stash)..."
+      git stash push -m "deploy-preserve-env-$(date +%s)" -- .env || true
+      stashed=true
+    elif [[ -f .env ]] && git ls-files --error-unmatch .env >/dev/null 2>&1; then
+      # tracked pero sin diff raro: igual protege por si el pull trae cambios
+      :
+    fi
+
+    if ! git pull --ff-only; then
+      echo "==> ff-only falló; intentando stash de todo lo local y pull..."
+      git stash push -u -m "deploy-auto-$(date +%s)" || true
+      stashed=true
+      git pull --ff-only
+    fi
+
+    if $stashed; then
+      echo "==> Restaurando .env del servidor..."
+      # Preferir el .env que había en el servidor antes del pull
+      git checkout stash -- .env 2>/dev/null || git stash pop 2>/dev/null || true
+      # Si quedó un stash, no lo forzamos a aplicar todo (evitar conflictos de código)
+      git stash list | head -3 || true
+    fi
+
+    # Forzar HTTPS en VITE_SIZOR_URL (evita Mixed Content en iframe)
+    if [[ -f .env ]]; then
+      if grep -qE '^VITE_SIZOR_URL=http://' .env; then
+        echo "==> Corrigiendo VITE_SIZOR_URL a https..."
+        sed -i 's|^VITE_SIZOR_URL=http://|VITE_SIZOR_URL=https://|' .env
+      fi
+      if ! grep -qE '^VITE_SIZOR_URL=' .env; then
+        echo 'VITE_SIZOR_URL=https://sizor.online' >> .env
+      fi
+    fi
   else
     echo "==> Sin repo git, omitiendo pull."
   fi
