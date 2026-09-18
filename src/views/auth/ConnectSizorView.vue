@@ -18,8 +18,11 @@ const status = ref('Conectando con Sizor…')
 const failed = ref(false)
 
 function sizorBaseUrl() {
-  let raw = (import.meta.env.VITE_SIZOR_URL || 'https://sizor.online').replace(/\/$/, '')
-  // Evitar Mixed Content: páginas HTTPS no pueden llamar a http://sizor.online
+  const fromQuery = String(route.query.sizorUrl || '').trim()
+  let raw = (fromQuery || import.meta.env.VITE_SIZOR_URL || 'https://sizor.online').replace(/\/$/, '')
+  if (typeof window !== 'undefined' && window.location.protocol === 'https:' && /^http:\/\//i.test(raw)) {
+    raw = raw.replace(/^http:/i, 'https:')
+  }
   if (/^http:\/\/(www\.)?sizor\.online/i.test(raw)) {
     raw = raw.replace(/^http:/i, 'https:')
   }
