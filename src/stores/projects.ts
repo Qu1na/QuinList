@@ -40,6 +40,7 @@ import type { RealtimeChangePayload } from '@/types/collaboration'
 import { useCollaborationStore } from './collaboration'
 import { useQuinListStore } from './quinlist'
 import { useAuthStore } from './auth'
+import { useBillingStore } from './billing'
 import { useNotificationStore } from './notifications'
 import { isWorkspaceMember } from '@/utils/projectAccess'
 import { generateId } from '@/utils/permissions'
@@ -833,6 +834,13 @@ export const useProjectsStore = defineStore('projects', () => {
     category?: string
   }) {
     const auth = useAuthStore()
+    const billing = useBillingStore()
+    const allowed = await billing.allowCreate('project', input.workspaceId)
+    if (!allowed) {
+      billing.openUpgrade('project')
+      return null
+    }
+
     const now = nowInstantISO()
     const project: Project = {
       id: generateId(),
@@ -876,7 +884,19 @@ export const useProjectsStore = defineStore('projects', () => {
       project.name,
       { entityType: 'project', entityId: project.id, entityTitle: project.name },
     )
-    await save()
+    try {
+      await save()
+    } catch (error) {
+      const message = error instanceof Error ? error.message : ''
+      projects.value = projects.value.filter((item) => item.id !== project.id)
+      members.value = members.value.filter((item) => item.projectId !== project.id)
+      activities.value = activities.value.filter((item) => item.projectId !== project.id)
+      if (message.includes('PLAN_LIMIT_PROJECT')) {
+        billing.openUpgrade('project')
+        return null
+      }
+      throw error
+    }
     return project
   }
 
@@ -1086,17 +1106,20 @@ export const useProjectsStore = defineStore('projects', () => {
     const project = getProject(task.projectId)
     let boardId = project?.boardId ?? task.boardId
 
-    if (!boardId) {
-      const board = await quinlist.createBoard(
-        project!.workspaceId,
-        `${project!.name} — Tablero`,
-      )
-      boardId = board?.id ?? null
-      if (boardId) {
-        for (const list of getDefaultBoardLists(boardId, generateId)) {
-          await quinlist.createList(boardId, list.title)
+    if (!boardId && project) {
+      const existing = quinlist.boards.find((board) => board.workspaceId === project.workspaceId)
+      if (existing) {
+        boardId = existing.id
+        await updateProject(project.id, { boardId })
+      } else {
+        const board = await quinlist.createBoard(project.workspaceId, `${project.name} — Tablero`)
+        boardId = board?.id ?? null
+        if (boardId) {
+          for (const list of getDefaultBoardLists(boardId, generateId)) {
+            await quinlist.createList(boardId, list.title)
+          }
+          await updateProject(project.id, { boardId })
         }
-        if (project) await updateProject(project.id, { boardId })
       }
     }
 

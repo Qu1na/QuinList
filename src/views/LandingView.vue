@@ -39,11 +39,21 @@ import {
 } from '@/seo/config'
 import { landingSchemas } from '@/seo/schema'
 import { getReviewsSummary, reviewsDataset } from '@/utils/reviews'
+import { fetchPlanOffer } from '@/services/billing'
+import { VIP_PRICE_USD } from '@/config/plans'
+import { formatMoney } from '@/utils/currency'
+import StartMenu from '@/components/landing/StartMenu.vue'
+import { rememberStartPlan } from '@/lib/startPlan'
 
 const year = computed(() => new Date().getFullYear())
 const menuOpen = ref(false)
 const scrolled = ref(false)
 const openFaq = ref<number | null>(0)
+const vipPriceUsd = ref(VIP_PRICE_USD)
+const vipPriceCop = ref<number | null>(null)
+const vipCopLabel = computed(() =>
+  vipPriceCop.value ? formatMoney(vipPriceCop.value, 'COP') : '',
+)
 let revealIo: IntersectionObserver | null = null
 
 const ratingSummary = getReviewsSummary()
@@ -60,7 +70,7 @@ const faqs = [
   },
   {
     q: '¿Puedo comenzar gratis?',
-    a: 'Sí. Puedes crear cuenta y comenzar gratis sin tarjeta de crédito. Escala cuando tu equipo crezca y necesite más capacidad.',
+    a: 'Sí. En Gratis tienes un tablero y un proyecto. VIP cuesta $15 USD al mes, es ilimitado e incluye el asistente de IA. El cobro se hace en pesos, a la tasa del día, con Landa Pay.',
   },
   {
     q: '¿Incluye roles, permisos e historial?',
@@ -91,6 +101,10 @@ function onScroll() {
 onMounted(() => {
   window.addEventListener('scroll', onScroll, { passive: true })
   onScroll()
+  void fetchPlanOffer().then((offer) => {
+    vipPriceUsd.value = offer.vipPriceUsd
+    vipPriceCop.value = offer.vipPriceCop
+  })
 
   const nodes = document.querySelectorAll('.landing-reveal')
   const io = new IntersectionObserver(
@@ -127,6 +141,7 @@ const navLinks = [
   { href: '#como-funciona', label: 'Cómo funciona' },
   { href: '#casos-de-uso', label: 'Casos de uso' },
   { href: '#opiniones', label: 'Reseñas' },
+  { href: '#planes', label: 'Planes' },
   { href: '#faq', label: 'FAQ' },
 ]
 
@@ -247,7 +262,7 @@ const useCases = [
 
         <div class="ml-auto hidden items-center gap-1 sm:flex">
           <RouterLink to="/login" class="landing-nav-login">Iniciar sesión</RouterLink>
-          <RouterLink to="/register" class="landing-nav-cta">Comenzar gratis</RouterLink>
+          <StartMenu :usd="vipPriceUsd" :cop="vipPriceCop" />
         </div>
 
         <button
@@ -287,9 +302,7 @@ const useCases = [
           >
             Iniciar sesión
           </RouterLink>
-          <RouterLink to="/register" class="landing-nav-cta justify-center" @click="closeMenu">
-            Comenzar gratis
-          </RouterLink>
+          <StartMenu variant="stack" :usd="vipPriceUsd" :cop="vipPriceCop" @navigate="closeMenu" />
         </div>
       </div>
     </header>
@@ -326,11 +339,15 @@ const useCases = [
               el trabajo colaborativo en un solo lugar.
             </p>
             <div class="mt-8 flex flex-wrap items-center gap-3">
-              <RouterLink to="/register" class="landing-explore-btn gap-2">
-                Comenzar gratis
+              <RouterLink
+                :to="{ name: 'register', query: { plan: 'vip' } }"
+                class="landing-explore-btn gap-2"
+                @click="rememberStartPlan('vip')"
+              >
+                Comenzar con VIP
                 <ArrowRight :size="16" aria-hidden="true" />
               </RouterLink>
-              <RouterLink to="/register" class="landing-enroll-btn">Crear cuenta</RouterLink>
+              <a href="#planes" class="landing-enroll-btn">Elegir plan</a>
             </div>
             <a
               href="#opiniones"
@@ -505,6 +522,60 @@ const useCases = [
         </div>
       </section>
 
+      <section id="planes" class="bg-white py-16 lg:py-20" aria-labelledby="planes-heading">
+        <div class="mx-auto max-w-6xl px-5 lg:px-8">
+          <div class="mx-auto max-w-2xl text-center landing-reveal">
+            <p class="text-sm font-semibold text-[#f4845f]">Planes</p>
+            <h2 id="planes-heading" class="mt-2 text-3xl font-extrabold tracking-tight lg:text-4xl">
+              Elige cómo empezar
+            </h2>
+            <p class="mt-4 text-[15px] leading-relaxed text-[#666]">
+              VIP son ${{ vipPriceUsd }} USD al mes. Lo ves en dólares y lo pagas en pesos, a la tasa del día.
+            </p>
+          </div>
+          <div class="mx-auto mt-10 grid max-w-4xl gap-5 md:grid-cols-2">
+            <article class="landing-reveal rounded-3xl border border-[#f4845f]/40 bg-[#fffaf7] p-7">
+              <p class="text-xs font-bold tracking-wide text-[#f4845f] uppercase">Recomendado</p>
+              <h3 class="mt-2 text-lg font-bold">VIP</h3>
+              <p class="mt-3 text-4xl font-extrabold tracking-tight">${{ vipPriceUsd }} <span class="text-lg font-bold">USD</span></p>
+              <p class="mt-1 text-sm text-[#777]">
+                al mes
+                <span v-if="vipCopLabel"> · aprox. {{ vipCopLabel }}</span>
+              </p>
+              <ul class="mt-5 space-y-2 text-sm text-[#555]">
+                <li>Tableros ilimitados</li>
+                <li>Proyectos ilimitados</li>
+                <li>Asistente de IA</li>
+              </ul>
+              <RouterLink
+                :to="{ name: 'register', query: { plan: 'vip' } }"
+                class="landing-nav-cta mt-6 w-full justify-center"
+                @click="rememberStartPlan('vip')"
+              >
+                Comenzar con VIP
+              </RouterLink>
+            </article>
+            <article class="landing-reveal rounded-3xl border border-[#eee] bg-white p-7">
+              <h3 class="text-lg font-bold">Gratis</h3>
+              <p class="mt-3 text-4xl font-extrabold tracking-tight">$0</p>
+              <p class="mt-1 text-sm text-[#777]">para probar QuinList</p>
+              <ul class="mt-5 space-y-2 text-sm text-[#555]">
+                <li>1 tablero</li>
+                <li>1 proyecto</li>
+                <li>Sin asistente de IA</li>
+              </ul>
+              <RouterLink
+                :to="{ name: 'register', query: { plan: 'free' } }"
+                class="landing-enroll-btn mt-6 w-full justify-center"
+                @click="rememberStartPlan('free')"
+              >
+                Comenzar con Gratis
+              </RouterLink>
+            </article>
+          </div>
+        </div>
+      </section>
+
       <!-- Logos / trust -->
       <section class="border-y border-[#f0f0f0] bg-[#fafafa] py-8" aria-label="Enfoque de la plataforma">
         <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-10 gap-y-3 px-5 text-center text-xs font-semibold uppercase tracking-wider text-[#aaa] lg:px-8">
@@ -546,7 +617,7 @@ const useCases = [
           </div>
 
           <div class="mt-10 flex flex-wrap justify-center gap-3 landing-reveal">
-            <RouterLink to="/register" class="landing-explore-btn">Comenzar gratis</RouterLink>
+            <a href="#planes" class="landing-explore-btn">Elegir plan</a>
             <a href="#contacto" class="landing-demo-btn">Solicitar demostración</a>
           </div>
         </div>
@@ -594,7 +665,7 @@ const useCases = [
               deja de saltar entre apps.
             </p>
             <div class="mt-6 flex flex-wrap justify-center gap-3">
-              <RouterLink to="/register" class="landing-explore-btn">Crear cuenta</RouterLink>
+              <a href="#planes" class="landing-explore-btn">Elegir plan</a>
               <RouterLink
                 to="/login"
                 class="inline-flex items-center rounded-full border border-white/25 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10"
@@ -630,10 +701,10 @@ const useCases = [
           </ol>
 
           <div class="mt-10 flex justify-center landing-reveal">
-            <RouterLink to="/register" class="landing-explore-btn gap-2">
-              Comenzar gratis
+            <a href="#planes" class="landing-explore-btn gap-2">
+              Elegir plan
               <ArrowRight :size="16" aria-hidden="true" />
-            </RouterLink>
+            </a>
           </div>
         </div>
       </section>
@@ -753,9 +824,9 @@ const useCases = [
                   Habla con nosotros o crea tu cuenta y pruébalo en minutos.
                 </p>
                 <div class="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                  <RouterLink to="/register" class="landing-nav-cta justify-center text-center">
-                    Comenzar gratis
-                  </RouterLink>
+                  <a href="#planes" class="landing-nav-cta justify-center text-center">
+                    Elegir plan
+                  </a>
                   <a
                     href="mailto:contacto@matubyte.com"
                     class="inline-flex items-center justify-center gap-2 rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/10"
@@ -876,10 +947,10 @@ const useCases = [
               </p>
 
               <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap">
-                <RouterLink to="/register" class="landing-explore-btn gap-2 px-8">
-                  Comenzar gratis
+                <a href="#planes" class="landing-explore-btn gap-2 px-8">
+                  Elegir plan
                   <ArrowRight :size="16" aria-hidden="true" />
-                </RouterLink>
+                </a>
                 <a
                   href="mailto:contacto@matubyte.com?subject=Solicitud%20de%20demostraci%C3%B3n%20QuinList"
                   class="inline-flex items-center justify-center rounded-full border border-white/25 bg-white/5 px-7 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:border-white/40 hover:bg-white/10"
@@ -982,9 +1053,10 @@ const useCases = [
               <li><a href="#caracteristicas" class="hover:text-[#f4845f]">Características</a></li>
               <li><a href="#como-funciona" class="hover:text-[#f4845f]">Cómo funciona</a></li>
               <li><a href="#casos-de-uso" class="hover:text-[#f4845f]">Casos de uso</a></li>
+              <li><a href="#planes" class="hover:text-[#f4845f]">Planes</a></li>
               <li><a href="#faq" class="hover:text-[#f4845f]">FAQ</a></li>
               <li>
-                <RouterLink to="/register" class="hover:text-[#f4845f]">Comenzar gratis</RouterLink>
+                <a href="#planes" class="hover:text-[#f4845f]">Elegir plan</a>
               </li>
               <li>
                 <RouterLink to="/login" class="hover:text-[#f4845f]">Iniciar sesión</RouterLink>

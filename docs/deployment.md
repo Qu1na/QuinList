@@ -105,7 +105,10 @@ Comprobar localmente en el servidor:
 
 ```bash
 curl -I http://127.0.0.1:3012
+curl -s http://127.0.0.1:4012/api/health
 ```
+
+`ecosystem.config.cjs` también levanta `quinlist-billing` (puerto 4012). Nginx envía `/api/` a ese proceso. En Landa Pay registra el webhook `https://quinlist.matubyte.com/api/billing/webhook`. Antes del primer cobro ejecuta `docs/migration-billing.sql` en MatuDB y completa `LANDAPAY_*` en `.env`.
 
 ## 5. Nginx
 

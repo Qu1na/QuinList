@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useBillingStore } from '@/stores/billing'
 import { isEmbedMode, isProjectsModuleVisible } from '@/config/features'
 import AppLayout from '@/layouts/AppLayout.vue'
 import LoginView from '../views/LoginView.vue'
@@ -96,6 +97,8 @@ const router = createRouter({
           component: () => import('../views/ProjectDetailView.vue'),
         },
         { path: 'settings', name: 'settings', component: () => import('../views/SettingsView.vue') },
+        { path: 'planes', name: 'plans', component: () => import('../views/PlansView.vue') },
+        { path: 'ia', name: 'ai', component: () => import('../views/AiView.vue') },
       ],
     },
     // Redirecciones de rutas antiguas
@@ -124,6 +127,10 @@ router.beforeEach(async (to) => {
     return { name: 'login' }
   }
 
+  if (to.name === 'register' && to.query.plan === 'vip' && auth.isAuthenticated) {
+    return { name: 'plans', query: { checkout: '1' } }
+  }
+
   if (to.meta.publicShare) {
     return true
   }
@@ -139,6 +146,10 @@ router.beforeEach(async (to) => {
 
   if (!isProjectsModuleVisible() && (to.name === 'projects' || to.name === 'project-detail')) {
     return { name: 'home' }
+  }
+
+  if (to.matched.some((record) => record.meta.requiresAuth) && auth.isAuthenticated) {
+    void useBillingStore().init()
   }
 
   // Persist embed flag from query for subsequent navigations

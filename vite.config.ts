@@ -41,6 +41,12 @@ export default defineConfig(({ mode }) => ({
     chunkSizeWarningLimit: 900,
   },
   server: {
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:4012',
+        changeOrigin: true,
+      },
+    },
     headers: {
       'Cache-Control': 'no-store',
       // Allows Google OAuth popup ↔ opener postMessage (avoids noisy COOP blocks).

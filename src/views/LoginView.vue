@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useRouter, RouterLink } from 'vue-router'
+import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { Eye, EyeOff, Loader2, Mail, Lock } from '@lucide/vue'
 import AuthLayout from '@/components/auth/AuthLayout.vue'
 import AuthNoticeModal from '@/components/auth/AuthNoticeModal.vue'
@@ -9,6 +9,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useQuinListStore } from '@/stores/quinlist'
 import { useProjectsStore } from '@/stores/projects'
 import { REDIRECT_KEY } from '@/router'
+import { consumeVipIntent, rememberStartPlan } from '@/lib/startPlan'
 import {
   AUTH_LOGIN_FAIL_MESSAGE,
   AUTH_LOGIN_FAIL_TITLE,
@@ -19,6 +20,7 @@ const auth = useAuthStore()
 const store = useQuinListStore()
 const projectsStore = useProjectsStore()
 const router = useRouter()
+const route = useRoute()
 
 const email = ref('')
 const password = ref('')
@@ -40,6 +42,7 @@ const demoUsers = [
 
 onMounted(() => {
   document.documentElement.classList.add('auth-screen')
+  if (route.query.plan === 'vip') rememberStartPlan('vip')
   const saved = localStorage.getItem('quinlist_remember_email')
   if (saved) email.value = saved
   else if (!auth.useDatabase) email.value = demoUsers[0]!.email
@@ -64,6 +67,8 @@ async function afterAuthSuccess() {
   if (redirect) {
     sessionStorage.removeItem(REDIRECT_KEY)
     await router.push(redirect)
+  } else if (consumeVipIntent() || route.query.plan === 'vip') {
+    await router.push({ name: 'plans', query: { checkout: '1' } })
   } else {
     await router.push({ name: 'home' })
   }

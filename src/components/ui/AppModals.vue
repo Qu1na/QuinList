@@ -5,6 +5,7 @@ import { useQuinListStore } from '@/stores/quinlist'
 import { useRouter } from 'vue-router'
 import AppWindow from '@/components/ui/AppWindow.vue'
 import AppConfirmDialog from '@/components/ui/AppConfirmDialog.vue'
+import UpgradeModal from '@/components/billing/UpgradeModal.vue'
 
 const ui = useUiStore()
 const store = useQuinListStore()
@@ -293,4 +294,5 @@ function submitWorkspace() {
       </AppWindow>
     </div>
   </Teleport>
+  <UpgradeModal />
 </template>

@@ -25,12 +25,12 @@ import AppWindow from '@/components/ui/AppWindow.vue'
 import type { DesktopMenuItem } from '@/components/workspace/DesktopContextMenu.vue'
 import type { ProjectStatus } from '@/types/projects'
 import { PROJECT_CREATION_ENABLED, PROJECTS_MODULE_ENABLED } from '@/config/features'
-import { useUiStore } from '@/stores/ui'
+import { useBillingStore } from '@/stores/billing'
 
 const store = useQuinListStore()
 const projectsStore = useProjectsStore()
 const auth = useAuthStore()
-const ui = useUiStore()
+const billing = useBillingStore()
 const router = useRouter()
 const route = useRoute()
 
@@ -127,7 +127,12 @@ const items = computed(() => {
   })
 })
 
-function openCreate() {
+async function openCreate() {
+  const allowed = await billing.allowCreate('project', store.currentWorkspaceId)
+  if (!allowed) {
+    billing.openUpgrade('project')
+    return
+  }
   createStep.value = 1
   newName.value = ''
   newClient.value = ''
@@ -207,8 +212,8 @@ function closeContextMenu() {
 }
 
 async function onContextMenuSelect(id: string) {
-  if (id === 'new-project') openCreate()
-  else if (id === 'new-board') ui.openCreateBoard()
+  if (id === 'new-project') void openCreate()
+  else if (id === 'new-board') void billing.requestCreateBoard()
   else if (id === 'refresh') await projectsStore.reloadForWorkspace(store.currentWorkspaceId)
   else if (id === 'home') await router.push('/app')
   else if (id === 'boards') await router.push('/app')

@@ -12,10 +12,12 @@ import { formatCalendarMonthYear } from '@/utils/datetime'
 import { INTEGRATION_META } from '@/utils/integrations'
 import type { IntegrationType } from '@/utils/integrations'
 import AccountShell from '@/components/layout/AccountShell.vue'
+import { useBillingStore } from '@/stores/billing'
 
 const auth = useAuthStore()
 const store = useQuinListStore()
 const integrations = useIntegrationsStore()
+const billing = useBillingStore()
 const router = useRouter()
 
 const editing = ref(false)
@@ -194,6 +196,29 @@ function openIntegrations() {
               <dd class="font-medium text-[#172b4d]">{{ userRole }}</dd>
             </div>
           </dl>
+        </div>
+      </section>
+
+      </section>
+
+      <section class="overflow-hidden rounded-xl border border-[#091e4214] bg-white shadow-sm">
+        <div class="flex items-center justify-between border-b border-[#091e4214] px-5 py-3">
+          <h2 class="text-sm font-semibold text-[#172b4d]">Plan</h2>
+          <RouterLink to="/app/planes" class="text-xs font-medium text-[#6554c0] hover:underline">
+            {{ billing.isVip ? 'Administrar' : 'Pasar a VIP' }}
+          </RouterLink>
+        </div>
+        <div class="px-5 py-4 text-sm text-[#44546f]">
+          <p>
+            Estás en <span class="font-semibold text-[#172b4d]">{{ billing.planLabel }}</span>.
+          </p>
+          <p class="mt-1">
+            {{
+              billing.isVip
+                ? 'Tableros y proyectos ilimitados, con asistente de IA.'
+                : 'Puedes crear un tablero y un proyecto. VIP quita ese límite y activa la IA.'
+            }}
+          </p>
         </div>
       </section>
 

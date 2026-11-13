@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import { Plus, Star, FolderKanban, LayoutGrid, FolderPlus, RefreshCw } from '@lucide/vue'
 import { useQuinListStore } from '@/stores/quinlist'
 import { useProjectsStore } from '@/stores/projects'
-import { useUiStore } from '@/stores/ui'
+import { useBillingStore } from '@/stores/billing'
 import { canEdit } from '@/utils/permissions'
 import { getBoardBackgroundThumbStyle } from '@/utils/boardBackgrounds'
 import { calcProjectProgress } from '@/utils/projectStats'
@@ -15,7 +15,7 @@ import type { DesktopMenuItem } from '@/components/workspace/DesktopContextMenu.
 
 const store = useQuinListStore()
 const projectsStore = useProjectsStore()
-const ui = useUiStore()
+const billing = useBillingStore()
 const router = useRouter()
 
 const projectsVisible = computed(() => isProjectsModuleVisible())
@@ -101,7 +101,7 @@ function closeContextMenu() {
 }
 
 async function onContextMenuSelect(id: string) {
-  if (id === 'new-board') ui.openCreateBoard()
+  if (id === 'new-board') void billing.requestCreateBoard()
   else if (id === 'new-project') await router.push({ path: '/app/projects', query: { create: '1' } })
   else if (id === 'refresh') {
     await store.init()
@@ -134,7 +134,7 @@ async function onContextMenuSelect(id: string) {
         <button
           v-if="canCreate"
           class="btn-brand"
-          @click="ui.openCreateBoard()"
+          @click="billing.requestCreateBoard()"
         >
           Crear tablero
         </button>
@@ -261,7 +261,7 @@ async function onContextMenuSelect(id: string) {
         <button
           v-if="canCreate"
           class="flex h-32 w-56 flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#091e4229] bg-[#fafbfc] text-[#44546f] transition-colors hover:border-[#f4845f]/40 hover:bg-[#f4845f08]"
-          @click="ui.openCreateBoard()"
+          @click="billing.requestCreateBoard()"
         >
           <Plus :size="28" class="mb-1 text-brand-coral" />
           <span class="text-sm font-medium">Crear tablero</span>

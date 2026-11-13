@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useRouter, RouterLink } from 'vue-router'
+import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { Eye, EyeOff, Loader2, Mail, Lock, User } from '@lucide/vue'
 import AuthLayout from '@/components/auth/AuthLayout.vue'
 import AuthNoticeModal from '@/components/auth/AuthNoticeModal.vue'
@@ -9,11 +9,14 @@ import { useQuinListStore } from '@/stores/quinlist'
 import { useProjectsStore } from '@/stores/projects'
 import { REDIRECT_KEY } from '@/router'
 import { localizeAuthError } from '@/utils/authMessages'
+import { consumeVipIntent, readStartPlan, rememberStartPlan, type StartPlan } from '@/lib/startPlan'
+import { VIP_PRICE_USD } from '@/config/plans'
 
 const auth = useAuthStore()
 const store = useQuinListStore()
 const projectsStore = useProjectsStore()
 const router = useRouter()
+const route = useRoute()
 
 const name = ref('')
 const email = ref('')
@@ -22,13 +25,19 @@ const confirmPassword = ref('')
 const showPassword = ref(false)
 const acceptTerms = ref(false)
 const loading = ref(false)
+const startPlan = ref<StartPlan>('free')
 
 const noticeOpen = ref(false)
 const noticeTitle = ref('')
 const noticeMessage = ref('')
 const noticeVariant = ref<'info' | 'error' | 'success'>('error')
 
-onMounted(() => document.documentElement.classList.add('auth-screen'))
+onMounted(() => {
+  document.documentElement.classList.add('auth-screen')
+  const fromQuery = route.query.plan === 'vip' ? 'vip' : route.query.plan === 'free' ? 'free' : readStartPlan()
+  startPlan.value = fromQuery
+  rememberStartPlan(fromQuery)
+})
 onUnmounted(() => document.documentElement.classList.remove('auth-screen'))
 
 function showNotice(title: string, message: string, variant: 'info' | 'error' | 'success' = 'error') {
@@ -38,9 +47,19 @@ function showNotice(title: string, message: string, variant: 'info' | 'error' | 
   noticeOpen.value = true
 }
 
+function selectPlan(plan: StartPlan) {
+  startPlan.value = plan
+  rememberStartPlan(plan)
+}
+
 async function afterAuthSuccess() {
   void store.init().catch((err) => console.error('[register] quinlist.init:', err))
   void projectsStore.init().catch((err) => console.error('[register] projects.init:', err))
+
+  if (consumeVipIntent() || startPlan.value === 'vip') {
+    await router.push({ name: 'plans', query: { checkout: '1' } })
+    return
+  }
 
   const redirect = sessionStorage.getItem(REDIRECT_KEY)
   if (redirect) {
@@ -90,7 +109,14 @@ async function submit() {
 </script>
 
 <template>
-  <AuthLayout title="Crea tu cuenta" subtitle="Regístrate gratis y empieza en minutos.">
+  <AuthLayout
+    :title="startPlan === 'vip' ? 'Crea tu cuenta VIP' : 'Crea tu cuenta'"
+    :subtitle="
+      startPlan === 'vip'
+        ? `Después del registro te llevamos al pago de $${VIP_PRICE_USD} USD.`
+        : 'El plan Gratis incluye un tablero y un proyecto.'
+    "
+  >
     <div
       v-if="!auth.useDatabase"
       class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-center text-sm text-amber-800"
@@ -102,6 +128,33 @@ async function submit() {
     </div>
 
     <template v-else>
+      <div class="mb-4 grid grid-cols-2 gap-2" role="radiogroup" aria-label="Cómo quieres empezar">
+        <button
+          type="button"
+          class="rounded-xl border px-3 py-3 text-left"
+          :class="startPlan === 'vip' ? 'border-[#f4845f] bg-[#fffaf7]' : 'border-[#e5e7eb] bg-white'"
+          :aria-checked="startPlan === 'vip'"
+          role="radio"
+          @click="selectPlan('vip')"
+        >
+          <span class="block text-xs font-semibold text-[#f4845f]">VIP</span>
+          <span class="mt-0.5 block text-sm font-bold text-[#172b4d]">${{ VIP_PRICE_USD }} USD</span>
+          <span class="block text-[11px] text-[#64748b]">Ilimitado + IA</span>
+        </button>
+        <button
+          type="button"
+          class="rounded-xl border px-3 py-3 text-left"
+          :class="startPlan === 'free' ? 'border-[#2563eb] bg-[#f8fbff]' : 'border-[#e5e7eb] bg-white'"
+          :aria-checked="startPlan === 'free'"
+          role="radio"
+          @click="selectPlan('free')"
+        >
+          <span class="block text-xs font-semibold text-[#2563eb]">Gratis</span>
+          <span class="mt-0.5 block text-sm font-bold text-[#172b4d]">$0</span>
+          <span class="block text-[11px] text-[#64748b]">1 tablero y 1 proyecto</span>
+        </button>
+      </div>
+
       <div class="mb-4 grid grid-cols-2 gap-3">
         <button type="button" class="auth-social-btn" disabled title="Próximamente">
           <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24">
@@ -205,13 +258,16 @@ async function submit() {
 
         <button type="submit" :disabled="loading" class="auth-submit">
           <Loader2 v-if="loading" :size="17" class="animate-spin" />
-          Crear cuenta
+          {{ startPlan === 'vip' ? 'Crear cuenta y pagar' : 'Crear cuenta' }}
         </button>
       </form>
 
       <p class="mt-4 text-center text-sm text-[#64748b]">
         ¿Ya tienes cuenta?
-        <RouterLink to="/login" class="font-semibold text-[#2563eb] hover:underline">
+        <RouterLink
+          :to="startPlan === 'vip' ? { name: 'login', query: { plan: 'vip' } } : { name: 'login' }"
+          class="font-semibold text-[#2563eb] hover:underline"
+        >
           Iniciar sesión
         </RouterLink>
       </p>

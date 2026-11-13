@@ -21,6 +21,7 @@ import {
   defaultBoardIntegrations,
 } from '@/utils/boardDefaults'
 import { useAuthStore } from './auth'
+import { useBillingStore } from './billing'
 import { useNotificationStore } from './notifications'
 import { useIntegrationsStore } from './integrations'
 import { useEventsStore } from './events'
@@ -635,6 +636,13 @@ export const useQuinListStore = defineStore('quinlist', () => {
   }
 
   async function createBoard(workspaceId: string, title: string, description = '') {
+    const billing = useBillingStore()
+    const allowed = await billing.allowCreate('board', workspaceId)
+    if (!allowed) {
+      billing.openUpgrade('board')
+      return null
+    }
+
     const boardId = generateId()
     const existingSlugs = boards.value.map((b) => b.slug)
     const board: Board = {
@@ -653,7 +661,17 @@ export const useQuinListStore = defineStore('quinlist', () => {
     boards.value.push(board)
     currentBoardId.value = boardId
     if (isMatuConfigured()) {
-      await insertBoard(board)
+      try {
+        await insertBoard(board)
+      } catch (error) {
+        boards.value = boards.value.filter((item) => item.id !== boardId)
+        const message = error instanceof Error ? error.message : ''
+        if (message.includes('PLAN_LIMIT_BOARD')) {
+          billing.openUpgrade('board')
+          return null
+        }
+        throw error
+      }
     } else {
       saveLocal()
     }

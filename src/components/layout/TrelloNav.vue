@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed, watch, onUnmounted, ref, useAttrs } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { LayoutGrid, Search, Bell, ChevronDown, Plus, UserPlus, X, Users, BarChart3, LogOut, FolderKanban } from '@lucide/vue'
+import { LayoutGrid, Search, Bell, ChevronDown, Plus, UserPlus, X, Users, BarChart3, LogOut, FolderKanban, Sparkles } from '@lucide/vue'
 import { useQuinListStore } from '@/stores/quinlist'
 import AppLogo from '@/components/brand/AppLogo.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notifications'
 import { useUiStore } from '@/stores/ui'
+import { useBillingStore } from '@/stores/billing'
 import { useBoardShareStore } from '@/stores/boardShare'
 import { useBoardPresenceStore } from '@/stores/boardPresence'
 import { subscribeBoardShareRealtime } from '@/services/boardShare'
@@ -27,6 +28,7 @@ const store = useQuinListStore()
 const auth = useAuthStore()
 const notif = useNotificationStore()
 const ui = useUiStore()
+const billing = useBillingStore()
 const boardShare = useBoardShareStore()
 const presence = useBoardPresenceStore()
 const projectsStore = useProjectsStore()
@@ -238,7 +240,7 @@ onUnmounted(() => {
       <button
         v-if="!isBoard"
         class="flex items-center gap-1.5 rounded-full bg-white/25 px-3 py-1.5 text-sm font-medium shadow-sm hover:bg-white/35"
-        @click="ui.openCreateBoard()"
+        @click="billing.requestCreateBoard()"
       >
         <Plus :size="16" />
         Crear
@@ -331,6 +333,21 @@ onUnmounted(() => {
           <p class="px-4 py-1 text-[11px] font-semibold tracking-wide text-[#626f86] uppercase">
             QuinList
           </p>
+          <RouterLink
+            to="/app/planes"
+            class="block px-4 py-2 text-sm text-[#172b4d] hover:bg-[#091e420a]"
+            @click="showAccountMenu = false"
+          >
+            Plan {{ billing.planLabel }}
+          </RouterLink>
+          <RouterLink
+            to="/app/ia"
+            class="flex items-center gap-2 px-4 py-2 text-sm text-[#172b4d] hover:bg-[#091e420a]"
+            @click="showAccountMenu = false"
+          >
+            <Sparkles :size="14" />
+            Asistente de IA
+          </RouterLink>
           <RouterLink
             to="/app/settings"
             class="block px-4 py-2 text-sm text-[#172b4d] hover:bg-[#091e420a]"
