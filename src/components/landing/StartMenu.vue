@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { ChevronDown, Sparkles } from '@lucide/vue'
+import { ChevronDown } from '@lucide/vue'
 import { useAuthStore } from '@/stores/auth'
 import { rememberStartPlan, type StartPlan } from '@/lib/startPlan'
 import { formatMoney } from '@/utils/currency'
@@ -51,7 +51,7 @@ async function choose(plan: StartPlan) {
     </button>
     <button
       type="button"
-      class="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold text-[#2d2d2d] ring-1 ring-[#e5e5e5] hover:bg-[#fafafa]"
+      class="inline-flex items-center justify-center rounded-md px-5 py-2.5 text-sm font-semibold text-[#121820] ring-1 ring-[#e2e6eb] hover:bg-[#f3f5f7]"
       @click="choose('free')"
     >
       Gratis
@@ -77,26 +77,25 @@ async function choose(plan: StartPlan) {
     >
       <button
         type="button"
-        class="start-fan__vip flex w-full flex-col rounded-2xl bg-[#2d2d2d] px-4 py-3 text-left text-white shadow-lg"
+        class="start-fan__vip flex w-full flex-col rounded-xl bg-[#121820] px-4 py-3 text-left text-white shadow-lg"
         role="menuitem"
         @click="choose('vip')"
       >
-        <span class="flex items-center gap-1.5 text-xs font-semibold text-[#f4845f]">
-          <Sparkles :size="13" />
+        <span class="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/50">
           Recomendado
         </span>
-        <span class="mt-1 text-sm font-bold">VIP · ${{ usd }} USD<span class="font-medium text-white/70"> / mes</span></span>
-        <span v-if="copLabel()" class="text-xs text-white/60">aprox. {{ copLabel() }} en pesos</span>
-        <span class="mt-1 text-xs text-white/75">Ilimitado + asistente de IA</span>
+        <span class="mt-1 text-sm font-semibold">VIP · ${{ usd }} USD<span class="font-medium text-white/65"> / mes</span></span>
+        <span v-if="copLabel()" class="text-xs text-white/55">aprox. {{ copLabel() }} en pesos</span>
+        <span class="mt-1 text-xs text-white/70">Ilimitado + asistente de IA</span>
       </button>
       <button
         type="button"
-        class="start-fan__free mt-2 flex w-full flex-col rounded-2xl border border-[#eee] bg-white px-4 py-3 text-left shadow-md"
+        class="start-fan__free mt-2 flex w-full flex-col rounded-xl border border-[#e2e6eb] bg-white px-4 py-3 text-left shadow-md"
         role="menuitem"
         @click="choose('free')"
       >
-        <span class="text-sm font-bold text-[#2d2d2d]">Gratis</span>
-        <span class="text-xs text-[#777]">1 tablero y 1 proyecto</span>
+        <span class="text-sm font-semibold text-[#121820]">Gratis</span>
+        <span class="text-xs text-[#5a6573]">1 tablero y 1 proyecto</span>
       </button>
     </div>
   </div>

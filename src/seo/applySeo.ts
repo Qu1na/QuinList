@@ -2,13 +2,17 @@ import {
   DEFAULT_DESCRIPTION,
   DEFAULT_KEYWORDS,
   DEFAULT_OG_IMAGE,
+  DEFAULT_OG_IMAGE_HEIGHT,
+  DEFAULT_OG_IMAGE_WIDTH,
   DEFAULT_TITLE,
+  SITE_HREFLANG,
   SITE_LOCALE,
   SITE_NAME,
   absoluteUrl,
 } from '@/seo/config'
 
-const DYNAMIC_JSONLD_ATTR = 'data-ql-seo-jsonld'
+/** Atributo compartido con el prerender: el cliente reemplaza estos bloques al navegar. */
+export const DYNAMIC_JSONLD_ATTR = 'data-ql-seo-jsonld'
 
 export type ApplySeoInput = {
   title: string
@@ -33,7 +37,10 @@ function upsertMeta(attr: 'name' | 'property', key: string, content: string) {
 }
 
 function upsertLink(rel: string, href: string, attrs?: Record<string, string>) {
-  let el = document.head.querySelector(`link[rel="${CSS.escape(rel)}"]`) as HTMLLinkElement | null
+  const selector = attrs?.hreflang
+    ? `link[rel="${CSS.escape(rel)}"][hreflang="${CSS.escape(attrs.hreflang)}"]`
+    : `link[rel="${CSS.escape(rel)}"]`
+  let el = document.head.querySelector(selector) as HTMLLinkElement | null
   if (!el) {
     el = document.createElement('link')
     el.rel = rel
@@ -71,7 +78,8 @@ export function applySeo(input: ApplySeoInput) {
     input.robots ||
     'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
   const ogType = input.ogType || 'website'
-  const imageAlt = input.imageAlt || `${SITE_NAME} — software de gestión de proyectos`
+  const imageAlt = input.imageAlt || `${SITE_NAME}: software de gestión de proyectos para empresas`
+  const indexable = !robots.includes('noindex')
 
   document.title = title
   document.documentElement.lang = 'es'
@@ -79,15 +87,23 @@ export function applySeo(input: ApplySeoInput) {
   upsertMeta('name', 'description', description)
   upsertMeta('name', 'keywords', keywords)
   upsertMeta('name', 'robots', robots)
-  upsertMeta('name', 'googlebot', robots.includes('noindex') ? 'noindex, nofollow' : 'index, follow')
-  upsertMeta('name', 'bingbot', robots.includes('noindex') ? 'noindex, nofollow' : 'index, follow')
+  upsertMeta('name', 'googlebot', robots)
+  upsertMeta('name', 'bingbot', robots)
   upsertMeta('name', 'author', 'MatuByte S.A.S.')
   upsertMeta('name', 'application-name', SITE_NAME)
   upsertMeta('name', 'theme-color', '#f4845f')
   upsertMeta('name', 'format-detection', 'telephone=no')
   upsertMeta('name', 'referrer', 'strict-origin-when-cross-origin')
 
-  upsertLink('canonical', url)
+  if (indexable) {
+    upsertLink('canonical', url)
+    upsertLink('alternate', url, { hreflang: SITE_HREFLANG })
+    upsertLink('alternate', url, { hreflang: 'x-default' })
+  } else {
+    document.head
+      .querySelectorAll('link[rel="canonical"], link[rel="alternate"][hreflang]')
+      .forEach((n) => n.remove())
+  }
 
   // Open Graph
   upsertMeta('property', 'og:type', ogType)
@@ -98,8 +114,8 @@ export function applySeo(input: ApplySeoInput) {
   upsertMeta('property', 'og:description', description)
   upsertMeta('property', 'og:image', image)
   upsertMeta('property', 'og:image:alt', imageAlt)
-  upsertMeta('property', 'og:image:width', '512')
-  upsertMeta('property', 'og:image:height', '512')
+  upsertMeta('property', 'og:image:width', DEFAULT_OG_IMAGE_WIDTH)
+  upsertMeta('property', 'og:image:height', DEFAULT_OG_IMAGE_HEIGHT)
 
   // Twitter / X
   upsertMeta('name', 'twitter:card', 'summary_large_image')

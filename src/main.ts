@@ -1,40 +1,67 @@
 import './assets/main.css'
 
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
+import { createApp, createSSRApp } from 'vue'
+import { createPinia, setActivePinia } from 'pinia'
 
 import App from './App.vue'
 import router from './router'
 import { setupRouterSeo } from '@/seo/setupRouterSeo'
-import { useAuthStore } from './stores/auth'
-import { useQuinListStore } from './stores/quinlist'
-import { useNotificationStore } from './stores/notifications'
-import { useProjectsStore } from './stores/projects'
+import { mayHaveSession } from '@/lib/sessionHint'
+import { initAnalytics } from '@/lib/analytics'
 
-const app = createApp(App)
-const pinia = createPinia()
+const container = document.getElementById('app')!
 
-app.use(pinia)
-app.use(router)
-setupRouterSeo(router)
+/**
+ * Las páginas públicas llegan prerenderizadas (scripts/prerender.mjs marca el contenedor con
+ * data-prerendered="/ruta"). En ese caso Vue *hidrata* el HTML existente en lugar de borrarlo y
+ * volver a pintarlo: la página se ve al instante y Google mide un LCP rápido.
+ */
+function shouldHydrate(isAuthenticated: boolean) {
+  const prerendered = container.dataset.prerendered
+  if (!prerendered) return false
+  const path = window.location.pathname.replace(/\/$/, '') || '/'
+  if (prerendered !== path) return false
+  // La landing redirige a /app a quien ya inició sesión: no hay nada que hidratar.
+  if (path === '/' && isAuthenticated) return false
+  return true
+}
 
 async function bootstrap() {
-  const auth = useAuthStore()
-  await auth.init()
+  initAnalytics()
+  const pinia = createPinia()
+  setActivePinia(pinia)
 
-  // Mount immediately so the shell renders while MatuDB data loads in background.
-  app.mount('#app')
+  // Sin sesión guardada no se carga MatuDB: la página pública se hidrata de inmediato.
+  let isAuthenticated = false
+  if (mayHaveSession()) {
+    const { useAuthStore } = await import('./stores/auth')
+    const auth = useAuthStore()
+    await auth.init()
+    isAuthenticated = auth.isAuthenticated
+  }
 
-  if (!auth.isAuthenticated) return
+  const hydrate = shouldHydrate(isAuthenticated)
+  const app = hydrate ? createSSRApp(App) : createApp(App)
+  app.use(pinia)
+  app.use(router)
+  setupRouterSeo(router)
 
-  const store = useQuinListStore()
-  const notif = useNotificationStore()
-  const projects = useProjectsStore()
+  // Para hidratar, los componentes de la ruta (carga diferida) deben estar listos.
+  if (hydrate) await router.isReady()
+  app.mount(container)
 
+  if (!isAuthenticated) return
+
+  // Datos de la app privada: se cargan aparte para no pesar en las páginas públicas.
   void (async () => {
     try {
-      await store.init()
-      await Promise.all([notif.init(), projects.init()])
+      const [{ useQuinListStore }, { useNotificationStore }, { useProjectsStore }] = await Promise.all([
+        import('./stores/quinlist'),
+        import('./stores/notifications'),
+        import('./stores/projects'),
+      ])
+      await useQuinListStore().init()
+      await Promise.all([useNotificationStore().init(), useProjectsStore().init()])
     } catch (err) {
       console.error('[bootstrap] Error cargando datos:', err)
     }

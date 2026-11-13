@@ -7,13 +7,10 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
-export default defineConfig(({ mode }) => ({
-  plugins: [
-    vue(),
-    vueJsx(),
-    mode === 'development' ? vueDevTools() : null,
-    tailwindcss(),
-  ].filter(Boolean),
+export default defineConfig(({ mode, isSsrBuild }) => ({
+  plugins: [vue(), vueJsx(), mode === 'development' ? vueDevTools() : null, tailwindcss()].filter(
+    Boolean,
+  ),
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
@@ -25,19 +22,23 @@ export default defineConfig(({ mode }) => ({
     minify: true,
     sourcemap: false,
     assetsInlineLimit: 4096,
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (!id.includes('node_modules')) return
-          if (id.includes('vue') || id.includes('pinia') || id.includes('vue-router')) {
-            return 'vendor-vue'
-          }
-          if (id.includes('@lucide')) return 'vendor-icons'
-          if (id.includes('vuedraggable') || id.includes('sortablejs')) return 'vendor-dnd'
-          if (id.includes('qrcode')) return 'vendor-qr'
+    rollupOptions: isSsrBuild
+      ? {}
+      : {
+          output: {
+            // Grupos explícitos sin arrastrar dependencias: así la landing no descarga
+            // vuedraggable/sortable (solo los usa la app privada).
+            codeSplitting: {
+              includeDependenciesRecursively: false,
+              groups: [
+                { name: 'vendor-vue', test: /node_modules[\/](@vue|vue|vue-router|pinia)[\/]/, priority: 40 },
+                { name: 'vendor-dnd', test: /node_modules[\/](vuedraggable|sortablejs)[\/]/, priority: 30 },
+                { name: 'vendor-icons', test: /node_modules[\/]@lucide[\/]/, priority: 20 },
+                { name: 'vendor-qr', test: /node_modules[\/]qrcode[\/]/, priority: 20 },
+              ],
+            },
+          },
         },
-      },
-    },
     chunkSizeWarningLimit: 900,
   },
   server: {

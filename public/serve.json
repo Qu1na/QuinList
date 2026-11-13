@@ -1,0 +1,113 @@
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "directoryListing": false,
+  "rewrites": [
+    {
+      "source": "/app",
+      "destination": "/app-shell.html"
+    },
+    {
+      "source": "/app/**",
+      "destination": "/app-shell.html"
+    },
+    {
+      "source": "/login",
+      "destination": "/app-shell.html"
+    },
+    {
+      "source": "/reset-password",
+      "destination": "/app-shell.html"
+    },
+    {
+      "source": "/conectar-sizor",
+      "destination": "/app-shell.html"
+    },
+    {
+      "source": "/share/**",
+      "destination": "/app-shell.html"
+    },
+    {
+      "source": "/join/**",
+      "destination": "/app-shell.html"
+    },
+    {
+      "source": "/board/**",
+      "destination": "/app-shell.html"
+    },
+    {
+      "source": "/calendar",
+      "destination": "/app-shell.html"
+    },
+    {
+      "source": "/events",
+      "destination": "/app-shell.html"
+    },
+    {
+      "source": "/okrs",
+      "destination": "/app-shell.html"
+    },
+    {
+      "source": "/reports",
+      "destination": "/app-shell.html"
+    },
+    {
+      "source": "/issues",
+      "destination": "/app-shell.html"
+    },
+    {
+      "source": "/releases",
+      "destination": "/app-shell.html"
+    },
+    {
+      "source": "/team",
+      "destination": "/app-shell.html"
+    },
+    {
+      "source": "/projects",
+      "destination": "/app-shell.html"
+    },
+    {
+      "source": "/settings",
+      "destination": "/app-shell.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "assets/**",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "image/**",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=2592000"
+        }
+      ]
+    },
+    {
+      "source": "**/*.@(xml|txt)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        }
+      ]
+    },
+    {
+      "source": "app-shell.html",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex"
+        }
+      ]
+    }
+  ]
+}

@@ -1,40 +1,28 @@
 {
   "siteUrl": "https://quinlist.matubyte.com",
   "siteName": "QuinList",
-  "locale": "es_ES",
+  "locale": "es_LA",
   "language": "es",
   "contactEmail": "contacto@matubyte.com",
   "publisher": {
     "name": "MatuByte S.A.S.",
     "url": "https://matubyte.com"
   },
-  "defaultOgImage": "/image/logo/logo-512.png",
+  "defaultOgImage": "/image/og/quinlist-og.png",
   "keywords": [
     "software de gestión de proyectos",
     "gestor de proyectos",
-    "project management software",
-    "software para empresas",
-    "software empresarial",
-    "software SaaS",
-    "plataforma de productividad",
-    "gestión de tareas",
+    "programa para gestionar proyectos",
+    "software de gestión de proyectos para empresas",
     "tablero Kanban",
-    "colaboración en tiempo real",
-    "administración de equipos",
-    "planificación de proyectos",
-    "seguimiento de proyectos",
-    "gestión empresarial",
-    "control de tareas",
-    "trabajo colaborativo",
-    "workspace",
-    "project tracker",
-    "team collaboration",
-    "task manager",
-    "project planner",
-    "gestión de equipos",
-    "software de organización",
-    "software para PYMES",
-    "software para empresas grandes",
+    "diagrama de Gantt online",
+    "control de presupuesto de proyectos",
+    "gestión de tareas",
+    "software para empresas",
+    "software para pymes",
+    "alternativa a Excel",
+    "alternativa a Trello",
+    "gestión de proyectos Latinoamérica",
     "QuinList"
   ],
   "routes": [
@@ -72,13 +60,9 @@
       "changefreq": "yearly",
       "priority": 0.3,
       "index": true
-    },
-    {
-      "path": "/login",
-      "name": "login",
-      "changefreq": "yearly",
-      "priority": 0.1,
-      "index": false
     }
-  ]
+  ],
+  "hreflang": "es-419",
+  "defaultOgImageWidth": 1200,
+  "defaultOgImageHeight": 630
 }

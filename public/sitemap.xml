@@ -1,34 +1,278 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://quinlist.matubyte.com/</loc>
-    <lastmod>2026-09-18</lastmod>
+    <lastmod>2026-11-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/"/>
+    <image:image>
+      <image:loc>https://quinlist.matubyte.com/image/og/quinlist-og.png</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/software-gestion-de-proyectos</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/software-gestion-de-proyectos"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/software-gestion-de-proyectos"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/tablero-kanban-online</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/tablero-kanban-online"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/tablero-kanban-online"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/diagrama-de-gantt-online</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/diagrama-de-gantt-online"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/diagrama-de-gantt-online"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/control-de-presupuesto-de-proyectos</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/control-de-presupuesto-de-proyectos"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/control-de-presupuesto-de-proyectos"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/gestion-de-proyectos-con-ia</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/gestion-de-proyectos-con-ia"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/gestion-de-proyectos-con-ia"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/software-gestion-de-tareas</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/software-gestion-de-tareas"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/software-gestion-de-tareas"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/automatizacion-de-proyectos</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/automatizacion-de-proyectos"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/automatizacion-de-proyectos"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/gestion-de-proyectos-para-agencias</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/gestion-de-proyectos-para-agencias"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/gestion-de-proyectos-para-agencias"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/gestion-de-proyectos-de-construccion</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/gestion-de-proyectos-de-construccion"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/gestion-de-proyectos-de-construccion"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/software-de-proyectos-para-pymes</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/software-de-proyectos-para-pymes"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/software-de-proyectos-para-pymes"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/gestion-de-proyectos-de-software</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/gestion-de-proyectos-de-software"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/gestion-de-proyectos-de-software"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/gestion-de-proyectos-para-equipos-remotos</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/gestion-de-proyectos-para-equipos-remotos"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/gestion-de-proyectos-para-equipos-remotos"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/alternativa-a-excel-para-proyectos</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/alternativa-a-excel-para-proyectos"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/alternativa-a-excel-para-proyectos"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/alternativa-a-trello</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/alternativa-a-trello"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/alternativa-a-trello"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/alternativa-a-asana-y-monday</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/alternativa-a-asana-y-monday"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/alternativa-a-asana-y-monday"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/software-gestion-de-proyectos/colombia</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/software-gestion-de-proyectos/colombia"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/software-gestion-de-proyectos/colombia"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/software-gestion-de-proyectos/mexico</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/software-gestion-de-proyectos/mexico"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/software-gestion-de-proyectos/mexico"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/software-gestion-de-proyectos/peru</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/software-gestion-de-proyectos/peru"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/software-gestion-de-proyectos/peru"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/software-gestion-de-proyectos/ecuador</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/software-gestion-de-proyectos/ecuador"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/software-gestion-de-proyectos/ecuador"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/software-gestion-de-proyectos/chile</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/software-gestion-de-proyectos/chile"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/software-gestion-de-proyectos/chile"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/software-gestion-de-proyectos/argentina</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/software-gestion-de-proyectos/argentina"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/software-gestion-de-proyectos/argentina"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/guias/como-organizar-proyectos-de-una-empresa</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/guias/como-organizar-proyectos-de-una-empresa"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/guias/como-organizar-proyectos-de-una-empresa"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/guias/como-hacer-un-cronograma-de-proyecto</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/guias/como-hacer-un-cronograma-de-proyecto"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/guias/como-hacer-un-cronograma-de-proyecto"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/guias/que-es-la-metodologia-kanban</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/guias/que-es-la-metodologia-kanban"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/guias/que-es-la-metodologia-kanban"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/guias/como-calcular-la-rentabilidad-de-un-proyecto</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/guias/como-calcular-la-rentabilidad-de-un-proyecto"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/guias/como-calcular-la-rentabilidad-de-un-proyecto"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/guias/matriz-de-riesgos-de-un-proyecto</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/guias/matriz-de-riesgos-de-un-proyecto"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/guias/matriz-de-riesgos-de-un-proyecto"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/guias/que-son-los-okr</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/guias/que-son-los-okr"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/guias/que-son-los-okr"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/guias</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/guias"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/guias"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/precios</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/precios"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/precios"/>
   </url>
   <url>
     <loc>https://quinlist.matubyte.com/register</loc>
-    <lastmod>2026-09-18</lastmod>
+    <lastmod>2026-11-13</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/register"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/register"/>
   </url>
   <url>
     <loc>https://quinlist.matubyte.com/ayuda</loc>
-    <lastmod>2026-09-18</lastmod>
+    <lastmod>2026-11-13</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/ayuda"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/ayuda"/>
   </url>
   <url>
     <loc>https://quinlist.matubyte.com/privacidad</loc>
-    <lastmod>2026-09-18</lastmod>
+    <lastmod>2026-11-13</lastmod>
     <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
+    <priority>0.2</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/privacidad"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/privacidad"/>
   </url>
   <url>
     <loc>https://quinlist.matubyte.com/terminos</loc>
-    <lastmod>2026-09-18</lastmod>
+    <lastmod>2026-11-13</lastmod>
     <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
+    <priority>0.2</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/terminos"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/terminos"/>
   </url>
 </urlset>

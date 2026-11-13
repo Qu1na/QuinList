@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { Star } from '@lucide/vue'
 import type { ReviewItem } from '@/utils/reviews'
 
 const props = defineProps<{
@@ -121,41 +120,35 @@ watch(
       @pointerup="onPointerUp"
       @pointercancel="onPointerUp"
     >
-      <article
+      <div
         v-for="(t, i) in loopReviews"
         :key="`${t.id}-${i}`"
         class="landing-review-card flex w-[280px] shrink-0 flex-col rounded-2xl border border-[#eee] bg-white p-5 text-left shadow-sm sm:w-[300px]"
         role="listitem"
+        :aria-hidden="i >= reviews.length ? 'true' : undefined"
       >
         <div class="flex items-center justify-between gap-2">
-          <div class="flex gap-0.5" :aria-label="`${t.rating} de 5 estrellas`">
-            <Star
-              v-for="n in 5"
-              :key="n"
-              :size="13"
-              :class="n <= t.rating ? 'fill-[#f4845f] text-[#f4845f]' : 'fill-[#eee] text-[#eee]'"
-              aria-hidden="true"
-            />
-          </div>
-          <span class="text-[11px] font-semibold text-[#aaa]">Reseña verificada</span>
+          <span class="text-sm leading-none tracking-[0.15em]" role="img" :aria-label="`${t.rating} de 5 estrellas`">
+            <span class="text-[#f4845f]">{{ '★'.repeat(t.rating) }}</span><span class="text-[#e5e5e5]">{{ '★'.repeat(5 - t.rating) }}</span>
+          </span>
         </div>
         <p class="mt-3 flex-1 text-sm leading-relaxed text-[#555]">“{{ t.quote }}”</p>
-        <footer class="mt-4 flex items-center gap-3 border-t border-[#f0f0f0] pt-4">
+        <div class="mt-4 flex items-center gap-3 border-t border-[#f0f0f0] pt-4">
           <span
-            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#fff5f0] text-xs font-bold text-[#f4845f]"
+            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#fff5f0] text-xs font-bold text-[#c2410c]"
             aria-hidden="true"
           >
             {{ t.name.charAt(0) }}
           </span>
           <div class="min-w-0">
-            <p class="truncate text-sm font-bold text-[#2d2d2d]">{{ t.name }}</p>
-            <p class="truncate text-xs text-[#999]">{{ t.role }} · {{ t.company }}</p>
+            <p class="truncate text-sm font-bold text-[#172b4d]">{{ t.name }}</p>
+            <p class="truncate text-xs text-[#666]">{{ t.role }} · {{ t.company }}</p>
           </div>
-        </footer>
-      </article>
+        </div>
+      </div>
     </div>
 
-    <p class="mt-4 text-center text-xs text-[#aaa]">
+    <p class="mt-4 text-center text-xs text-[#666]">
       Arrastra para explorar · se desplaza automáticamente
     </p>
   </div>

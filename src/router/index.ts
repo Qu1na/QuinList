@@ -1,34 +1,24 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
-import { useBillingStore } from '@/stores/billing'
+import { mayHaveSession } from '@/lib/sessionHint'
 import { isEmbedMode, isProjectsModuleVisible } from '@/config/features'
-import AppLayout from '@/layouts/AppLayout.vue'
-import LoginView from '../views/LoginView.vue'
-import RegisterView from '../views/RegisterView.vue'
-import LandingView from '../views/LandingView.vue'
-import ConnectSizorView from '../views/auth/ConnectSizorView.vue'
+import { notFoundRoute, publicRoutes } from './publicRoutes'
 
 const REDIRECT_KEY = 'quinlist_redirect'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    {
-      path: '/',
-      name: 'landing',
-      component: LandingView,
-      meta: { guestLanding: true },
-    },
+    ...publicRoutes,
     {
       path: '/login',
       name: 'login',
-      component: LoginView,
+      component: () => import('../views/LoginView.vue'),
       meta: { guest: true },
     },
     {
       path: '/conectar-sizor',
       name: 'conectar-sizor',
-      component: ConnectSizorView,
+      component: () => import('../views/auth/ConnectSizorView.vue'),
       meta: { publicShare: true },
     },
     {
@@ -40,23 +30,8 @@ const router = createRouter({
     {
       path: '/register',
       name: 'register',
-      component: RegisterView,
+      component: () => import('../views/RegisterView.vue'),
       meta: { guest: true },
-    },
-    {
-      path: '/ayuda',
-      name: 'help',
-      component: () => import('../views/HelpView.vue'),
-    },
-    {
-      path: '/privacidad',
-      name: 'privacy',
-      component: () => import('../views/PrivacyView.vue'),
-    },
-    {
-      path: '/terminos',
-      name: 'terms',
-      component: () => import('../views/TermsView.vue'),
     },
     {
       path: '/share/project/:token',
@@ -78,7 +53,7 @@ const router = createRouter({
     },
     {
       path: '/app',
-      component: AppLayout,
+      component: () => import('@/layouts/AppLayout.vue'),
       meta: { requiresAuth: true },
       children: [
         { path: '', name: 'home', component: () => import('../views/HomeView.vue') },
@@ -112,10 +87,20 @@ const router = createRouter({
     { path: '/team', redirect: '/app/team' },
     { path: '/projects', redirect: '/app/projects' },
     { path: '/settings', redirect: '/app/settings' },
+    notFoundRoute,
   ],
+  scrollBehavior(to, _from, saved) {
+    if (saved) return saved
+    if (to.hash) return { el: to.hash, top: 80, behavior: 'smooth' }
+    return { top: 0 }
+  },
 })
 
 router.beforeEach(async (to) => {
+  // Visitante anónimo en una página pública de SEO: no hace falta cargar MatuDB.
+  if (to.meta.seoPublic && !mayHaveSession()) return true
+
+  const { useAuthStore } = await import('@/stores/auth')
   const auth = useAuthStore()
 
   if (!auth.isReady) {
@@ -149,7 +134,7 @@ router.beforeEach(async (to) => {
   }
 
   if (to.matched.some((record) => record.meta.requiresAuth) && auth.isAuthenticated) {
-    void useBillingStore().init()
+    void import('@/stores/billing').then(({ useBillingStore }) => useBillingStore().init())
   }
 
   // Persist embed flag from query for subsequent navigations

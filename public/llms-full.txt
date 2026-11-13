@@ -1,0 +1,1092 @@
+# QuinList: contenido completo
+
+> QuinList es un software de gestión de proyectos y finanzas para empresas, hecho en Colombia para equipos de Latinoamérica: une tareas, tableros Kanban, cronograma Gantt, presupuesto y rentabilidad, hitos, riesgos, chat de equipo y asistente de IA en un solo lugar.
+
+Actualizado: 2026-11-13. Empresa: MatuByte S.A.S. (Colombia). Contacto: contacto@matubyte.com
+
+## Preguntas frecuentes generales
+**¿Qué es QuinList?**
+QuinList es un software de gestión de proyectos en la nube para empresas, hecho por MatuByte S.A.S. en Colombia. Reúne tableros Kanban, tareas, cronograma Gantt, hitos, entregables, riesgos, presupuesto y finanzas del proyecto, chat de equipo, calendario, OKRs, reportes y un asistente de IA. Se usa desde el navegador, sin instalar nada.
+
+**¿Para quién es QuinList?**
+Para equipos y empresas de Latinoamérica que hoy llevan sus proyectos en Excel, cuadernos, grupos de WhatsApp o carpetas de Google Drive: agencias, consultoras, constructoras, equipos de software, pymes y áreas de operaciones. Funciona igual para un equipo de 3 personas que para varias áreas de una empresa.
+
+**¿Cuánto cuesta QuinList?**
+Hay un plan Gratis para siempre, con 1 tablero y 1 proyecto, sin tarjeta de crédito. El plan VIP cuesta 15 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA. El cobro se hace en pesos colombianos, a la tasa del día, a través de Landa Pay.
+
+**¿En qué se diferencia de Trello, Asana o Monday?**
+QuinList está pensado para empresas de Latinoamérica: precio simple, soporte directo del equipo que lo construye y presupuesto del proyecto en tu moneda (COP, MXN, PEN, CLP, ARS, USD y más). Además del Kanban, cada proyecto trae finanzas (ingresos, egresos, flujo de caja y rentabilidad), cronograma Gantt, hitos, entregables y riesgos, sin integraciones extra.
+
+**¿Puedo controlar el presupuesto de mis proyectos?**
+Sí. Cada proyecto tiene una caja con presupuesto base, ingresos y egresos por categoría, libro mayor con saldo acumulado, flujo de caja mensual y meta de rentabilidad. Cada proyecto puede usar su propia moneda.
+
+**¿QuinList tiene inteligencia artificial?**
+Sí. El plan VIP incluye un asistente de IA que lee el contexto de tus tableros y proyectos y te ayuda a priorizar, resumir el avance, redactar tareas y detectar lo que está atrasado.
+
+**¿Sirve para equipos remotos?**
+Sí. Todo se sincroniza en tiempo real: tableros, comentarios, chat de equipo con menciones y notificaciones. Funciona en cualquier navegador, desde computador o celular.
+
+**¿Mis datos están seguros?**
+Cada espacio de trabajo tiene roles (Propietario, Administrador, Miembro y Observador), permisos por módulo e historial de actividad. Tú decides quién ve las finanzas, quién edita tareas y quién solo consulta.
+
+## El software de gestión de proyectos que controla tareas y dinero
+URL: https://quinlist.matubyte.com/software-gestion-de-proyectos
+
+QuinList reúne en una sola plataforma todo lo que hoy tienes repartido en Excel, WhatsApp, cuadernos y carpetas de Drive: tareas, cronograma, presupuesto, entregables, riesgos, archivos y la conversación del equipo.
+
+### Un proyecto completo, no solo una lista de tareas
+- **Dashboard de avance**: Porcentaje de avance, tareas pendientes y próximos vencimientos al abrir el proyecto.
+- **Lista, Kanban y Gantt**: Las mismas tareas en tres vistas. Cada persona trabaja como le sirve.
+- **Hitos y entregables**: Puntos de control con fecha y entregables con flujo de aprobación.
+- **Riesgos e incidencias**: Severidad, responsable y plan de mitigación antes de que el problema crezca.
+- **Finanzas del proyecto**: Presupuesto, ingresos, egresos, flujo de caja y rentabilidad.
+- **Documentos y archivos**: Documentación, centro de archivos y actividad de todo el proyecto.
+Ideal para: Pymes, Agencias, Constructoras, Consultoras, Equipos de tecnología.
+
+### ¿Qué es un software de gestión de proyectos?
+Un software de gestión de proyectos es una herramienta donde el equipo planifica el trabajo, asigna responsables, define fechas y sigue el avance en tiempo real. Reemplaza las hojas de cálculo compartidas y los mensajes sueltos por un sistema único donde todos ven lo mismo.
+La diferencia con una lista de tareas es el contexto: en QuinList cada proyecto tiene su dashboard, su cronograma, su dinero, sus documentos y su historial. Sabes qué falta, quién lo tiene, cuánto se ha gastado y qué riesgo puede retrasar la entrega.
+
+### Los módulos de cada proyecto
+- Dashboard: avance en %, tareas pendientes, próximos vencimientos y actividad reciente
+- Tareas en vista lista, Kanban con arrastrar y soltar, y cronograma tipo Gantt
+- Hitos con línea de tiempo y progreso
+- Entregables con estados Pendiente, En progreso, Entregado y Aprobado
+- Riesgos e incidencias con severidad, responsable y plan de mitigación
+- Finanzas: presupuesto base, ingresos, egresos, libro mayor, flujo de caja y rentabilidad
+- Documentación, centro de archivos y registro de actividad
+- Reportes por estado, prioridad y resumen financiero
+
+### Cómo empezar en 3 pasos
+1. **Crea tu cuenta gratis**: Regístrate con tu correo o con Google. No pedimos tarjeta.
+2. **Crea tu primer proyecto**: Define nombre, cliente, fechas, presupuesto y moneda en un asistente de dos pasos.
+3. **Invita a tu equipo**: Comparte un enlace o un código QR, asigna roles y empieza a mover tareas.
+
+### Preguntas frecuentes
+**¿Cuál es el mejor software de gestión de proyectos para una empresa en Latinoamérica?**
+Depende de tu equipo. Si buscas una sola herramienta con presupuesto del proyecto en moneda local, Kanban, Gantt, riesgos y chat en un solo lugar, QuinList está hecho para eso y tiene plan gratis para probarlo.
+
+**¿Necesito instalar algo?**
+No. QuinList funciona en el navegador, desde computador, tablet o celular.
+
+**¿Cuántas personas pueden usarlo?**
+Puedes invitar a tu equipo a tu espacio de trabajo y asignar a cada persona un rol: Propietario, Administrador, Miembro u Observador.
+
+**¿Cuánto cuesta?**
+Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 15 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
+
+
+---
+
+## Tablero Kanban online gratis para tu equipo
+URL: https://quinlist.matubyte.com/tablero-kanban-online
+
+Visualiza el trabajo de tu equipo en columnas, mueve tarjetas con arrastrar y soltar y mira en segundos qué está por hacer, qué está en curso y qué ya se terminó.
+
+### Todo lo que una tarjeta necesita
+- **Responsables**: Cada tarjeta con dueño claro para que nada quede en el aire.
+- **Fechas y prioridad**: Fecha límite y nivel de prioridad visibles en el tablero.
+- **Checklist**: Divide la tarjeta en pasos y marca el avance.
+- **Etiquetas**: Clasifica por área, cliente o tipo de trabajo.
+- **Comentarios y menciones**: La conversación queda dentro de la tarjeta, no en WhatsApp.
+- **Adjuntos**: Documentos e imágenes donde se necesitan.
+Ideal para: Marketing, Ventas, Soporte, Desarrollo, Operaciones.
+
+### ¿Qué es un tablero Kanban?
+Kanban es un método visual para gestionar el trabajo. Cada tarea es una tarjeta y cada columna es una etapa: por ejemplo Por hacer, En curso y Hecho. Al mover las tarjetas, todo el equipo ve el estado real del trabajo sin necesidad de reuniones.
+Funciona para desarrollo de software, marketing, ventas, soporte, operaciones y cualquier equipo que tenga trabajo que fluye por etapas.
+
+### Lo que puedes hacer con el Kanban de QuinList
+- Listas configurables con el flujo de tu equipo
+- Tarjetas con descripción, responsable, fecha límite, prioridad y etiquetas
+- Checklist dentro de cada tarjeta
+- Comentarios, menciones y archivos adjuntos
+- Notificaciones cuando te asignan o te mencionan
+- Enlaces de invitación y código QR para sumar al equipo
+- Tarjetas conectadas a las tareas de un proyecto
+
+### Kanban + proyectos: lo mejor de los dos mundos
+En la mayoría de herramientas el Kanban se queda solo. En QuinList cualquier tarea de un proyecto se puede abrir en un tablero, y el proyecto sigue mostrando su cronograma, su presupuesto y sus entregables. El equipo trabaja en el tablero; la dirección mira el proyecto completo.
+
+### Preguntas frecuentes
+**¿El tablero Kanban es gratis?**
+Sí. El plan Gratis incluye 1 tablero Kanban para siempre. El plan VIP (15 USD/mes) incluye tableros ilimitados.
+
+**¿Varias personas pueden editar el tablero a la vez?**
+Sí. Los cambios se ven en tiempo real para todos los miembros del tablero.
+
+**¿Puedo usar Kanban con metodología Scrum?**
+Sí. Puedes crear columnas para tu sprint (Backlog, Sprint, En curso, Revisión, Hecho) y usar etiquetas y prioridades para ordenar el trabajo.
+
+
+---
+
+## Diagrama de Gantt online para el cronograma de tus proyectos
+URL: https://quinlist.matubyte.com/diagrama-de-gantt-online
+
+Deja de dibujar el cronograma en Excel o en una presentación. En QuinList el diagrama de Gantt se arma solo con las fechas de inicio y fin de tus tareas y se actualiza cada vez que el equipo avanza.
+
+### Un cronograma vivo, conectado al trabajo real
+- **Barras automáticas**: Salen de la fecha de inicio y fin de cada tarea.
+- **Línea de hoy**: Ves de inmediato qué va atrasado respecto a la fecha actual.
+- **Colores por estado**: Pendiente, en curso y completada se distinguen sin leer.
+- **Hitos con progreso**: Puntos de control con fecha y porcentaje de avance.
+- **Escala mensual**: Una vista clara para proyectos de semanas o de meses.
+- **Conectado al Kanban**: Mueves una tarea en el tablero y el cronograma lo refleja.
+Ideal para: Obras, Lanzamientos, Eventos, Implementaciones, Consultorías.
+
+### ¿Qué es un diagrama de Gantt?
+Es una gráfica de barras horizontales donde cada barra es una tarea y su largo es la duración. Permite ver de un vistazo qué se hace primero, qué se cruza y qué está atrasado respecto a la fecha de hoy.
+
+### Cronograma conectado con el resto del proyecto
+- Las barras salen de las fechas reales de cada tarea
+- Colores según el estado: pendiente, en curso, completada
+- Línea de hoy para detectar atrasos al instante
+- Hitos con fecha de vencimiento y porcentaje de avance
+- Misma tarea visible en lista, Kanban y Gantt
+
+### Cómo hacer un cronograma en QuinList
+1. **Lista las tareas**: Crea las tareas del proyecto con responsable y prioridad.
+2. **Asigna fechas**: Pon fecha de inicio y de fin a cada tarea.
+3. **Abre el cronograma**: La vista Gantt aparece lista. Ajusta fechas cuando cambie el plan.
+
+### Preguntas frecuentes
+**¿El diagrama de Gantt se actualiza solo?**
+Sí. Se construye con las fechas de las tareas, así que cualquier cambio en una tarea se refleja en el cronograma.
+
+**¿Puedo ver el cronograma y el Kanban del mismo proyecto?**
+Sí. Las tareas de un proyecto se ven en lista, en Kanban y en cronograma. Es la misma información en tres vistas.
+
+
+---
+
+## Control de presupuesto de proyectos, sin hojas de cálculo
+URL: https://quinlist.matubyte.com/control-de-presupuesto-de-proyectos
+
+La mayoría de herramientas de proyectos solo cuentan tareas. QuinList también cuenta el dinero: cada proyecto tiene su caja con presupuesto base, ingresos, egresos, flujo de caja y rentabilidad.
+
+### La caja de cada proyecto, al día
+- **Presupuesto base**: Defínelo al crear el proyecto, en la moneda de tu cliente.
+- **Ingresos y egresos**: Con categoría, método de pago, comprobante y notas.
+- **Libro mayor**: Saldo acumulado movimiento por movimiento.
+- **Flujo de caja mensual**: Gráfico de ingresos menos egresos mes a mes.
+- **Gastos por categoría**: Personal, herramientas, servicios, marketing, viajes y más.
+- **Rentabilidad**: Compárala contra tu meta mientras el proyecto avanza.
+Ideal para: Agencias, Constructoras, Consultoras, Software a la medida, Eventos.
+
+### La caja de cada proyecto
+Al crear un proyecto defines el presupuesto base y la moneda. Desde ahí, cada ingreso (anticipo del cliente, facturación, hito completado, reembolso) y cada egreso (personal, herramientas, servicios, infraestructura, marketing, viajes) queda registrado con su método de pago, referencia o comprobante y notas.
+El saldo se calcula solo: Saldo = Presupuesto base + Ingresos − Egresos.
+
+### Qué ves en el módulo de finanzas
+- Tarjeta del proyecto con saldo, presupuesto base y flujo neto
+- Libro mayor con saldo acumulado movimiento por movimiento
+- Gráfico de flujo de caja mensual
+- Desglose de egresos por categoría
+- KPIs: ingresos, egresos, % de presupuesto consumido y rentabilidad
+- Permisos: decide quién puede ver y editar las finanzas
+
+### Por qué importa
+Un proyecto puede ir a tiempo y aun así perder plata. Ver el consumo del presupuesto mientras avanzan las tareas te permite renegociar, recortar o facturar un hito antes de que sea tarde.
+
+### Preguntas frecuentes
+**¿En qué monedas puedo llevar el presupuesto?**
+COP, USD, MXN, PEN, CLP, ARS, BRL, EUR y GBP. Cada proyecto tiene su propia moneda.
+
+**¿Reemplaza a mi software contable?**
+No. QuinList controla las finanzas operativas de cada proyecto (presupuesto, gastos, flujo y rentabilidad). La contabilidad formal y la facturación electrónica siguen en tu sistema contable.
+
+**¿Puedo ocultar las finanzas a parte del equipo?**
+Sí. Los permisos por módulo permiten que alguien trabaje en las tareas sin ver el dinero del proyecto.
+
+
+---
+
+## Gestión de proyectos con inteligencia artificial
+URL: https://quinlist.matubyte.com/gestion-de-proyectos-con-ia
+
+El asistente de IA de QuinList lee el estado de tus tableros y proyectos —tarjetas abiertas, tareas completadas, proyectos en curso— y te responde con ese contexto. No tienes que copiar y pegar nada.
+
+### Pregúntale lo que le preguntarías a tu PM
+- **Detecta atrasos**: “¿Qué está atrasado esta semana?”
+- **Prioriza**: “¿En qué debería enfocarse el equipo hoy?”
+- **Resume el avance**: “Resume el proyecto para enviárselo al cliente.”
+- **Divide tareas**: “Parte esta tarea grande en pasos.”
+- **Redacta**: “Escribe la descripción de esta tarjeta.”
+- **Contexto acotado**: Solo usa el resumen del espacio de trabajo en el que estás.
+Ideal para: Gerentes de proyecto, Dueños de pyme, Líderes de equipo, Consultores.
+
+### Qué le puedes pedir
+- “¿Qué está atrasado esta semana?”
+- “Resume el avance del proyecto para el cliente.”
+- “Divide esta tarea grande en pasos.”
+- “¿En qué debería enfocarse el equipo hoy?”
+- “Redacta la descripción de esta tarjeta.”
+
+### IA con contexto, no un chat genérico
+Un chat de IA común no sabe nada de tu empresa. El asistente de QuinList recibe un resumen de tus tableros y proyectos del espacio de trabajo actual, así que sus respuestas parten de tu realidad.
+
+### Preguntas frecuentes
+**¿El asistente de IA está en el plan gratis?**
+No. El asistente de IA está incluido en el plan VIP, que cuesta 15 USD al mes.
+
+**¿Qué información usa la IA?**
+Usa un resumen del espacio de trabajo en el que estás: nombres de tableros y proyectos, tarjetas abiertas y conteo de tareas. Solo se envía cuando haces una pregunta.
+
+
+---
+
+## Software de gestión de tareas que hace el seguimiento por ti
+URL: https://quinlist.matubyte.com/software-gestion-de-tareas
+
+Cada tarea con un dueño, una fecha y una prioridad. QuinList avisa lo que vence, calcula el avance del proyecto y arma los reportes, para que no tengas que perseguir a nadie por WhatsApp.
+
+### El seguimiento se hace solo
+- **Asignación clara**: Cada tarea con un responsable y fecha límite.
+- **Notificaciones**: Avisos cuando te asignan o te mencionan.
+- **Avance automático**: El % del proyecto se recalcula con cada tarea completada.
+- **Reportes al instante**: Por estado, prioridad y completadas de la semana.
+- **Búsqueda y filtros**: Encuentra cualquier tarea por estado en segundos.
+- **Historial**: Cada cambio queda registrado en la actividad.
+Ideal para: Equipos de operaciones, Pymes, Áreas administrativas, Equipos remotos.
+
+### Lo que QuinList hace automáticamente
+- Calcula el % de avance de cada proyecto según las tareas completadas
+- Muestra los próximos vencimientos en el dashboard del proyecto
+- Notifica cuando te asignan una tarea o te mencionan
+- Registra cada cambio en el historial de actividad
+- Genera gráficos por estado y prioridad, y las tareas completadas de la semana
+- Recalcula el saldo y el flujo de caja con cada movimiento
+
+### Tres vistas para las mismas tareas
+Lista para revisar y filtrar, Kanban para mover el trabajo y cronograma para ver fechas. Cada persona usa la vista que le sirve y todos ven la misma información.
+
+### Preguntas frecuentes
+**¿Puedo asignar una tarea a varias personas?**
+Cada tarea tiene un responsable principal para que siempre haya alguien a cargo, y puedes mencionar a otras personas en los comentarios.
+
+**¿Recibo avisos de las tareas?**
+Sí. QuinList envía notificaciones dentro de la app cuando te asignan una tarea o te mencionan.
+
+
+---
+
+## Automatiza el seguimiento de tus proyectos
+URL: https://quinlist.matubyte.com/automatizacion-de-proyectos
+
+Menos trabajo manual, menos mensajes de “¿cómo vas?”. QuinList calcula el avance, el saldo y los reportes por su cuenta, y avisa a Slack o a tus herramientas de automatización cada vez que el trabajo se mueve.
+
+### Menos trabajo manual, más flujo
+- **Webhook personalizado**: Envía los eventos del tablero a cualquier URL.
+- **Avisos en Slack**: Tu canal se entera cuando una tarjeta avanza.
+- **n8n, Make y Zapier**: Arma flujos con las herramientas que ya usas.
+- **Exportación .ics**: Lleva las fechas límite a Google Calendar u Outlook.
+- **Cálculos automáticos**: Avance, saldo, flujo de caja y reportes sin fórmulas.
+- **Notificaciones**: Asignaciones y menciones dentro de la app.
+Ideal para: Equipos técnicos, Operaciones, Agencias, Equipos que ya usan Slack.
+
+### Lo que pasa solo, sin que nadie lo haga
+- El % de avance del proyecto se recalcula con cada tarea completada
+- El saldo, el libro mayor y el flujo de caja se actualizan con cada ingreso o egreso
+- Los reportes por estado y prioridad se generan al instante
+- Notificaciones dentro de la app cuando te asignan o te mencionan
+- Historial de actividad con cada cambio registrado
+
+### Conecta tus tableros con otras herramientas
+Cada tablero tiene un panel de integraciones. Activa Slack y recibe en tu canal un aviso cuando una tarjeta cambia de columna o recibe un comentario.
+Con el webhook personalizado, QuinList envía esos mismos eventos a cualquier URL. Así conectas Zapier, Make o n8n y armas tus propios flujos: crear una fila en una hoja de cálculo cuando algo se termina, avisar por correo a un cliente o registrar el cambio en tu CRM.
+También puedes exportar las fechas límite del tablero como archivo .ics e importarlas en Google Calendar, Outlook o Apple Calendar.
+
+### Cómo activar un webhook
+1. **Abre el tablero**: Entra al panel de integraciones desde la barra del tablero.
+2. **Activa Slack o Webhook**: Pega la URL del webhook de Slack, Zapier, Make o n8n.
+3. **Mueve una tarjeta**: El evento llega con el tablero, la tarjeta, el usuario y la hora.
+
+### Preguntas frecuentes
+**¿Qué eventos envía QuinList por webhook?**
+Hoy envía un evento cuando una tarjeta se mueve de columna y cuando se agrega un comentario, con el nombre del tablero, la tarjeta, el usuario y la fecha.
+
+**¿Funciona con n8n, Make o Zapier?**
+Sí. Cualquier herramienta que reciba webhooks por URL puede recibir los eventos de QuinList.
+
+**¿Cuánto cuesta?**
+Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 15 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
+
+_Slack, Zapier, Make y n8n son marcas de sus respectivos dueños. QuinList no está afiliado a estas empresas._
+
+---
+
+## Gestión de proyectos para agencias y consultoras
+URL: https://quinlist.matubyte.com/gestion-de-proyectos-para-agencias
+
+Cuando manejas diez clientes a la vez, el Excel no alcanza. QuinList te da un proyecto por cliente con sus tareas, entregables, presupuesto y archivos, y te dice cuáles proyectos te dejan plata.
+
+### Hecho para el ritmo de una agencia
+- **Ficha del cliente**: Cliente, responsable, prioridad y categoría en cada proyecto.
+- **Entregables con aprobación**: Pendiente → En progreso → Entregado → Aprobado.
+- **Facturación por hito**: Registra anticipos, facturas y pagos por hito completado.
+- **Rentabilidad por cuenta**: Sabe qué clientes te dejan plata y cuáles no.
+- **Enlace para el cliente**: Muestra el avance en solo lectura, sin darle acceso a todo.
+- **Chat del equipo**: Separa el trabajo del WhatsApp personal.
+Ideal para: Agencias de marketing, Estudios de diseño, Consultoras, Productoras.
+
+### Pensado para el día a día de una agencia
+- Datos del cliente, responsable, prioridad y categoría en cada proyecto
+- Entregables con estados Pendiente → En progreso → Entregado → Aprobado
+- Hitos para facturar por avance
+- Ingresos por anticipo, facturación o hito completado
+- Enlace público para mostrar el avance al cliente sin darle acceso a todo
+- Chat de equipo para no mezclar el trabajo con WhatsApp personal
+
+### Sabe qué cliente es rentable
+Registra las horas, herramientas y servicios que cuesta cada cuenta. QuinList calcula la rentabilidad del proyecto contra la meta que definas, para que sepas dónde ajustar precios.
+
+### Preguntas frecuentes
+**¿Puedo mostrarle el avance al cliente?**
+Sí. Puedes compartir un proyecto con un enlace público de solo lectura.
+
+**¿Cuánto cuesta?**
+Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 15 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
+
+
+---
+
+## Software para la gestión de proyectos de construcción
+URL: https://quinlist.matubyte.com/gestion-de-proyectos-de-construccion
+
+Obra, presupuesto y equipo en el mismo lugar. Lleva el cronograma, los gastos, los riesgos y las evidencias de cada frente de trabajo sin depender de cuadernos ni de fotos sueltas en el celular.
+
+### La obra, el presupuesto y el equipo en un lugar
+- **Cronograma de obra**: Actividades e hitos con línea de hoy para ver atrasos.
+- **Presupuesto de obra**: Materiales, personal y servicios con saldo al día.
+- **Riesgos e incidencias**: De baja a crítica, con plan de mitigación.
+- **Evidencias**: Planos, actas y fotos de avance en el centro de archivos.
+- **Entregas por etapa**: Entregables con aprobación para cada fase.
+- **Desde el celular**: Revisa tareas y sube archivos desde el frente de obra.
+Ideal para: Constructoras, Contratistas, Remodelaciones, Ingeniería, Interventorías.
+
+### Cómo lo usan las constructoras
+- Un proyecto por obra, con cliente, responsable y fechas
+- Cronograma con las actividades y los hitos de la obra
+- Egresos por categoría: personal, materiales y servicios, viajes
+- Riesgos e incidencias con severidad (baja a crítica) y plan de mitigación
+- Entregables con aprobación para cada etapa
+- Centro de archivos con planos, actas y fotos de avance
+
+### El presupuesto de obra, al día
+El libro mayor muestra el saldo después de cada compra o pago. Ves el porcentaje del presupuesto consumido frente al avance de la obra y detectas a tiempo cuándo una obra se va a pasar.
+
+### Preguntas frecuentes
+**¿Sirve para varias obras a la vez?**
+Sí. Cada obra es un proyecto independiente con su cronograma, presupuesto y equipo. El plan VIP permite proyectos ilimitados.
+
+**¿Se puede usar desde el celular en la obra?**
+Sí. QuinList funciona en el navegador del celular para revisar tareas, subir archivos y comentar.
+
+
+---
+
+## Software de gestión de proyectos para pymes
+URL: https://quinlist.matubyte.com/software-de-proyectos-para-pymes
+
+Las pymes no necesitan un sistema que tome meses implementar. Necesitan que el equipo deje de perder tareas y que el dueño sepa cómo va cada proyecto. QuinList se aprende en una tarde.
+
+### Lo que una pyme necesita, sin lo que sobra
+- **Fácil de aprender**: El equipo lo usa sin capacitación.
+- **Precio simple**: Gratis para empezar y 15 USD al mes en VIP.
+- **Kanban y proyectos**: Del tablero diario al proyecto completo.
+- **Dinero del proyecto**: Presupuesto en tu moneda, sin hojas de cálculo.
+- **Roles**: Separa lo que ve el dueño, el administrador y el equipo.
+- **Chat de equipo**: Las tareas dejan de perderse en WhatsApp.
+Ideal para: Servicios, Comercio, Manufactura, Distribuidoras, Emprendimientos.
+
+### Por qué las pymes eligen QuinList
+- Interfaz simple: el equipo lo usa sin capacitación
+- Un solo pago de 15 USD al mes en el plan VIP
+- Kanban, proyectos, chat de equipo y calendario en una sola herramienta
+- Roles para separar lo que ve el dueño, el administrador y el equipo
+- Presupuesto por proyecto en tu moneda
+
+### Del caos al orden en una semana
+1. **Día 1**: Crea tu espacio y pasa las tareas del Excel o del grupo de WhatsApp a un tablero.
+2. **Día 2**: Invita al equipo con un enlace y asigna responsables y fechas.
+3. **Día 5**: Revisa el dashboard: ya sabes qué está atrasado sin preguntar.
+
+### Preguntas frecuentes
+**¿Cuánto cuesta?**
+Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 15 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
+
+**¿Sirve para equipos remotos?**
+Sí. Todo se sincroniza en tiempo real: tableros, comentarios, chat de equipo con menciones y notificaciones. Funciona en cualquier navegador, desde computador o celular.
+
+
+---
+
+## Gestión de proyectos de software para equipos de desarrollo
+URL: https://quinlist.matubyte.com/gestion-de-proyectos-de-software
+
+Sprints, incidencias, lanzamientos y objetivos en una sola herramienta. QuinList le da a tu equipo de desarrollo un tablero ágil y a la dirección una vista clara de fechas, riesgos y presupuesto.
+
+### Del backlog al lanzamiento
+- **Tablero de sprint**: Backlog, En curso, Revisión y Hecho con tus columnas.
+- **Incidencias**: Registra errores y solicitudes en su propio módulo.
+- **Lanzamientos**: Planea versiones y lo que entra en cada una.
+- **OKRs**: Objetivos trimestrales, semestrales o anuales.
+- **Eventos a Slack**: Avisos cuando una tarjeta cambia de columna.
+- **Contratos con clientes**: Hitos, entregables y rentabilidad del desarrollo a la medida.
+Ideal para: Software factories, Startups, Equipos de producto, Freelancers.
+
+### Cómo lo usa un equipo de desarrollo
+- Tablero por sprint con columnas Backlog, En curso, Revisión y Hecho
+- Prioridad, etiquetas (frontend, backend, UX) y checklist en cada tarjeta
+- Módulo de incidencias para registrar errores y solicitudes
+- Módulo de lanzamientos para planear versiones
+- OKRs trimestrales para alinear el trabajo con los objetivos
+- Avisos a Slack o webhooks cuando una tarjeta cambia de columna
+
+### Para clientes y software a la medida
+Si desarrollas software para clientes, crea un proyecto por contrato con hitos, entregables con aprobación, presupuesto y rentabilidad. El cliente puede ver el avance con un enlace público de solo lectura.
+
+### Preguntas frecuentes
+**¿Sirve para trabajar con Scrum?**
+Sí. Puedes armar un tablero por sprint con tus columnas, prioridades y etiquetas, y usar los OKRs para los objetivos del trimestre.
+
+**¿Se integra con GitHub?**
+Hoy no hay sincronización con GitHub. Puedes enviar los eventos del tablero a Slack o a cualquier URL con webhooks y conectarlos con n8n, Make o Zapier.
+
+
+---
+
+## Gestión de proyectos para equipos remotos e híbridos
+URL: https://quinlist.matubyte.com/gestion-de-proyectos-para-equipos-remotos
+
+Cuando el equipo no comparte oficina, lo que no está escrito se pierde. QuinList junta las tareas, la conversación y el avance en un lugar que todos ven en tiempo real, desde cualquier ciudad.
+
+### Trabajar a distancia, sin perder el hilo
+- **Tiempo real**: Todo el equipo ve los mismos cambios al instante.
+- **Chat con canales**: Menciones, presencia y mensajes junto al trabajo.
+- **Avance visible**: Dashboard de proyecto sin reuniones de seguimiento.
+- **Calendario compartido**: Eventos y vencimientos para todo el equipo.
+- **Notificaciones**: Nadie se pierde una asignación o una mención.
+- **Invitación fácil**: Suma personas con un enlace o un código QR.
+Ideal para: Equipos híbridos, Startups, Agencias remotas, Empresas con sedes.
+
+### Lo que necesita un equipo remoto
+- Tableros que se actualizan en tiempo real para todos
+- Chat de equipo con canales, menciones y presencia en línea
+- Comentarios en cada tarea para que las decisiones queden escritas
+- Notificaciones cuando te asignan o te mencionan
+- Calendario de eventos y vencimientos compartido
+- Dashboard de avance para saber cómo va el proyecto sin una reunión
+
+### Reglas simples para que funcione
+1. **Todo trabajo es una tarjeta**: Si no está en el tablero, no existe.
+2. **Un responsable por tarea**: Siempre hay a quién preguntar.
+3. **Decisiones en comentarios**: Nada importante se queda en un audio.
+4. **Revisión diaria de 10 minutos**: Cada quien mueve sus tarjetas al empezar el día.
+
+### Preguntas frecuentes
+**¿Funciona con personas en distintos países?**
+Sí. QuinList es una herramienta en la nube: todo el equipo ve los mismos tableros en tiempo real desde cualquier país.
+
+
+---
+
+## La alternativa a Excel para gestionar tus proyectos
+URL: https://quinlist.matubyte.com/alternativa-a-excel-para-proyectos
+
+Excel es excelente para calcular, pero no para coordinar personas. Si tu equipo trabaja con un archivo compartido, un cuaderno y una carpeta de Drive, QuinList es el siguiente paso natural.
+
+### Señales de que tu empresa ya superó el Excel
+- Hay varias versiones del mismo archivo y nadie sabe cuál es la última
+- Preguntas por WhatsApp “¿cómo vas con…?” todos los días
+- Los archivos del proyecto están repartidos entre Drive, el correo y el celular
+- Te enteras de los atrasos cuando el cliente se queja
+- El presupuesto se revisa al final, no durante el proyecto
+
+### Cómo pasarte de Excel a QuinList
+1. **Crea el proyecto**: Usa el mismo nombre, cliente, fechas y presupuesto de tu hoja.
+2. **Pasa las filas a tareas**: Cada fila de tu Excel se vuelve una tarea con responsable y fecha.
+3. **Sube los archivos clave**: Adjunta los documentos a las tareas o a la documentación del proyecto.
+4. **Invita al equipo**: Desde ese día, el estado del proyecto se actualiza solo.
+
+### Excel y carpetas frente a QuinList
+| Necesidad | Excel + Drive + WhatsApp | QuinList |
+| --- | --- | --- |
+| Saber quién hace qué | Columna que nadie actualiza | Responsable en cada tarea |
+| Ver el avance | Hay que preguntar | Dashboard con % de avance |
+| Cronograma | Barras pintadas a mano | Gantt automático |
+| Presupuesto | Fórmulas frágiles | Libro mayor y flujo de caja |
+| Archivos | Carpetas sueltas | Centro de archivos por proyecto |
+| Conversación | Grupo de WhatsApp | Comentarios y chat del equipo |
+| Historial | No existe | Registro de actividad |
+
+### Preguntas frecuentes
+**¿Puedo seguir usando Excel para algunas cosas?**
+Claro. Excel sigue siendo útil para análisis puntuales. QuinList reemplaza la parte de coordinar al equipo, seguir tareas y controlar el presupuesto del proyecto.
+
+**¿Cuánto cuesta?**
+Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 15 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
+
+_Excel es una marca registrada de Microsoft Corporation. Google Drive es una marca de Google LLC. QuinList no está afiliado a estas empresas._
+
+---
+
+## Una alternativa a Trello con gestión de proyectos completa
+URL: https://quinlist.matubyte.com/alternativa-a-trello
+
+Trello popularizó el tablero Kanban. QuinList mantiene esa experiencia simple de mover tarjetas y le suma lo que un proyecto real necesita: cronograma, presupuesto, entregables, riesgos y chat de equipo.
+
+### Cuándo conviene QuinList
+- Necesitas controlar el presupuesto del proyecto además de las tareas
+- Quieres cronograma Gantt sin instalar complementos
+- Quieres soporte directo del equipo que construye la herramienta
+- Quieres el chat del equipo junto al trabajo
+
+### Cuándo puede convenir Trello
+Si solo necesitas un tablero personal muy sencillo y ya usas el ecosistema de Atlassian, Trello puede ser suficiente. QuinList brilla cuando el tablero hace parte de un proyecto con fechas, dinero y entregables.
+
+### Funciones incluidas en QuinList
+| Función | Trello | QuinList |
+| --- | --- | --- |
+| Tablero Kanban | Sí | Sí |
+| Presupuesto y flujo de caja por proyecto | No es su enfoque | Incluido |
+| Cronograma Gantt | Según plan | Incluido en proyectos |
+| Riesgos y entregables | No es su enfoque | Incluido |
+| Chat de equipo | No incluido | Incluido |
+| Asistente de IA | Según plan | Plan VIP |
+
+### Preguntas frecuentes
+**¿Puedo pasar mis tableros de Trello a QuinList?**
+Hoy puedes recrear tus listas y tarjetas en QuinList en pocos minutos. Si tienes muchos tableros, escríbenos a contacto@matubyte.com y te ayudamos.
+
+**¿Cuánto cuesta?**
+Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 15 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
+
+_Trello es una marca registrada de Atlassian. La comparación refleja el enfoque general de cada producto y puede cambiar; revisa el sitio oficial de cada herramienta. QuinList no está afiliado a Atlassian._
+
+---
+
+## Una alternativa a Asana y Monday hecha para Latinoamérica
+URL: https://quinlist.matubyte.com/alternativa-a-asana-y-monday
+
+Asana y Monday son herramientas potentes y muy completas. QuinList se enfoca en lo que piden los equipos de la región: precio simple, soporte cercano y el dinero del proyecto junto a las tareas.
+
+### Lo que hace distinto a QuinList
+- Precio fijo del plan VIP: 15 USD al mes, sin módulos extra
+- Presupuesto, ingresos, egresos y rentabilidad en cada proyecto
+- Moneda por proyecto: COP, MXN, PEN, CLP, ARS, USD y más
+- Chat de equipo integrado
+- Equipo detrás del producto en Colombia, en tu zona horaria
+
+### Cuándo conviene una herramienta global
+Si tu empresa ya tiene cientos de integraciones conectadas o necesita flujos muy específicos de gran corporación, una herramienta global puede convenir. Para equipos que quieren ordenarse rápido y controlar tiempos y dinero, QuinList es más directo.
+
+### Preguntas frecuentes
+**¿Cuánto cuesta?**
+Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 15 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
+
+**¿En qué se diferencia de Trello, Asana o Monday?**
+QuinList está pensado para empresas de Latinoamérica: precio simple, soporte directo del equipo que lo construye y presupuesto del proyecto en tu moneda (COP, MXN, PEN, CLP, ARS, USD y más). Además del Kanban, cada proyecto trae finanzas (ingresos, egresos, flujo de caja y rentabilidad), cronograma Gantt, hitos, entregables y riesgos, sin integraciones extra.
+
+_Asana es una marca registrada de Asana, Inc. Monday.com es una marca registrada de monday.com Ltd. QuinList no está afiliado a estas empresas. Revisa el sitio oficial de cada herramienta para ver sus funciones y precios actuales._
+
+---
+
+## Software de gestión de proyectos para empresas de Colombia
+URL: https://quinlist.matubyte.com/software-gestion-de-proyectos/colombia
+
+QuinList ayuda a equipos de Bogotá, Medellín, Cali, Barranquilla, Bucaramanga y todo Colombia a dejar el Excel y los grupos de WhatsApp. Planifica tareas, controla el presupuesto en pesos colombianos (COP) y sigue el avance de cada proyecto en tiempo real.
+
+### Gestión de proyectos pensada para Colombia
+QuinList nace en Colombia, en MatuByte S.A.S. Lo construimos para la forma en que trabajan los equipos colombianos: proyectos con anticipo del cliente, pagos por hito y mucha coordinación por WhatsApp que conviene pasar a un sistema ordenado.
+Lo usan agencias de marketing y desarrollo, constructoras y contratistas, consultoras, equipos de tecnología y pymes de servicios que necesitan ver tareas y dinero en el mismo lugar.
+
+### Tu presupuesto en pesos colombianos
+Cada proyecto de QuinList tiene su propia moneda. Configura el presupuesto base en COP, registra ingresos y egresos por categoría y mira el saldo, el flujo de caja mensual y la rentabilidad sin fórmulas ni hojas de cálculo.
+Si trabajas con clientes de otros países, cada proyecto puede usar una moneda distinta: COP, USD, MXN, PEN, CLP, ARS, BRL, EUR o GBP.
+
+### Todo lo que tu equipo necesita en un solo lugar
+- Tableros Kanban con arrastrar y soltar, etiquetas, checklist, fechas límite y adjuntos
+- Proyectos con tareas en vista lista, Kanban y cronograma (Gantt)
+- Hitos, entregables con flujo de aprobación y matriz de riesgos e incidencias
+- Chat de equipo con menciones, notificaciones y colaboración en tiempo real
+- Calendario, eventos, OKRs y centro de métricas
+- Roles y permisos: Propietario, Administrador, Miembro y Observador
+- Asistente de IA para priorizar y resumir el avance (plan VIP)
+
+### Precio claro, en dólares
+El plan Gratis incluye 1 tablero y 1 proyecto, para siempre. El plan VIP cuesta 15 USD al mes con tableros y proyectos ilimitados y asistente de IA. En Colombia pagas en pesos, a la tasa del día, a través de Landa Pay.
+
+### Preguntas frecuentes
+**¿QuinList funciona en Colombia?**
+Sí. QuinList es un software en la nube: se usa desde cualquier navegador en Colombia y el resto de Latinoamérica, sin instalar nada. La interfaz y el soporte están en español.
+
+**¿Puedo manejar el presupuesto en COP?**
+Sí. Al crear un proyecto eliges la moneda (COP incluida) y todos los montos, el libro mayor, el flujo de caja y la rentabilidad se muestran en esa moneda.
+
+**¿QuinList es una empresa colombiana?**
+Sí. QuinList es un producto de MatuByte S.A.S., empresa colombiana. El soporte es en español y en hora de Colombia.
+
+**¿Cuánto cuesta?**
+Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 15 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
+
+
+---
+
+## Software de gestión de proyectos para empresas de México
+URL: https://quinlist.matubyte.com/software-gestion-de-proyectos/mexico
+
+QuinList ayuda a equipos de Ciudad de México, Guadalajara, Monterrey, Puebla, Querétaro y todo México a dejar el Excel y los grupos de WhatsApp. Planifica tareas, controla el presupuesto en pesos mexicanos (MXN) y sigue el avance de cada proyecto en tiempo real.
+
+### Gestión de proyectos pensada para México
+En México muchos equipos trabajan con clientes en varias ciudades y zonas horarias. Con QuinList todo el equipo ve el mismo tablero en tiempo real, sin importar si está en CDMX, Monterrey o trabajando remoto.
+Es útil para agencias, despachos de consultoría, desarrolladoras de software, constructoras y áreas de operaciones de empresas medianas que quieren pasar de Excel a un sistema claro.
+
+### Tu presupuesto en pesos mexicanos
+Cada proyecto de QuinList tiene su propia moneda. Configura el presupuesto base en MXN, registra ingresos y egresos por categoría y mira el saldo, el flujo de caja mensual y la rentabilidad sin fórmulas ni hojas de cálculo.
+Si trabajas con clientes de otros países, cada proyecto puede usar una moneda distinta: COP, USD, MXN, PEN, CLP, ARS, BRL, EUR o GBP.
+
+### Todo lo que tu equipo necesita en un solo lugar
+- Tableros Kanban con arrastrar y soltar, etiquetas, checklist, fechas límite y adjuntos
+- Proyectos con tareas en vista lista, Kanban y cronograma (Gantt)
+- Hitos, entregables con flujo de aprobación y matriz de riesgos e incidencias
+- Chat de equipo con menciones, notificaciones y colaboración en tiempo real
+- Calendario, eventos, OKRs y centro de métricas
+- Roles y permisos: Propietario, Administrador, Miembro y Observador
+- Asistente de IA para priorizar y resumir el avance (plan VIP)
+
+### Precio claro, en dólares
+El plan Gratis incluye 1 tablero y 1 proyecto, para siempre. El plan VIP cuesta 15 USD al mes con tableros y proyectos ilimitados y asistente de IA. El precio se publica en dólares para que sea el mismo en toda la región.
+
+### Preguntas frecuentes
+**¿QuinList funciona en México?**
+Sí. QuinList es un software en la nube: se usa desde cualquier navegador en México y el resto de Latinoamérica, sin instalar nada. La interfaz y el soporte están en español.
+
+**¿Puedo manejar el presupuesto en MXN?**
+Sí. Al crear un proyecto eliges la moneda (MXN incluida) y todos los montos, el libro mayor, el flujo de caja y la rentabilidad se muestran en esa moneda.
+
+**¿Puedo usar QuinList con clientes de Estados Unidos?**
+Sí. Cada proyecto puede tener su propia moneda, así que puedes llevar unos proyectos en MXN y otros en USD.
+
+**¿Cuánto cuesta?**
+Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 15 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
+
+
+---
+
+## Software de gestión de proyectos para empresas de Perú
+URL: https://quinlist.matubyte.com/software-gestion-de-proyectos/peru
+
+QuinList ayuda a equipos de Lima, Arequipa, Trujillo, Cusco, Piura y todo Perú a dejar el Excel y los grupos de WhatsApp. Planifica tareas, controla el presupuesto en soles (PEN) y sigue el avance de cada proyecto en tiempo real.
+
+### Gestión de proyectos pensada para Perú
+Equipos de Lima a Arequipa usan QuinList para ordenar proyectos que antes vivían en cuadernos y hojas de cálculo. El presupuesto se lleva en soles y el avance se ve sin pedir reportes.
+Funciona para constructoras, consultoras, agencias, equipos de minería y energía que coordinan contratistas, y pymes de servicios.
+
+### Tu presupuesto en soles
+Cada proyecto de QuinList tiene su propia moneda. Configura el presupuesto base en PEN, registra ingresos y egresos por categoría y mira el saldo, el flujo de caja mensual y la rentabilidad sin fórmulas ni hojas de cálculo.
+Si trabajas con clientes de otros países, cada proyecto puede usar una moneda distinta: COP, USD, MXN, PEN, CLP, ARS, BRL, EUR o GBP.
+
+### Todo lo que tu equipo necesita en un solo lugar
+- Tableros Kanban con arrastrar y soltar, etiquetas, checklist, fechas límite y adjuntos
+- Proyectos con tareas en vista lista, Kanban y cronograma (Gantt)
+- Hitos, entregables con flujo de aprobación y matriz de riesgos e incidencias
+- Chat de equipo con menciones, notificaciones y colaboración en tiempo real
+- Calendario, eventos, OKRs y centro de métricas
+- Roles y permisos: Propietario, Administrador, Miembro y Observador
+- Asistente de IA para priorizar y resumir el avance (plan VIP)
+
+### Precio claro, en dólares
+El plan Gratis incluye 1 tablero y 1 proyecto, para siempre. El plan VIP cuesta 15 USD al mes con tableros y proyectos ilimitados y asistente de IA. El precio se publica en dólares para que sea el mismo en toda la región.
+
+### Preguntas frecuentes
+**¿QuinList funciona en Perú?**
+Sí. QuinList es un software en la nube: se usa desde cualquier navegador en Perú y el resto de Latinoamérica, sin instalar nada. La interfaz y el soporte están en español.
+
+**¿Puedo manejar el presupuesto en PEN?**
+Sí. Al crear un proyecto eliges la moneda (PEN incluida) y todos los montos, el libro mayor, el flujo de caja y la rentabilidad se muestran en esa moneda.
+
+**¿Puedo llevar proyectos en soles y en dólares?**
+Sí. Cada proyecto tiene su moneda: puedes tener unos en PEN y otros en USD dentro del mismo espacio de trabajo.
+
+**¿Cuánto cuesta?**
+Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 15 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
+
+
+---
+
+## Software de gestión de proyectos para empresas de Ecuador
+URL: https://quinlist.matubyte.com/software-gestion-de-proyectos/ecuador
+
+QuinList ayuda a equipos de Quito, Guayaquil, Cuenca, Manta, Loja y todo Ecuador a dejar el Excel y los grupos de WhatsApp. Planifica tareas, controla el presupuesto en dólares (USD) y sigue el avance de cada proyecto en tiempo real.
+
+### Gestión de proyectos pensada para Ecuador
+Como en Ecuador la moneda es el dólar, el precio de QuinList en USD es directo: sin conversiones. El presupuesto de cada proyecto también se lleva en dólares.
+Lo aprovechan agencias, constructoras, exportadoras que coordinan logística, consultoras y equipos de tecnología en Quito, Guayaquil y Cuenca.
+
+### Tu presupuesto en dólares
+Cada proyecto de QuinList tiene su propia moneda. Configura el presupuesto base en USD, registra ingresos y egresos por categoría y mira el saldo, el flujo de caja mensual y la rentabilidad sin fórmulas ni hojas de cálculo.
+Si trabajas con clientes de otros países, cada proyecto puede usar una moneda distinta: COP, USD, MXN, PEN, CLP, ARS, BRL, EUR o GBP.
+
+### Todo lo que tu equipo necesita en un solo lugar
+- Tableros Kanban con arrastrar y soltar, etiquetas, checklist, fechas límite y adjuntos
+- Proyectos con tareas en vista lista, Kanban y cronograma (Gantt)
+- Hitos, entregables con flujo de aprobación y matriz de riesgos e incidencias
+- Chat de equipo con menciones, notificaciones y colaboración en tiempo real
+- Calendario, eventos, OKRs y centro de métricas
+- Roles y permisos: Propietario, Administrador, Miembro y Observador
+- Asistente de IA para priorizar y resumir el avance (plan VIP)
+
+### Precio claro, en dólares
+El plan Gratis incluye 1 tablero y 1 proyecto, para siempre. El plan VIP cuesta 15 USD al mes con tableros y proyectos ilimitados y asistente de IA. Como el precio está en dólares, en Ecuador no hay conversión de moneda.
+
+### Preguntas frecuentes
+**¿QuinList funciona en Ecuador?**
+Sí. QuinList es un software en la nube: se usa desde cualquier navegador en Ecuador y el resto de Latinoamérica, sin instalar nada. La interfaz y el soporte están en español.
+
+**¿Puedo manejar el presupuesto en USD?**
+Sí. Al crear un proyecto eliges la moneda (USD incluida) y todos los montos, el libro mayor, el flujo de caja y la rentabilidad se muestran en esa moneda.
+
+**¿Hay soporte en horario de Ecuador?**
+Sí. Ecuador y Colombia comparten zona horaria, así que el soporte en español funciona en tu mismo horario.
+
+**¿Cuánto cuesta?**
+Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 15 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
+
+
+---
+
+## Software de gestión de proyectos para empresas de Chile
+URL: https://quinlist.matubyte.com/software-gestion-de-proyectos/chile
+
+QuinList ayuda a equipos de Santiago, Valparaíso, Concepción, Antofagasta, La Serena y todo Chile a dejar el Excel y los grupos de WhatsApp. Planifica tareas, controla el presupuesto en pesos chilenos (CLP) y sigue el avance de cada proyecto en tiempo real.
+
+### Gestión de proyectos pensada para Chile
+En Chile QuinList ayuda a equipos que necesitan ordenar varios proyectos al mismo tiempo, con presupuesto en pesos chilenos y responsables claros para cada entrega.
+Sirve a constructoras, consultoras de ingeniería, agencias, empresas de servicios y equipos de software en Santiago y regiones.
+
+### Tu presupuesto en pesos chilenos
+Cada proyecto de QuinList tiene su propia moneda. Configura el presupuesto base en CLP, registra ingresos y egresos por categoría y mira el saldo, el flujo de caja mensual y la rentabilidad sin fórmulas ni hojas de cálculo.
+Si trabajas con clientes de otros países, cada proyecto puede usar una moneda distinta: COP, USD, MXN, PEN, CLP, ARS, BRL, EUR o GBP.
+
+### Todo lo que tu equipo necesita en un solo lugar
+- Tableros Kanban con arrastrar y soltar, etiquetas, checklist, fechas límite y adjuntos
+- Proyectos con tareas en vista lista, Kanban y cronograma (Gantt)
+- Hitos, entregables con flujo de aprobación y matriz de riesgos e incidencias
+- Chat de equipo con menciones, notificaciones y colaboración en tiempo real
+- Calendario, eventos, OKRs y centro de métricas
+- Roles y permisos: Propietario, Administrador, Miembro y Observador
+- Asistente de IA para priorizar y resumir el avance (plan VIP)
+
+### Precio claro, en dólares
+El plan Gratis incluye 1 tablero y 1 proyecto, para siempre. El plan VIP cuesta 15 USD al mes con tableros y proyectos ilimitados y asistente de IA. El precio se publica en dólares para que sea el mismo en toda la región.
+
+### Preguntas frecuentes
+**¿QuinList funciona en Chile?**
+Sí. QuinList es un software en la nube: se usa desde cualquier navegador en Chile y el resto de Latinoamérica, sin instalar nada. La interfaz y el soporte están en español.
+
+**¿Puedo manejar el presupuesto en CLP?**
+Sí. Al crear un proyecto eliges la moneda (CLP incluida) y todos los montos, el libro mayor, el flujo de caja y la rentabilidad se muestran en esa moneda.
+
+**¿Funciona para equipos en regiones?**
+Sí. Al ser una herramienta en la nube, el equipo en terreno y el de la oficina ven la misma información en tiempo real.
+
+**¿Cuánto cuesta?**
+Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 15 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
+
+
+---
+
+## Software de gestión de proyectos para empresas de Argentina
+URL: https://quinlist.matubyte.com/software-gestion-de-proyectos/argentina
+
+QuinList ayuda a equipos de Buenos Aires, Córdoba, Rosario, Mendoza, La Plata y todo Argentina a dejar el Excel y los grupos de WhatsApp. Planifica tareas, controla el presupuesto en pesos argentinos (ARS) y sigue el avance de cada proyecto en tiempo real.
+
+### Gestión de proyectos pensada para Argentina
+En un contexto donde los precios cambian rápido, ver el presupuesto del proyecto en tiempo real vale oro. QuinList te deja llevar proyectos en pesos argentinos o en dólares, y comparar lo gastado contra lo planeado en cualquier momento.
+Lo usan agencias y estudios, software factories, consultoras, constructoras y pymes que trabajan con clientes locales y del exterior.
+
+### Tu presupuesto en pesos argentinos
+Cada proyecto de QuinList tiene su propia moneda. Configura el presupuesto base en ARS, registra ingresos y egresos por categoría y mira el saldo, el flujo de caja mensual y la rentabilidad sin fórmulas ni hojas de cálculo.
+Si trabajas con clientes de otros países, cada proyecto puede usar una moneda distinta: COP, USD, MXN, PEN, CLP, ARS, BRL, EUR o GBP.
+
+### Todo lo que tu equipo necesita en un solo lugar
+- Tableros Kanban con arrastrar y soltar, etiquetas, checklist, fechas límite y adjuntos
+- Proyectos con tareas en vista lista, Kanban y cronograma (Gantt)
+- Hitos, entregables con flujo de aprobación y matriz de riesgos e incidencias
+- Chat de equipo con menciones, notificaciones y colaboración en tiempo real
+- Calendario, eventos, OKRs y centro de métricas
+- Roles y permisos: Propietario, Administrador, Miembro y Observador
+- Asistente de IA para priorizar y resumir el avance (plan VIP)
+
+### Precio claro, en dólares
+El plan Gratis incluye 1 tablero y 1 proyecto, para siempre. El plan VIP cuesta 15 USD al mes con tableros y proyectos ilimitados y asistente de IA. El precio se publica en dólares para que sea el mismo en toda la región.
+
+### Preguntas frecuentes
+**¿QuinList funciona en Argentina?**
+Sí. QuinList es un software en la nube: se usa desde cualquier navegador en Argentina y el resto de Latinoamérica, sin instalar nada. La interfaz y el soporte están en español.
+
+**¿Puedo manejar el presupuesto en ARS?**
+Sí. Al crear un proyecto eliges la moneda (ARS incluida) y todos los montos, el libro mayor, el flujo de caja y la rentabilidad se muestran en esa moneda.
+
+**¿Puedo tener proyectos en pesos y en dólares?**
+Sí. Cada proyecto tiene su propia moneda: ARS para clientes locales y USD para clientes del exterior, en el mismo espacio de trabajo.
+
+**¿Cuánto cuesta?**
+Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 15 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
+
+
+---
+
+## Cómo organizar los proyectos de tu empresa en 7 pasos
+URL: https://quinlist.matubyte.com/guias/como-organizar-proyectos-de-una-empresa
+
+Si tus proyectos viven entre un Excel, un cuaderno, un grupo de WhatsApp y varias carpetas de Drive, esta guía es para ti. Son siete pasos que puedes aplicar con cualquier herramienta, y al final te mostramos cómo hacerlo en QuinList.
+
+### 1. Haz un inventario de todos los proyectos
+Escribe en una sola lista todo lo que está abierto: proyectos de clientes, proyectos internos y “cosas pendientes” que en realidad son proyectos. Para cada uno anota cliente, responsable y fecha de entrega. Muchas empresas descubren aquí que tienen el doble de proyectos de los que creían.
+
+### 2. Define un responsable por proyecto y por tarea
+Un proyecto con tres responsables no tiene ninguno. Asigna una persona que responda por cada proyecto y una por cada tarea. Los demás pueden colaborar, pero hay un nombre al que preguntar.
+
+### 3. Parte cada proyecto en entregables e hitos
+Un entregable es algo que el cliente recibe y aprueba. Un hito es un punto de control con fecha. Si un proyecto no tiene hitos, solo sabrás que va mal al final.
+
+### 4. Convierte los entregables en tareas con fecha
+Cada entregable se divide en tareas pequeñas, de uno a cinco días, con fecha de inicio y fin. Esas fechas son las que arman tu cronograma.
+
+### 5. Visualiza el flujo con un tablero Kanban
+Usa columnas como Por hacer, En curso, En revisión y Hecho. Revisar el tablero diez minutos al día reemplaza la mayoría de reuniones de “¿cómo vamos?”.
+
+### 6. Controla el dinero mientras avanzas
+Define el presupuesto base y registra cada ingreso y egreso apenas ocurre. Compara el porcentaje de presupuesto consumido con el porcentaje de avance: si gastaste el 70% y vas en el 40%, hay que actuar ya.
+
+### 7. Centraliza archivos y conversaciones
+Los documentos van con el proyecto o con la tarea, no en carpetas sueltas. Las decisiones quedan en los comentarios, no en audios de WhatsApp.
+
+### Cómo aplicar estos pasos en QuinList
+1. **Crea un proyecto por cada ítem del inventario**: Con cliente, responsable, fechas, presupuesto y moneda.
+2. **Agrega hitos, entregables y tareas**: El cronograma Gantt se arma solo con las fechas.
+3. **Abre las tareas en un tablero**: El equipo trabaja en Kanban y tú ves el proyecto completo.
+4. **Registra ingresos y egresos**: El saldo, el flujo de caja y la rentabilidad se calculan solos.
+
+### Preguntas frecuentes
+**¿Cuál es la mejor forma de organizar proyectos en una empresa pequeña?**
+Una lista única de proyectos, un responsable por proyecto y por tarea, entregables con fecha y un tablero Kanban que el equipo revise a diario. Una herramienta como QuinList junta todo eso en un solo lugar.
+
+**¿Es mejor Excel o un software de gestión de proyectos?**
+Excel funciona para una persona. Cuando varias personas trabajan en varios proyectos, un software de gestión de proyectos evita versiones duplicadas, asigna responsables y muestra el avance en tiempo real.
+
+
+---
+
+## Cómo hacer un cronograma de proyecto, paso a paso
+URL: https://quinlist.matubyte.com/guias/como-hacer-un-cronograma-de-proyecto
+
+Un buen cronograma responde tres preguntas: qué se hace, en qué orden y para cuándo. Esta guía te lleva de una lista de actividades a un diagrama de Gantt que el equipo puede seguir.
+
+### 1. Lista todas las actividades
+Escribe todo lo que hay que hacer para terminar el proyecto. Si una actividad tarda más de dos semanas, divídela. Ejemplo para el lanzamiento de una página web: brief, diseño, contenido, desarrollo, pruebas, publicación.
+
+### 2. Estima la duración de cada una
+Pregunta a quien la va a hacer. Usa días hábiles y agrega un margen del 10 al 20% en las actividades con más incertidumbre.
+
+### 3. Ordena por dependencias
+Algunas actividades no pueden empezar hasta que otra termine: no se desarrolla sin diseño aprobado. Ordénalas y marca cuáles pueden ir en paralelo.
+
+### 4. Marca los hitos
+Los hitos son puntos de control con fecha: diseño aprobado, versión de pruebas, lanzamiento. Son los momentos para revisar el avance con el cliente o la dirección.
+
+### 5. Dibuja el diagrama de Gantt y mantenlo vivo
+Pon cada actividad como una barra entre su fecha de inicio y de fin. El error más común es hacer el cronograma una vez y no volver a mirarlo. Un cronograma sirve si se actualiza cuando cambia la realidad.
+
+### Hazlo en QuinList en minutos
+1. **Crea el proyecto**: Con fecha de inicio y de entrega.
+2. **Agrega las tareas con fechas**: Cada tarea con responsable, inicio y fin.
+3. **Crea los hitos**: Con su fecha de vencimiento.
+4. **Abre la vista de cronograma**: El Gantt aparece con la línea de hoy y colores por estado.
+
+### Preguntas frecuentes
+**¿Qué debe tener un cronograma de proyecto?**
+Actividades, duración, fechas de inicio y fin, responsables, dependencias e hitos.
+
+**¿Qué diferencia hay entre cronograma y diagrama de Gantt?**
+El cronograma es el plan de actividades y fechas. El diagrama de Gantt es la forma gráfica más usada para mostrarlo, con barras en una línea de tiempo.
+
+
+---
+
+## Qué es la metodología Kanban y cómo usarla en tu equipo
+URL: https://quinlist.matubyte.com/guias/que-es-la-metodologia-kanban
+
+Kanban es un método visual para gestionar el trabajo: cada tarea es una tarjeta que avanza por columnas que representan etapas. Nació en las fábricas de Toyota y hoy lo usan equipos de software, marketing, operaciones y servicios.
+
+### Cómo funciona un tablero Kanban
+Un tablero Kanban tiene columnas, como Por hacer, En curso y Hecho, y tarjetas que representan tareas. Cuando alguien empieza una tarea, mueve su tarjeta a En curso; cuando la termina, a Hecho. Con mirar el tablero, todo el equipo sabe el estado real del trabajo.
+
+### Los 4 principios de Kanban
+- Visualizar el trabajo: todo lo que el equipo hace está en el tablero
+- Limitar el trabajo en curso: pocas tareas a la vez se terminan más rápido
+- Gestionar el flujo: detectar dónde se acumulan las tarjetas y destrabar
+- Mejorar de forma continua: ajustar columnas y reglas con lo aprendido
+
+### Kanban o Scrum
+Scrum trabaja en ciclos fijos (sprints) con roles definidos. Kanban es un flujo continuo sin sprints obligatorios. Muchos equipos combinan los dos: planean por sprints y ejecutan en un tablero Kanban.
+
+### Arma tu primer tablero Kanban en QuinList
+1. **Crea un tablero**: Con las columnas Por hacer, En curso, En revisión y Hecho.
+2. **Agrega las tareas**: Una tarjeta por tarea, con responsable, fecha y prioridad.
+3. **Fija un límite**: Acuerden un máximo de tarjetas En curso por persona.
+4. **Revisa a diario**: Diez minutos al día moviendo tarjetas reemplazan muchas reuniones.
+
+### Preguntas frecuentes
+**¿Qué significa Kanban?**
+Kanban es una palabra japonesa que significa “tarjeta visual” o “letrero”. En gestión de proyectos se refiere al método de organizar el trabajo con tarjetas en columnas.
+
+**¿Kanban sirve para equipos que no son de software?**
+Sí. Funciona para cualquier trabajo que pase por etapas: ventas, marketing, soporte, compras, obras o atención al cliente.
+
+
+---
+
+## Cómo calcular la rentabilidad de un proyecto (con ejemplo)
+URL: https://quinlist.matubyte.com/guias/como-calcular-la-rentabilidad-de-un-proyecto
+
+La rentabilidad de un proyecto es el porcentaje de ganancia que queda después de restar sus costos a sus ingresos. Calcularla al final sirve de poco: el valor está en seguirla mientras el proyecto avanza.
+
+### La fórmula
+Rentabilidad (%) = (Ingresos del proyecto − Costos del proyecto) ÷ Ingresos del proyecto × 100.
+Los ingresos son lo que el cliente paga: anticipos, facturas por hito y pagos finales. Los costos son todo lo que gastas para entregar: personal, materiales, herramientas, servicios y viajes.
+
+### Ejemplo
+- Contrato con el cliente: 40.000.000
+- Personal: 18.000.000
+- Materiales y servicios: 9.000.000
+- Herramientas y viajes: 3.000.000
+- Costos totales: 30.000.000
+- Rentabilidad: (40.000.000 − 30.000.000) ÷ 40.000.000 × 100 = 25%
+
+### Cómo protegerla durante el proyecto
+Compara el porcentaje del presupuesto consumido con el porcentaje de avance. Si llevas el 70% del gasto y el 40% del trabajo, la rentabilidad final va a caer. Detectarlo a tiempo te deja renegociar alcance, facturar un hito o recortar costos.
+
+### Hazlo automático en QuinList
+1. **Define presupuesto y meta**: Al crear el proyecto, pon el presupuesto base y la rentabilidad objetivo.
+2. **Registra ingresos y egresos**: Cada movimiento con su categoría y comprobante.
+3. **Mira los indicadores**: Saldo, flujo de caja y rentabilidad se calculan solos.
+
+### Preguntas frecuentes
+**¿Qué es una buena rentabilidad para un proyecto?**
+Depende del sector y del tipo de contrato. Lo importante es fijar una meta antes de empezar y medirla durante el proyecto, no solo al final.
+
+**¿Cuál es la diferencia entre margen y rentabilidad?**
+En el día a día se usan como sinónimos. En rigor, el margen compara la ganancia con los ingresos, y la rentabilidad sobre la inversión la compara con lo invertido.
+
+
+---
+
+## Cómo hacer la matriz de riesgos de un proyecto
+URL: https://quinlist.matubyte.com/guias/matriz-de-riesgos-de-un-proyecto
+
+Una matriz de riesgos es una lista de lo que podría salir mal en un proyecto, calificado por probabilidad e impacto, con un responsable y un plan para cada riesgo. Sirve para actuar antes de que el problema llegue al cliente.
+
+### 1. Identifica los riesgos
+Reúne al equipo 30 minutos y pregunta: ¿qué podría retrasar, encarecer o arruinar este proyecto? Ejemplos: el cliente tarda en aprobar, un proveedor no entrega, una persona clave se ausenta, el alcance crece sin pagar más.
+
+### 2. Califica cada riesgo
+Dale a cada riesgo una severidad según su probabilidad y su impacto. Una escala simple funciona bien: baja, media, alta y crítica.
+
+### 3. Define responsable y estrategia
+- Evitar: cambiar el plan para que el riesgo no ocurra
+- Reducir: bajar la probabilidad o el impacto
+- Transferir: pasar el riesgo a un tercero (seguro, contrato)
+- Aceptar: asumirlo y tener un plan de contingencia
+
+### 4. Haz seguimiento
+Revisa la matriz cada semana. Cuando un riesgo ocurre se convierte en incidencia y necesita acción inmediata; cuando deja de ser probable, se cierra.
+
+### Tu matriz de riesgos en QuinList
+1. **Abre el módulo de riesgos**: Dentro de cada proyecto.
+2. **Registra riesgo o incidencia**: Con severidad, responsable y plan de mitigación.
+3. **Actualiza el estado**: Abierto, mitigado o cerrado. Los riesgos críticos se ven en los indicadores.
+
+### Preguntas frecuentes
+**¿Qué diferencia hay entre riesgo e incidencia?**
+Un riesgo es algo que podría pasar. Una incidencia es algo que ya pasó y está afectando el proyecto.
+
+**¿Cada cuánto se revisa la matriz de riesgos?**
+En la mayoría de proyectos basta con una revisión semanal, y siempre que cambie el alcance o aparezca un problema nuevo.
+
+
+---
+
+## Qué son los OKR y cómo usarlos en tu empresa
+URL: https://quinlist.matubyte.com/guias/que-son-los-okr
+
+OKR significa “Objetivos y Resultados Clave”. Es un método para fijar metas: un objetivo claro y de 2 a 5 resultados medibles que dicen si lo lograste. Se definen por trimestre, semestre o año.
+
+### Cómo se escribe un OKR
+El objetivo es cualitativo y claro: “Ser la opción preferida de las pymes de la ciudad”. Los resultados clave son números: “Pasar de 40 a 70 clientes activos”, “Subir la satisfacción de 7,5 a 8,5”.
+
+### Ejemplos por área
+- Ventas, aumentar la recurrencia: 30% de clientes renuevan; 15 contratos nuevos.
+- Marketing, ser visibles en Google: 5.000 visitas orgánicas al mes; 200 registros.
+- Operaciones, entregar a tiempo: 90% de proyectos en fecha; 0 incidencias críticas abiertas.
+
+### Errores comunes
+- Poner tareas como resultados clave (“hacer una campaña” no es un resultado)
+- Tener demasiados objetivos: con 2 o 3 por periodo basta
+- Definirlos y no revisarlos hasta el final del periodo
+
+### OKRs en QuinList
+1. **Crea el objetivo**: Elige periodo trimestral, semestral o anual.
+2. **Agrega los resultados clave**: Con su meta numérica.
+3. **Actualiza el avance**: Revisa el progreso junto a tus tableros y proyectos.
+
+### Preguntas frecuentes
+**¿Qué diferencia hay entre OKR y KPI?**
+Un KPI mide la salud de algo de forma continua, como las ventas del mes. Un OKR es una meta de mejora para un periodo, y sus resultados clave suelen usar KPIs.
+
+
+---
+
+## Guías prácticas de gestión de proyectos
+URL: https://quinlist.matubyte.com/guias
+
+Artículos cortos y aplicables para ordenar los proyectos de tu empresa, con o sin software. Cada guía termina con un paso a paso para hacerlo en QuinList.
+
+### Por dónde empezar
+Si tus proyectos viven en Excel o en WhatsApp, empieza por la guía de cómo organizar los proyectos de una empresa. Si ya tienes un orden básico, sigue con el cronograma, el Kanban y el control de la rentabilidad.
+
+
+---
+
+## Precios simples: empieza gratis, crece con VIP
+URL: https://quinlist.matubyte.com/precios
+
+Sin cotizaciones ni letra pequeña. Usa QuinList gratis el tiempo que quieras y pasa a VIP cuando tu equipo necesite más tableros, más proyectos y el asistente de IA.
+
+### Qué incluye cada plan
+- Gratis: 1 tablero Kanban y 1 proyecto con todos sus módulos
+- Gratis: chat de equipo, calendario, notificaciones y roles
+- VIP: tableros ilimitados
+- VIP: proyectos ilimitados
+- VIP: asistente de IA
+
+### Cómo se paga
+El plan VIP cuesta 15 USD al mes. El cobro se hace en pesos colombianos a la tasa del día, a través de Landa Pay.
+
+### Preguntas frecuentes
+**¿El plan gratis tiene fecha de vencimiento?**
+No. El plan Gratis es para siempre, con 1 tablero y 1 proyecto.
+
+**¿Necesito tarjeta de crédito para empezar?**
+No. Creas tu cuenta y empiezas en el plan Gratis sin tarjeta.
+
+**¿Puedo cancelar el plan VIP?**
+Sí. Es una suscripción mensual sin contrato de permanencia.
+
+**¿Tienen planes para empresas grandes?**
+Escríbenos a contacto@matubyte.com y armamos una propuesta para tu empresa.
+
+

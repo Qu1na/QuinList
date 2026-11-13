@@ -199,8 +199,6 @@ function openIntegrations() {
         </div>
       </section>
 
-      </section>
-
       <section class="overflow-hidden rounded-xl border border-[#091e4214] bg-white shadow-sm">
         <div class="flex items-center justify-between border-b border-[#091e4214] px-5 py-3">
           <h2 class="text-sm font-semibold text-[#172b4d]">Plan</h2>

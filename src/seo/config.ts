@@ -1,20 +1,46 @@
 import siteConfig from '@/seo/site.config.json'
-import { getReviewsSummary } from '@/utils/reviews'
 
 export const SITE_URL = siteConfig.siteUrl.replace(/\/$/, '')
 export const SITE_NAME = siteConfig.siteName
 export const SITE_LOCALE = siteConfig.locale
 export const SITE_LANGUAGE = siteConfig.language
+export const SITE_HREFLANG = siteConfig.hreflang
 export const CONTACT_EMAIL = siteConfig.contactEmail
 export const PUBLISHER = siteConfig.publisher
 export const DEFAULT_OG_IMAGE = `${SITE_URL}${siteConfig.defaultOgImage}`
+export const DEFAULT_OG_IMAGE_WIDTH = String(siteConfig.defaultOgImageWidth)
+export const DEFAULT_OG_IMAGE_HEIGHT = String(siteConfig.defaultOgImageHeight)
+export const LOGO_URL = `${SITE_URL}/image/logo/logo-512.png`
 export const DEFAULT_KEYWORDS = siteConfig.keywords.join(', ')
 
-export const DEFAULT_TITLE =
-  'QuinList — Software de Gestión de Proyectos y Colaboración para Equipos'
+export const DEFAULT_TITLE = 'QuinList: software de gestión de proyectos para empresas'
 
 export const DEFAULT_DESCRIPTION =
-  'QuinList es software de gestión de proyectos y project management software para empresas. Tablero Kanban, gestión de tareas, workspace, colaboración en tiempo real y plataforma de productividad SaaS.'
+  'Deja el Excel, los cuadernos y el WhatsApp. QuinList reúne Kanban, Gantt, presupuesto, chat e IA para equipos de Latinoamérica. Empieza gratis.'
+
+export const SAME_AS = [
+  PUBLISHER.url,
+  'https://www.linkedin.com/company/matubyte',
+  'https://x.com/matubyte',
+  'https://www.instagram.com/matubyte',
+]
+
+export const LATAM_AREA_SERVED = [
+  'Colombia',
+  'México',
+  'Perú',
+  'Ecuador',
+  'Chile',
+  'Argentina',
+  'Bolivia',
+  'Venezuela',
+  'Panamá',
+  'Costa Rica',
+  'Guatemala',
+  'República Dominicana',
+  'Uruguay',
+  'Paraguay',
+]
 
 export type PublicRouteConfig = {
   path: string
@@ -34,15 +60,4 @@ export function absoluteUrl(path = '/'): string {
 
 export function keywordsFor(...extra: string[]): string {
   return [...extra, ...siteConfig.keywords].filter(Boolean).join(', ')
-}
-
-export function getDefaultAggregateRating() {
-  const summary = getReviewsSummary()
-  return {
-    '@type': 'AggregateRating' as const,
-    ratingValue: summary.score,
-    reviewCount: String(summary.count),
-    bestRating: String(summary.bestRating),
-    worstRating: String(summary.worstRating),
-  }
 }

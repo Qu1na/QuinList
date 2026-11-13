@@ -176,12 +176,376 @@ html.auth-screen body {
   @apply flex w-full items-center justify-center gap-2 rounded-[10px] bg-[#2563eb] py-3 text-sm font-semibold text-white transition-colors hover:bg-[#1d4ed8] disabled:opacity-60;
 }
 
+/* =====================================================================
+ * Sistema de diseño de marketing (landing, soluciones, guías, precios).
+ * Es el MISMO lenguaje visual de la app: azul QuinList, navy del sidebar,
+ * acentos cielo y coral, tipografía Inter y ventanas estilo macOS/iOS.
+ * Sin degradados ni bordes recargados: color sólido, vidrio (blur) y movimiento sutil.
+ * ===================================================================== */
 .landing-page {
+  --ql-blue: #2d7eb8;
+  --ql-blue-600: #2a72a8;
+  --ql-blue-700: #215d8a;
+  --ql-blue-50: #eef5fb;
+  --ql-blue-100: #dbeaf6;
+  --ql-navy: #1a2b4a;
+  --ql-navy-900: #0f1c33;
+  --ql-sky: #5bbce4;
+  --ql-sky-50: #eaf6fc;
+  --ql-coral: #f4845f;
+  --ql-coral-600: #d9622f;
+  --ql-coral-700: #c2410c;
+  --ql-coral-50: #fff3ee;
+  --ql-ink: #172b4d;
+  --ql-text: #44546f;
+  --ql-subtle: #5e6c84;
+  --ql-line: #e4e9f0;
+  --ql-bg: #f6f8fb;
+  --ql-ease: cubic-bezier(0.22, 1, 0.36, 1);
   scroll-behavior: smooth;
+  color: var(--ql-ink);
+  background: #fff;
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+.landing-page h1,
+.landing-page h2,
+.landing-page h3 {
+  letter-spacing: -0.022em;
+}
+
+/* Etiqueta superior de sección */
+.ql-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ql-blue-600);
+}
+
+.ql-eyebrow::before {
+  content: '';
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--ql-coral);
+}
+
+.ql-eyebrow--light {
+  color: #fff;
+}
+
+/* Botones (mismos colores que la app: azul de marca) */
+.ql-btn,
+.landing-explore-btn,
+.landing-nav-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.75rem;
+  background: #2a72a8;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  padding: 0.8rem 1.4rem;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.15) inset,
+    0 6px 16px -8px rgba(42, 114, 168, 0.65);
+  transition:
+    background 0.2s ease,
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.2s ease;
+}
+
+.ql-btn:hover,
+.landing-explore-btn:hover,
+.landing-nav-cta:hover {
+  background: #215d8a;
+  transform: translateY(-1px);
+}
+
+.ql-btn:active,
+.landing-explore-btn:active,
+.landing-nav-cta:active {
+  transform: scale(0.98);
+}
+
+.landing-nav-cta {
+  font-size: 0.875rem;
+  padding: 0.55rem 1.05rem;
+  border-radius: 0.65rem;
+}
+
+.ql-btn--ghost,
+.landing-enroll-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e4e9f0;
+  background: #fff;
+  color: #172b4d;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  padding: 0.8rem 1.4rem;
+  box-shadow: 0 1px 2px rgba(23, 43, 77, 0.06);
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.ql-btn--ghost:hover,
+.landing-enroll-btn:hover {
+  border-color: #dbeaf6;
+  background: #eef5fb;
+}
+
+.ql-btn--light {
+  background: #fff;
+  color: #215d8a;
+  box-shadow: 0 8px 20px -10px rgba(15, 28, 51, 0.5);
+}
+
+.ql-btn--light:hover {
+  background: #eef5fb;
+}
+
+.ql-btn--outline-light {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: none;
+}
+
+.ql-btn--outline-light:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Vidrio estilo iOS */
+.ql-glass {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(18px) saturate(1.6);
+  -webkit-backdrop-filter: blur(18px) saturate(1.6);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 20px 50px -24px rgba(23, 43, 77, 0.35);
+}
+
+/* Ventana estilo macOS (igual que los modales de la app) */
+.ql-window {
+  overflow: hidden;
+  border-radius: 0.875rem;
+  border: 1px solid rgba(23, 43, 77, 0.12);
+  background: #f5f5f7;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.65) inset,
+    0 30px 60px -24px rgba(15, 28, 51, 0.35),
+    0 12px 24px -12px rgba(15, 28, 51, 0.18);
+}
+
+.ql-window__bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.85rem;
+  background: rgba(255, 255, 255, 0.82);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.ql-dots {
+  display: flex;
+  flex: none;
+  gap: 0.4rem;
+}
+
+.ql-dots > i {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 999px;
+  border: 0.5px solid rgba(0, 0, 0, 0.1);
+}
+
+.ql-dots > i:nth-child(1) {
+  background: #ff5f57;
+}
+
+.ql-dots > i:nth-child(2) {
+  background: #febc2e;
+}
+
+.ql-dots > i:nth-child(3) {
+  background: #28c840;
+}
+
+/* Control segmentado de iOS */
+.ql-segmented {
+  position: relative;
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  padding: 0.25rem;
+  border-radius: 0.85rem;
+  background: rgba(118, 118, 128, 0.12);
+}
+
+.ql-segmented__thumb {
+  position: absolute;
+  top: 0.25rem;
+  bottom: 0.25rem;
+  left: 0.25rem;
+  border-radius: 0.65rem;
+  background: #fff;
+  box-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.12),
+    0 3px 1px rgba(0, 0, 0, 0.04);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ql-segmented button {
+  position: relative;
+  z-index: 1;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #44546f;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+
+.ql-segmented button[aria-selected='true'] {
+  color: #172b4d;
+}
+
+/* Lista agrupada de iOS (Ajustes) */
+.ql-grouped {
+  overflow: hidden;
+  border-radius: 1rem;
+  background: #fff;
+  border: 1px solid #e4e9f0;
+}
+
+.ql-grouped > * + * {
+  border-top: 1px solid #e4e9f0;
+}
+
+/* Dock con magnificación (macOS) */
+.ql-dock {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 0.65rem 0.8rem;
+  border-radius: 1.4rem;
+}
+
+.ql-dock__item {
+  --s: 1;
+  position: relative;
+  display: flex;
+  height: 3.25rem;
+  width: 3.25rem;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.9rem;
+  /* Como el dock de macOS: el ícono crece y empuja a sus vecinos. */
+  margin-inline: calc((var(--s) - 1) * 0.95rem);
+  transform: translateY(calc((var(--s) - 1) * -0.85rem)) scale(var(--s));
+  transform-origin: bottom center;
+  transition:
+    transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    margin 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.ql-dock__item[aria-pressed='true']::after {
+  content: '';
+  position: absolute;
+  bottom: -0.6rem;
+  width: 0.3rem;
+  height: 0.3rem;
+  border-radius: 999px;
+  background: #172b4d;
+}
+
+/* Subrayado tipo marcador (color sólido) */
+.ql-mark {
+  background-image: linear-gradient(#ffe2d6, #ffe2d6);
+  background-repeat: no-repeat;
+  background-size: 100% 0.38em;
+  background-position: 0 90%;
+}
+
+.landing-page .mkt-surface {
+  background: #f6f8fb;
 }
 
 .landing-page section[id] {
   scroll-margin-top: 5.5rem;
+}
+
+/*
+ * Rendimiento: el navegador no calcula estilos ni layout de las secciones de abajo hasta que
+ * se acercan a la pantalla. La historia con scroll usa position sticky, por eso se excluye.
+ */
+.landing-page main > section:not(:first-child):not(.ql-story),
+.landing-page main > article {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
+}
+
+/*
+ * Carril horizontal en celular → cuadrícula en pantallas grandes.
+ * En móvil las listas de tarjetas se deslizan de lado (con imán) en vez de apilarse
+ * en una columna larguísima. Desde 640px pasan a 2 columnas, y a 3/4 desde 1024px.
+ */
+.mkt-rail {
+  display: flex;
+  gap: 0.875rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 1.25rem;
+  margin-inline: -1.25rem;
+  padding: 0.25rem 1.25rem 0.75rem;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mkt-rail::-webkit-scrollbar {
+  display: none;
+}
+
+.mkt-rail > * {
+  flex: 0 0 min(80%, 300px);
+  scroll-snap-align: start;
+}
+
+@media (min-width: 640px) {
+  .mkt-rail {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow: visible;
+    margin-inline: 0;
+    padding: 0;
+    gap: 1rem;
+  }
+
+  .mkt-rail > * {
+    flex: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .mkt-rail--3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .mkt-rail--4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 
 .landing-skip {
@@ -189,7 +553,7 @@ html.auth-screen body {
   left: -9999px;
   z-index: 100;
   padding: 0.75rem 1rem;
-  background: #2d2d2d;
+  background: #172b4d;
   color: #fff;
   font-size: 0.875rem;
   font-weight: 600;
@@ -201,100 +565,92 @@ html.auth-screen body {
   top: 1rem;
 }
 
+/* Barra de navegación: vidrio iOS */
 .landing-nav {
   background: transparent;
 }
 
 .landing-nav--top {
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(16px) saturate(1.6);
+  -webkit-backdrop-filter: blur(16px) saturate(1.6);
   border-bottom: 1px solid transparent;
 }
 
 .landing-nav--solid {
-  background: rgba(255, 255, 255, 0.94);
-  border-bottom: 1px solid #ececec;
-  backdrop-filter: blur(14px);
-  box-shadow: 0 8px 24px -18px rgba(45, 45, 45, 0.25);
+  background: rgba(255, 255, 255, 0.84);
+  backdrop-filter: blur(20px) saturate(1.8);
+  -webkit-backdrop-filter: blur(20px) saturate(1.8);
+  border-bottom: 1px solid rgba(23, 43, 77, 0.08);
 }
 
 .landing-nav-link {
-  @apply rounded-lg px-3 py-2 text-[13px] font-medium text-[#5a5a5a] transition-colors duration-200 hover:bg-[#f4f4f4] hover:text-[#2d2d2d];
+  @apply rounded-lg px-3 py-2 text-[14px] font-medium text-[#44546f] transition-colors duration-200 hover:bg-[#eef5fb] hover:text-[#172b4d];
 }
 
 .landing-nav-login {
-  @apply rounded-full px-3.5 py-2 text-sm font-semibold text-[#444] transition-colors duration-200 hover:bg-[#f4f4f4] hover:text-[#2d2d2d];
+  @apply rounded-lg px-3.5 py-2 text-sm font-semibold text-[#172b4d] transition-colors duration-200 hover:bg-[#eef5fb];
 }
 
-.landing-nav-cta {
-  @apply inline-flex items-center rounded-full bg-[#f4845f] px-5 py-2 text-sm font-bold text-white shadow-sm shadow-[#f4845f]/30 transition-all duration-200 hover:bg-[#e8754f] hover:shadow-md hover:shadow-[#f4845f]/35;
-}
-
+/* Fondo del hero: cuadrícula de puntos azul muy suave (sin degradado de color) */
 .landing-hero-bg {
-  background:
-    radial-gradient(ellipse 80% 60% at 70% 10%, rgba(244, 132, 95, 0.14), transparent 55%),
-    radial-gradient(ellipse 60% 50% at 10% 40%, rgba(91, 188, 228, 0.12), transparent 50%),
-    linear-gradient(180deg, #fff 0%, #fafafa 100%);
-}
-
-.landing-enroll-btn {
-  @apply inline-flex items-center rounded-full border-2 border-[#2d2d2d] px-6 py-2.5 text-sm font-semibold text-[#2d2d2d] transition-all duration-300 hover:bg-[#2d2d2d] hover:text-white;
-}
-
-.landing-explore-btn {
-  @apply inline-flex items-center rounded-full bg-[#f4845f] px-7 py-3 text-sm font-bold text-white shadow-lg shadow-orange-200/60 transition-all duration-300 hover:bg-[#e8754f] hover:shadow-xl hover:-translate-y-0.5;
+  background-color: #f6f8fb;
+  background-image: radial-gradient(rgba(45, 126, 184, 0.14) 1px, transparent 1px);
+  background-size: 22px 22px;
 }
 
 .landing-demo-btn {
-  @apply inline-flex items-center rounded-full border-2 border-[#5bbce4] bg-white/70 px-5 py-2.5 text-sm font-semibold text-[#2d7eb8] backdrop-blur transition-all duration-300 hover:bg-[#e8f6fc];
-}
-
-.landing-module-card {
-  @apply rounded-2xl border border-[#eee] bg-white p-6 transition-transform hover:-translate-y-1 hover:shadow-lg;
-}
-
-.landing-module-card--featured {
-  @apply border-transparent bg-[#f4845f] shadow-xl shadow-orange-200/50;
+  @apply inline-flex items-center rounded-xl border border-[#dbeaf6] bg-white px-5 py-2.5 text-sm font-semibold text-[#2a72a8] transition-colors duration-200 hover:bg-[#eef5fb];
 }
 
 .landing-product-frame {
-  transform: perspective(1400px) rotateY(-4deg) rotateX(3deg);
   transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-@media (hover: hover) {
-  .landing-product-frame:hover {
-    transform: perspective(1400px) rotateY(-1deg) rotateX(1deg) translateY(-4px);
-  }
+/* Historia con scroll: cambio de escena dentro de la ventana fija */
+.ql-scene {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: translateY(14px) scale(0.985);
+  transition:
+    opacity 0.45s ease,
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
 }
 
-@media (max-width: 640px) {
-  .landing-product-frame {
-    transform: none;
-  }
+.ql-scene.is-active {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .landing-product-frame {
-    transform: none;
+  .ql-scene,
+  .ql-dock__item,
+  .ql-segmented__thumb {
+    transition: none;
   }
 }
 
+/*
+ * Animación de entrada. El contenido es visible por defecto (HTML prerenderizado,
+ * crawlers y usuarios sin JS). useReveal() solo oculta lo que está fuera de pantalla.
+ */
 .landing-reveal {
-  opacity: 0;
-  transform: translateY(18px);
   transition:
     opacity 0.65s ease,
     transform 0.65s ease;
 }
 
-.landing-reveal.is-visible {
-  opacity: 1;
-  transform: translateY(0);
+.landing-reveal.reveal-pending {
+  opacity: 0;
+  transform: translateY(18px);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .landing-reveal {
+  .landing-reveal,
+  .landing-reveal.reveal-pending {
     opacity: 1;
     transform: none;
     transition: none;
@@ -329,8 +685,8 @@ html.auth-screen body {
 }
 
 .landing-review-card:hover {
-  border-color: rgba(244, 132, 95, 0.35);
-  box-shadow: 0 12px 28px -16px rgba(45, 45, 45, 0.28);
+  border-color: rgba(27, 79, 114, 0.28);
+  box-shadow: 0 12px 28px -16px rgba(18, 24, 32, 0.22);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2817,5 +3173,158 @@ html.auth-screen body {
 
   .dash-hero__health {
     justify-self: start;
+  }
+}
+
+/* =====================================================================
+ * App en celular (y WebView de Android / Flutter): acabado nativo estilo iOS.
+ * Todo vive en media queries: en escritorio la app se ve exactamente igual.
+ * ===================================================================== */
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+a,
+[role='button'] {
+  touch-action: manipulation;
+}
+
+@media (max-width: 639px) {
+  /* Modales centrados → hoja inferior (bottom sheet) de iOS */
+  .app-window-overlay.items-center {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+
+  .app-window-overlay.items-center > .app-window,
+  .app-window-overlay.items-start > .app-window {
+    width: 100%;
+    max-width: 100% !important;
+    border-radius: 1.25rem 1.25rem 0 0;
+    border-width: 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    padding-bottom: env(safe-area-inset-bottom);
+    animation: ql-sheet-up 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .app-window-overlay.items-center > .app-window .app-window__body {
+    max-height: min(72dvh, 640px);
+  }
+
+  /* Tarjeta del tablero: hoja casi a pantalla completa */
+  .app-window-overlay.items-start {
+    padding: 0 !important;
+    padding-top: 2.25rem !important;
+  }
+
+  .app-window-overlay.items-start > .app-window {
+    min-height: calc(100dvh - 2.25rem);
+  }
+
+  .app-window-overlay.items-start > .app-window .app-window__body {
+    max-height: none;
+  }
+
+  /* Agarradera de la hoja */
+  .app-window-overlay.items-center > .app-window::before,
+  .app-window-overlay.items-start > .app-window::before {
+    content: '';
+    display: block;
+    width: 2.25rem;
+    height: 0.3rem;
+    margin: 0.45rem auto 0;
+    border-radius: 999px;
+    background: rgba(60, 60, 67, 0.3);
+  }
+
+  .app-window-overlay.items-center > .app-window .app-window__titlebar,
+  .app-window-overlay.items-start > .app-window .app-window__titlebar {
+    background: transparent;
+    backdrop-filter: none;
+  }
+
+  /* Paneles laterales → ancho completo */
+  .app-window--panel,
+  .app-window--panel-sm,
+  .app-window--panel-md,
+  .app-window--panel-lg {
+    max-width: 100% !important;
+    border-radius: 0;
+  }
+
+  /* Cerrar: botón circular gris tipo iOS (tap cómodo) en vez del punto rojo de 12 px */
+  .app-window__dot--min,
+  .app-window__dot--max {
+    display: none;
+  }
+
+  .app-window__dot--close {
+    position: relative;
+    width: 1.875rem;
+    height: 1.875rem;
+    border: 0;
+    background: rgba(118, 118, 128, 0.16);
+    box-shadow: none;
+  }
+
+  .app-window__dot--close::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 0.75rem;
+    height: 0.75rem;
+    background:
+      linear-gradient(45deg, transparent 44%, #6b6b70 44%, #6b6b70 56%, transparent 56%),
+      linear-gradient(-45deg, transparent 44%, #6b6b70 44%, #6b6b70 56%, transparent 56%);
+  }
+
+  .app-window__spacer {
+    width: 1.875rem;
+  }
+
+  .app-window__footer {
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+  }
+
+  /* Botones de pie de modal: grandes y a lo ancho, como en iOS */
+  .app-window-footer-actions > * {
+    flex: 1;
+    min-height: 2.75rem;
+  }
+
+  /* Tablero Kanban: las listas “encajan” al deslizar */
+  .kanban-board-scroll {
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 1rem;
+  }
+
+  .kanban-board-scroll > * {
+    scroll-snap-align: start;
+  }
+}
+
+/* Evita el zoom automático de iOS al enfocar un campo (exige 16 px o más). */
+@media (max-width: 639px) and (pointer: coarse) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+@keyframes ql-sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-window {
+    animation: none !important;
   }
 }

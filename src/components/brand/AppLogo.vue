@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-const LOGO_SRC = '/image/logo/logo-app.png'
+const LOGO_SRC = '/image/logo/logo-app-160.webp'
 
 const props = withDefaults(
   defineProps<{
@@ -35,6 +35,8 @@ const sizeClass = computed(() => {
     alt="QuinList — software de gestión de proyectos"
     class="shrink-0 object-contain"
     :class="[sizeClass, rounded ? 'rounded-[22%]' : '', props.class]"
+    width="160"
+    height="160"
     :loading="eager ? 'eager' : 'lazy'"
     decoding="async"
     draggable="false"

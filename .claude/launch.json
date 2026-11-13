@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "quinlist-prod-preview",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "dist", "-l", "3012"],
+      "port": 3012
+    }
+  ]
+}
