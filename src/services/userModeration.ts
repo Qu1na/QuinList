@@ -10,6 +10,7 @@ interface DbProfileModeration {
   email: string
   avatar?: string
   initials: string
+  provider?: string | null
   suspended_at?: string | null
   suspended_until?: string | null
   suspended_reason?: string | null
@@ -24,6 +25,7 @@ export function profileToUser(row: DbProfileModeration): User {
     email: row.email,
     avatar: row.avatar ?? '',
     initials: row.initials,
+    provider: row.provider === 'google' ? 'google' : 'email',
     suspendedAt: row.suspended_at ?? null,
     suspendedUntil: row.suspended_until ?? null,
     suspendedReason: row.suspended_reason ?? null,

@@ -214,7 +214,7 @@ onMounted(async () => {
           ${{ priceUsd }} <span class="text-lg font-bold">USD</span>
         </p>
         <p class="mt-1 text-sm text-[#626f86]">
-          al mes<span v-if="priceCop"> · aprox. {{ priceCop }}</span>
+          al mes<span v-if="priceCop"></span>
           · cancela cuando quieras
         </p>
 

@@ -46,9 +46,14 @@ const PATTERNS: Array<{ test: RegExp; message: string }> = [
       'El enlace de recuperación no es válido o ya caducó. Solicita uno nuevo desde el inicio de sesión.',
   },
   {
-    test: /401|403|unauthorized|forbidden|oauth/i,
+    test: /matudb.*401|401.*google|oauth.*google|invalid\s*(id\s*)?token|audience|client[_ ]?id/i,
     message:
-      'No pudimos completar el inicio con Google. Verifica la configuración OAuth en MatuDB e inténtalo de nuevo.',
+      'Google no pudo validarse en el servidor de cuentas. En MatuDB, activa OAuth Google y pega el mismo Client ID (y secreto) que usas en QuinList.',
+  },
+  {
+    test: /401|403|unauthorized|forbidden/i,
+    message:
+      'No pudimos completar el inicio con Google. Revisa la configuración OAuth en MatuDB e inténtalo de nuevo.',
   },
   {
     test: /tardó demasiado|timeout|timed?\s*out/i,
@@ -95,6 +100,11 @@ export function localizeAuthError(
 export const AUTH_LOGIN_FAIL_TITLE = 'No pudimos entrar'
 export const AUTH_LOGIN_FAIL_MESSAGE =
   'Revisa tu correo y tu contraseña. Si olvidaste la clave, usa “¿Olvidaste tu contraseña?” para recuperarla.'
+
+/** Cuenta creada con email/password; el usuario intentó entrar con Google. */
+export const AUTH_GOOGLE_EMAIL_ACCOUNT_TITLE = 'Cuenta existente'
+export const AUTH_GOOGLE_EMAIL_ACCOUNT_MESSAGE =
+  'Este correo ya tiene una cuenta. Inicia sesión con tu email y contraseña.'
 
 export const AUTH_RESET_NOT_FOUND_TITLE = 'Correo no registrado'
 export const AUTH_RESET_NOT_FOUND_MESSAGE =

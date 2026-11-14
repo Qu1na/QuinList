@@ -9,6 +9,7 @@ import {
   createDefaultWorkspace,
   ensureUserProfile,
   profileFromAuth,
+  searchProfileByEmail,
 } from '@/services/matuData'
 import { acceptPendingBoardInvites } from '@/services/boardShare'
 import {
@@ -17,7 +18,10 @@ import {
 } from '@/services/userModeration'
 import { isUserSuspended } from '@/utils/permissions'
 import { isGoogleAuthConfigured, peekGoogleIdToken, requestGoogleIdToken } from '@/lib/googleAuth'
-import { localizeAuthError } from '@/utils/authMessages'
+import {
+  AUTH_GOOGLE_EMAIL_ACCOUNT_MESSAGE,
+  localizeAuthError,
+} from '@/utils/authMessages'
 
 export const useAuthStore = defineStore('auth', () => {
   const currentUserId = ref<string | null>(null)
@@ -31,8 +35,8 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isAuthenticated = computed(() => currentUserId.value !== null)
   const useDatabase = computed(() => isMatuConfigured())
-  /** Visible when MatuDB is configured; Client ID is checked on click. */
-  const googleAuthEnabled = computed(() => isMatuConfigured())
+  /** Google listo cuando MatuDB + VITE_GOOGLE_CLIENT_ID están configurados. */
+  const googleAuthEnabled = computed(() => isMatuConfigured() && isGoogleAuthConfigured())
 
   function fail(message: string | null | undefined, fallback?: string) {
     const localized = localizeAuthError(message, fallback)
@@ -178,7 +182,7 @@ export const useAuthStore = defineStore('auth', () => {
         return fail(null, 'No pudimos crear tu cuenta. Inténtalo de nuevo.')
       }
 
-      const profile = profileFromAuth(data.user.id, data.user.email, name.trim())
+      const profile = profileFromAuth(data.user.id, data.user.email, name.trim(), null, 'email')
       currentUserId.value = data.user.id
       users.value = [profile]
 
@@ -274,9 +278,15 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  /** provider vacío / null / distinto de google = cuenta de correo. */
+  function isEmailPasswordAccount(provider: User['provider'] | null | undefined): boolean {
+    return provider !== 'google'
+  }
+
   /**
    * Google OAuth: GIS credential → MatuDB JWT → profiles + workspace bootstrap.
    * New Google users get a default workspace (same as email register).
+   * Si el correo ya existe con provider email (o vacío), no mezclamos métodos.
    */
   async function loginWithGoogle(): Promise<{ ok: boolean; error?: string }> {
     authError.value = null
@@ -295,9 +305,23 @@ export const useAuthStore = defineStore('auth', () => {
       suppressAuthBootstrap = true
       const credential = await requestGoogleIdToken()
       const googleClaims = peekGoogleIdToken(credential)
+      const previewEmail = (googleClaims.email || '').trim().toLowerCase()
+
+      if (previewEmail) {
+        const existing = await searchProfileByEmail(previewEmail)
+        if (existing && isEmailPasswordAccount(existing.provider)) {
+          return fail(null, AUTH_GOOGLE_EMAIL_ACCOUNT_MESSAGE)
+        }
+      }
 
       const { data, error } = await signInWithGoogleCredential(credential)
       if (error || !data) {
+        if (previewEmail) {
+          const existing = await searchProfileByEmail(previewEmail)
+          if (existing && isEmailPasswordAccount(existing.provider)) {
+            return fail(null, AUTH_GOOGLE_EMAIL_ACCOUNT_MESSAGE)
+          }
+        }
         return fail(error, 'No pudimos iniciar sesión con Google. Inténtalo de nuevo.')
       }
 
@@ -307,21 +331,41 @@ export const useAuthStore = defineStore('auth', () => {
         return fail(null, 'Google no compartió un correo válido para esta cuenta.')
       }
 
+      const existingAfter = await searchProfileByEmail(email)
+      if (
+        existingAfter &&
+        existingAfter.id !== data.user.id &&
+        isEmailPasswordAccount(existingAfter.provider)
+      ) {
+        await getMatuClient().auth.signOut()
+        return fail(null, AUTH_GOOGLE_EMAIL_ACCOUNT_MESSAGE)
+      }
+
       const name = data.user.name || googleClaims.name || null
       const avatar = googleClaims.picture || null
 
       currentUserId.value = data.user.id
-      const profile = await bootstrapAppUser(data.user.id, email, name, avatar)
-      const moderated = (await loadProfileById(data.user.id)) ?? profile
+      try {
+        const profile = await bootstrapAppUser(data.user.id, email, name, avatar, 'google')
+        const moderated = (await loadProfileById(data.user.id)) ?? profile
 
-      if (isUserSuspended(moderated)) {
+        if (isUserSuspended(moderated)) {
+          await getMatuClient().auth.signOut()
+          currentUserId.value = null
+          return fail(suspensionMessage(moderated))
+        }
+
+        mergeUser(moderated)
+        return { ok: true }
+      } catch (bootErr) {
         await getMatuClient().auth.signOut()
         currentUserId.value = null
-        return fail(suspensionMessage(moderated))
+        const bootMsg = bootErr instanceof Error ? bootErr.message : String(bootErr)
+        if (/correo|email|already|existe|perfil/i.test(bootMsg)) {
+          return fail(null, AUTH_GOOGLE_EMAIL_ACCOUNT_MESSAGE)
+        }
+        return fail(bootMsg, 'No pudimos iniciar sesión con Google. Inténtalo de nuevo.')
       }
-
-      mergeUser(moderated)
-      return { ok: true }
     } catch (err) {
       return fail(formatMatuNetworkError(err))
     } finally {

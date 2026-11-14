@@ -101,3 +101,24 @@ CREATE TRIGGER quinlist_project_plan_limit
   BEFORE INSERT ON projects
   FOR EACH ROW
   EXECUTE FUNCTION quinlist_enforce_project_plan();
+
+-- MatuDB /data inserta con search_path=public; sin esto el trigger lee public.workspaces
+-- (sin owner_id) y falla. Ejecutar en el schema del proyecto (consola SQL de MatuDB):
+--   ALTER FUNCTION quinlist_enforce_board_plan() SET search_path TO current_schema, public;
+--   ALTER FUNCTION quinlist_enforce_project_plan() SET search_path TO current_schema, public;
+--   ALTER FUNCTION quinlist_owner_is_vip(text) SET search_path TO current_schema, public;
+DO $$
+BEGIN
+  EXECUTE format(
+    'ALTER FUNCTION quinlist_enforce_board_plan() SET search_path TO %I, public',
+    current_schema()
+  );
+  EXECUTE format(
+    'ALTER FUNCTION quinlist_enforce_project_plan() SET search_path TO %I, public',
+    current_schema()
+  );
+  EXECUTE format(
+    'ALTER FUNCTION quinlist_owner_is_vip(text) SET search_path TO %I, public',
+    current_schema()
+  );
+END $$;

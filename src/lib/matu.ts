@@ -122,71 +122,67 @@ export async function signInWithGoogleCredential(
     clientId,
   }
 
-  const paths = [`${base}/oauth/google`, `${base}/google`, `${base}/oauth`]
-
-  let lastStatus = 0
-  let lastMessage = ''
-
   try {
-    for (const url of paths) {
-      const res = await fetch(url, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(body),
-      })
+    const res = await fetch(`${base}/oauth/google`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body),
+    })
 
-      const json = (await res.json().catch(() => ({}))) as {
-        message?: string
-        error?: string
-        data?: { user?: AuthUser; token?: string }
-      }
+    const json = (await res.json().catch(() => ({}))) as {
+      message?: string
+      error?: string
+      data?: { user?: AuthUser; token?: string }
+    }
 
-      lastStatus = res.status
-      lastMessage = json.message || json.error || ''
+    const message = json.message || json.error || ''
 
-      if (res.status === 404) continue
-
-      if (!res.ok) {
-        if (res.status === 401 || res.status === 403) {
-          return {
-            data: null,
-            error:
-              lastMessage ||
-              'MatuDB rechazó Google (401). En el panel de MatuDB activa OAuth Google y pega el mismo Client ID que VITE_GOOGLE_CLIENT_ID.',
-          }
-        }
+    if (!res.ok) {
+      if (res.status === 404) {
         return {
           data: null,
           error:
-            lastMessage ||
-            `No pudimos completar el inicio con Google (${res.status}).`,
+            'MatuDB no tiene endpoint OAuth Google. Despliega matu-db-api y actívalo en Auth → Providers.',
         }
       }
-
-      const user = json.data?.user
-      const token = json.data?.token
-      if (!user?.id || !token) {
-        return { data: null, error: 'Respuesta OAuth inválida desde MatuDB' }
+      if (res.status === 403) {
+        return {
+          data: null,
+          error:
+            message ||
+            'Google no está activado en este proyecto. En MatuDB → Auth → Providers activa Google y pega el Client ID.',
+        }
       }
-
-      applyMatuAuthSession(user, token, { emit: false })
-      return { data: { user, token }, error: null }
-    }
-
-    if (lastStatus === 404 || lastStatus === 0) {
+      if (res.status === 409) {
+        return {
+          data: null,
+          error:
+            message ||
+            'Ya existe una cuenta con este correo y contraseña. Inicia sesión con email o vincula Google desde el panel.',
+        }
+      }
+      if (res.status === 401) {
+        return {
+          data: null,
+          error:
+            message ||
+            'Google no pudo validarse. Revisa que el Client ID en MatuDB sea el mismo que VITE_GOOGLE_CLIENT_ID.',
+        }
+      }
       return {
         data: null,
-        error:
-          'MatuDB no tiene endpoint OAuth Google. Actívalo en el servidor (POST /auth/oauth/google) con el Client ID de Google.',
+        error: message || `No pudimos completar el inicio con Google (${res.status}).`,
       }
     }
 
-    return {
-      data: null,
-      error:
-        lastMessage ||
-        `No pudimos completar el inicio con Google (${lastStatus || 'sin respuesta'}).`,
+    const user = json.data?.user
+    const token = json.data?.token
+    if (!user?.id || !token) {
+      return { data: null, error: 'Respuesta OAuth inválida desde MatuDB' }
     }
+
+    applyMatuAuthSession(user, token, { emit: false })
+    return { data: { user, token }, error: null }
   } catch (err) {
     return { data: null, error: formatMatuNetworkError(err) }
   }

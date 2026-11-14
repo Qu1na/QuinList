@@ -25,6 +25,7 @@ interface DbProfile {
   email: string
   avatar: string
   initials: string
+  provider?: string | null
   suspended_at?: string | null
   suspended_until?: string | null
   suspended_reason?: string | null
@@ -104,6 +105,10 @@ function initialsFromName(name: string): string {
     .join('')
 }
 
+function normalizeProvider(value: string | null | undefined): User['provider'] {
+  return value === 'google' ? 'google' : 'email'
+}
+
 function toUser(row: DbProfile): User {
   return {
     id: row.id,
@@ -111,6 +116,7 @@ function toUser(row: DbProfile): User {
     email: row.email,
     avatar: row.avatar ?? '',
     initials: row.initials,
+    provider: normalizeProvider(row.provider),
     suspendedAt: row.suspended_at ?? null,
     suspendedUntil: row.suspended_until ?? null,
     suspendedReason: row.suspended_reason ?? null,
@@ -556,6 +562,7 @@ export async function saveProfile(user: User): Promise<void> {
     email: user.email.trim().toLowerCase(),
     avatar: user.avatar ?? '',
     initials: user.initials,
+    provider: user.provider === 'google' ? 'google' : 'email',
   })
 }
 
@@ -575,6 +582,7 @@ export async function ensureUserProfile(user: User): Promise<User> {
   const normalized: User = {
     ...user,
     email: user.email.trim().toLowerCase(),
+    provider: user.provider === 'google' ? 'google' : 'email',
   }
 
   const byEmail = await searchProfileByEmail(normalized.email)
@@ -1005,6 +1013,7 @@ export function profileFromAuth(
   email: string,
   name?: string | null,
   avatar?: string | null,
+  provider: User['provider'] = 'email',
 ): User {
   const normalizedEmail = email.trim().toLowerCase()
   const displayName = name?.trim() || normalizedEmail.split('@')[0] || 'Usuario'
@@ -1014,6 +1023,7 @@ export function profileFromAuth(
     email: normalizedEmail,
     avatar: avatar?.trim() || '',
     initials: initialsFromName(displayName),
+    provider: provider === 'google' ? 'google' : 'email',
   }
 }
 
@@ -1026,8 +1036,9 @@ export async function bootstrapAppUser(
   email: string,
   name?: string | null,
   avatar?: string | null,
+  provider: User['provider'] = 'email',
 ): Promise<User> {
-  const draft = profileFromAuth(userId, email, name, avatar)
+  const draft = profileFromAuth(userId, email, name, avatar, provider)
   const profile = await ensureUserProfile(draft)
 
   try {
@@ -1053,6 +1064,39 @@ export async function bootstrapAppUser(
     const hasWorkspace = Array.isArray(memberships) && memberships.length > 0
     if (!hasWorkspace) {
       await createDefaultWorkspace(userId, profile.name)
+    } else {
+      // Si el workspace quedó huérfano (p.ej. falló el INSERT del tablero por un trigger),
+      // creamos el tablero por defecto en el primer espacio del usuario.
+      const { data: memberRows } = await db
+        .from('workspace_members')
+        .select('workspace_id')
+        .eq('user_id', userId)
+        .limit(1)
+      const workspaceId = (memberRows as { workspace_id?: string }[] | null)?.[0]?.workspace_id
+      if (workspaceId) {
+        const { data: boardRows } = await db
+          .from('boards')
+          .select('id')
+          .eq('workspace_id', workspaceId)
+          .limit(1)
+        const hasBoard = Array.isArray(boardRows) && boardRows.length > 0
+        if (!hasBoard) {
+          const board: Board = {
+            id: generateId(),
+            workspaceId,
+            title: 'Mi primer tablero',
+            slug: 'mi-primer-tablero',
+            description: '',
+            background: 'ocean',
+            starred: false,
+            integrations: defaultBoardIntegrations(),
+            labels: [],
+            lists: [],
+            createdAt: todayCalendarDate(),
+          }
+          await insertBoard(board)
+        }
+      }
     }
   } catch (err) {
     console.warn('[matuData] bootstrap workspace:', err)

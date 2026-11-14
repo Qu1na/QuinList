@@ -11,10 +11,13 @@ import { useProjectsStore } from '@/stores/projects'
 import { REDIRECT_KEY } from '@/router'
 import { consumeVipIntent, rememberStartPlan } from '@/lib/startPlan'
 import {
+  AUTH_GOOGLE_EMAIL_ACCOUNT_MESSAGE,
+  AUTH_GOOGLE_EMAIL_ACCOUNT_TITLE,
   AUTH_LOGIN_FAIL_MESSAGE,
   AUTH_LOGIN_FAIL_TITLE,
   localizeAuthError,
 } from '@/utils/authMessages'
+import { preloadGoogleAuth } from '@/lib/googleAuth'
 
 const auth = useAuthStore()
 const store = useQuinListStore()
@@ -27,6 +30,7 @@ const password = ref('')
 const showPassword = ref(false)
 const remember = ref(true)
 const loading = ref(false)
+const googleLoading = ref(false)
 const showForgot = ref(false)
 
 const noticeOpen = ref(false)
@@ -46,6 +50,7 @@ onMounted(() => {
   const saved = localStorage.getItem('quinlist_remember_email')
   if (saved) email.value = saved
   else if (!auth.useDatabase) email.value = demoUsers[0]!.email
+  if (auth.googleAuthEnabled) preloadGoogleAuth()
 })
 
 onUnmounted(() => document.documentElement.classList.remove('auth-screen'))
@@ -102,13 +107,43 @@ async function submit() {
 function openForgot() {
   showForgot.value = true
 }
+
+async function submitGoogle() {
+  if (!auth.googleAuthEnabled || googleLoading.value || loading.value) return
+  googleLoading.value = true
+  try {
+    const result = await auth.loginWithGoogle()
+    if (!result.ok) {
+      const message = localizeAuthError(result.error, AUTH_LOGIN_FAIL_MESSAGE)
+      const isEmailAccount =
+        message === AUTH_GOOGLE_EMAIL_ACCOUNT_MESSAGE ||
+        /email y contraseña|correo ya tiene/i.test(message)
+      showNotice(
+        isEmailAccount ? AUTH_GOOGLE_EMAIL_ACCOUNT_TITLE : AUTH_LOGIN_FAIL_TITLE,
+        message,
+        'error',
+      )
+      return
+    }
+    await afterAuthSuccess()
+  } finally {
+    googleLoading.value = false
+  }
+}
 </script>
 
 <template>
   <AuthLayout title="Inicia sesión" subtitle="¡Bienvenido! Elige cómo quieres entrar:">
     <div v-if="auth.useDatabase" class="mb-5 grid grid-cols-2 gap-3">
-      <button type="button" class="auth-social-btn" disabled title="Próximamente">
-        <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24">
+      <button
+        type="button"
+        class="auth-social-btn"
+        :disabled="!auth.googleAuthEnabled || googleLoading || loading"
+        :title="auth.googleAuthEnabled ? 'Continuar con Google' : 'Configura VITE_GOOGLE_CLIENT_ID en .env'"
+        @click="submitGoogle"
+      >
+        <Loader2 v-if="googleLoading" :size="18" class="animate-spin text-[#64748b]" />
+        <svg v-else class="h-[18px] w-[18px]" viewBox="0 0 24 24">
           <path
             fill="#4285F4"
             d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"

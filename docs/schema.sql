@@ -7,6 +7,7 @@
     email TEXT NOT NULL UNIQUE,
     avatar TEXT DEFAULT '',
     initials TEXT NOT NULL,
+    provider TEXT NOT NULL DEFAULT 'email',
     suspended_at TIMESTAMPTZ,
     suspended_until TIMESTAMPTZ,
     suspended_reason TEXT,

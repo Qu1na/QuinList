@@ -50,8 +50,8 @@ export default defineConfig(({ mode, isSsrBuild }) => ({
     },
     headers: {
       'Cache-Control': 'no-store',
-      // Allows Google OAuth popup ↔ opener postMessage (avoids noisy COOP blocks).
-      'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+      // Sin COOP estricto: Google GIS usa postMessage entre popup y opener.
+      'Cross-Origin-Opener-Policy': 'unsafe-none',
       // Embeber QuinList dentro de Sizor (Tableros)
       'Content-Security-Policy':
         "frame-ancestors 'self' https://sizor.online https://*.sizor.online http://localhost:5173 http://127.0.0.1:5173",

@@ -8,9 +8,14 @@ import { useAuthStore } from '@/stores/auth'
 import { useQuinListStore } from '@/stores/quinlist'
 import { useProjectsStore } from '@/stores/projects'
 import { REDIRECT_KEY } from '@/router'
-import { localizeAuthError } from '@/utils/authMessages'
+import {
+  AUTH_GOOGLE_EMAIL_ACCOUNT_MESSAGE,
+  AUTH_GOOGLE_EMAIL_ACCOUNT_TITLE,
+  localizeAuthError,
+} from '@/utils/authMessages'
 import { consumeVipIntent, readStartPlan, rememberStartPlan, type StartPlan } from '@/lib/startPlan'
 import { VIP_PRICE_USD } from '@/config/plans'
+import { preloadGoogleAuth } from '@/lib/googleAuth'
 
 const auth = useAuthStore()
 const store = useQuinListStore()
@@ -25,6 +30,7 @@ const confirmPassword = ref('')
 const showPassword = ref(false)
 const acceptTerms = ref(false)
 const loading = ref(false)
+const googleLoading = ref(false)
 const startPlan = ref<StartPlan>('free')
 
 const noticeOpen = ref(false)
@@ -37,6 +43,7 @@ onMounted(() => {
   const fromQuery = route.query.plan === 'vip' ? 'vip' : route.query.plan === 'free' ? 'free' : readStartPlan()
   startPlan.value = fromQuery
   rememberStartPlan(fromQuery)
+  if (auth.googleAuthEnabled) preloadGoogleAuth()
 })
 onUnmounted(() => document.documentElement.classList.remove('auth-screen'))
 
@@ -67,6 +74,36 @@ async function afterAuthSuccess() {
     await router.push(redirect)
   } else {
     await router.push({ name: 'home' })
+  }
+}
+
+async function submitGoogle() {
+  if (!auth.googleAuthEnabled || googleLoading.value || loading.value) return
+  if (!acceptTerms.value) {
+    showNotice('Términos', 'Acepta los términos y la política de privacidad para continuar.', 'info')
+    return
+  }
+  googleLoading.value = true
+  try {
+    const result = await auth.loginWithGoogle()
+    if (!result.ok) {
+      const message = localizeAuthError(
+        result.error,
+        'Inténtalo de nuevo en unos momentos.',
+      )
+      const isEmailAccount =
+        message === AUTH_GOOGLE_EMAIL_ACCOUNT_MESSAGE ||
+        /email y contraseña|correo ya tiene/i.test(message)
+      showNotice(
+        isEmailAccount ? AUTH_GOOGLE_EMAIL_ACCOUNT_TITLE : 'No pudimos crear tu cuenta',
+        message,
+        'error',
+      )
+      return
+    }
+    await afterAuthSuccess()
+  } finally {
+    googleLoading.value = false
   }
 }
 
@@ -156,8 +193,15 @@ async function submit() {
       </div>
 
       <div class="mb-4 grid grid-cols-2 gap-3">
-        <button type="button" class="auth-social-btn" disabled title="Próximamente">
-          <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24">
+        <button
+          type="button"
+          class="auth-social-btn"
+          :disabled="!auth.googleAuthEnabled || googleLoading || loading"
+          :title="auth.googleAuthEnabled ? 'Registrarte con Google' : 'Configura VITE_GOOGLE_CLIENT_ID en .env'"
+          @click="submitGoogle"
+        >
+          <Loader2 v-if="googleLoading" :size="18" class="animate-spin text-[#64748b]" />
+          <svg v-else class="h-[18px] w-[18px]" viewBox="0 0 24 24">
             <path
               fill="#4285F4"
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"

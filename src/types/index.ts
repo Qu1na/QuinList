@@ -1,4 +1,7 @@
 export type UserRole = 'owner' | 'admin' | 'member' | 'viewer'
+
+/** Cómo se creó / autentica la cuenta (profiles.provider). */
+export type AuthProvider = 'email' | 'google'
 export type Priority = 'alta' | 'media' | 'baja'
 export type NotificationType =
   | 'card_assigned'
@@ -19,6 +22,8 @@ export interface User {
   email: string
   avatar: string
   initials: string
+  /** email = correo/contraseña · google = OAuth Google */
+  provider?: AuthProvider
   /** Platform suspension start (ISO). Null = not suspended. */
   suspendedAt?: string | null
   /** When suspension ends. Null with suspendedAt = indefinite. */
