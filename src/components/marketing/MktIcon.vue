@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { Component } from 'vue'
 import {
-  Bot,
   Briefcase,
   Bug,
   Building2,
@@ -9,9 +8,11 @@ import {
   Camera,
   ChartColumn,
   ChartPie,
+  CircleDollarSign,
   Clock,
   CodeXml,
   Coins,
+  Cpu,
   Download,
   Eye,
   FileText,
@@ -30,6 +31,7 @@ import {
   MessagesSquare,
   Milestone,
   Paperclip,
+  PenLine,
   QrCode,
   Radio,
   Receipt,
@@ -37,7 +39,6 @@ import {
   Share2,
   Shield,
   Smartphone,
-  Sparkles,
   SquareChartGantt,
   Store,
   Tags,
@@ -46,7 +47,6 @@ import {
   TrendingUp,
   TriangleAlert,
   Users,
-  Wallet,
   Webhook,
   Workflow,
   Zap,
@@ -56,7 +56,6 @@ import type { IconName } from '@/seo/showcase'
 
 /** Íconos de las páginas de solución. Solo se incluyen los que se usan (tree-shaking). */
 const ICONS: Record<IconName, Component> = {
-  Bot,
   Briefcase,
   Bug,
   Building2,
@@ -64,9 +63,11 @@ const ICONS: Record<IconName, Component> = {
   Camera,
   ChartColumn,
   ChartPie,
+  CircleDollarSign,
   Clock,
   CodeXml,
   Coins,
+  Cpu,
   Download,
   Eye,
   FileText,
@@ -85,6 +86,7 @@ const ICONS: Record<IconName, Component> = {
   MessagesSquare,
   Milestone,
   Paperclip,
+  PenLine,
   QrCode,
   Radio,
   Receipt,
@@ -92,7 +94,6 @@ const ICONS: Record<IconName, Component> = {
   Share2,
   Shield,
   Smartphone,
-  Sparkles,
   SquareChartGantt,
   Store,
   Tags,
@@ -101,16 +102,24 @@ const ICONS: Record<IconName, Component> = {
   TrendingUp,
   TriangleAlert,
   Users,
-  Wallet,
   Webhook,
   Workflow,
   Zap,
   Bell,
 }
 
-defineProps<{ name: IconName; size?: number }>()
+withDefaults(
+  defineProps<{ name: IconName; size?: number; strokeWidth?: number }>(),
+  { size: 20, strokeWidth: 1.5 },
+)
 </script>
 
 <template>
-  <component :is="ICONS[name]" :size="size ?? 20" aria-hidden="true" />
+  <component
+    :is="ICONS[name]"
+    :size="size"
+    :stroke-width="strokeWidth"
+    absolute-stroke-width
+    aria-hidden="true"
+  />
 </template>

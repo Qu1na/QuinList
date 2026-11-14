@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { Sparkles, Send } from '@lucide/vue'
+import { Cpu, Send } from '@lucide/vue'
 import { useBillingStore } from '@/stores/billing'
 import { useQuinListStore } from '@/stores/quinlist'
 import { useProjectsStore } from '@/stores/projects'
@@ -77,7 +77,7 @@ async function send() {
   <div class="mx-auto flex h-full min-h-0 w-full max-w-3xl flex-col px-6 py-6">
     <div class="mb-4">
       <p class="flex items-center gap-2 text-xs font-semibold tracking-wide text-[#6554c0] uppercase">
-        <Sparkles :size="14" />
+        <Cpu :size="14" />
         Asistente
       </p>
       <h1 class="mt-1 text-2xl font-bold text-[#172b4d]">IA de QuinList</h1>

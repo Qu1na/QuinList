@@ -14,25 +14,25 @@ void props
 
 <template>
   <section id="faq" class="bg-white py-20 lg:py-28" aria-labelledby="faq-heading">
-    <div class="mx-auto grid max-w-6xl gap-10 px-5 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16 lg:px-8">
+    <div class="mx-auto grid max-w-[1200px] gap-10 px-5 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16 lg:px-8">
       <!-- Columna de contexto -->
       <div class="lg:sticky lg:top-28 lg:self-start">
         <p class="ql-eyebrow">Preguntas frecuentes</p>
-        <h2 id="faq-heading" class="mt-3 text-3xl font-bold text-[#172b4d] lg:text-[2.6rem] lg:leading-[1.1]">{{ title }}</h2>
-        <p class="mt-4 max-w-md text-[15px] leading-relaxed text-[#44546f]">
+        <h2 id="faq-heading" class="mt-3 text-[2rem] leading-[1.15] text-[#101214] lg:text-[2.75rem] lg:leading-[1.14]">{{ title }}</h2>
+        <p class="mt-4 max-w-md text-[15px] leading-relaxed text-[#42526e]">
           Respuestas cortas y claras. Si te queda alguna duda, te respondemos personalmente.
         </p>
 
-        <div class="mt-8 flex items-start gap-4 rounded-2xl bg-[#2a72a8] p-5 text-white">
-          <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/15">
-            <MessageCircleQuestion :size="22" aria-hidden="true" />
+        <div class="mt-8 flex items-start gap-4 rounded-[20px] border border-[#dfe1e6] bg-[#f7f8fa] p-6 text-[#101214]">
+          <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-[#dfe1e6] bg-white text-[#101214]">
+            <MessageCircleQuestion :size="20" :stroke-width="1.5" aria-hidden="true" />
           </span>
           <div class="min-w-0">
             <p class="font-semibold">¿Hablamos?</p>
-            <p class="mt-1 text-sm text-white">Escríbenos y te mostramos QuinList con tus propios proyectos.</p>
+            <p class="mt-1 text-[14px] text-[#292a2e]">Escríbenos y te mostramos QuinList con tus propios proyectos.</p>
             <a
               href="mailto:contacto@matubyte.com"
-              class="mt-3 inline-flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm font-semibold text-[#215d8a] hover:bg-[#eef5fb]"
+              class="ql-btn mt-4 px-4 py-2 text-[14px]"
             >
               <Mail :size="15" aria-hidden="true" /> contacto@matubyte.com
             </a>
@@ -41,20 +41,20 @@ void props
       </div>
 
       <!-- Lista agrupada estilo iOS -->
-      <div class="ql-grouped self-start shadow-[0_12px_32px_-24px_rgba(23,43,77,0.4)]">
+      <div class="ql-grouped self-start">
         <div v-for="(f, i) in faqs" :key="f.q">
           <h3>
             <button
               type="button"
-              class="flex w-full items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-[#f6f8fb] lg:px-6 lg:py-5"
+              class="group flex w-full items-center gap-4 py-5 text-left"
               :aria-expanded="open === i"
               :aria-controls="`${idPrefix}-panel-${i}`"
               @click="open = open === i ? null : i"
             >
-              <span class="flex-1 text-[15px] font-semibold leading-snug text-[#172b4d] lg:text-base">{{ f.q }}</span>
+              <span class="ql-display flex-1 text-[18px] font-medium leading-snug text-[#101214] group-hover:text-[#1868db] lg:text-[20px]">{{ f.q }}</span>
               <span
                 class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition-all duration-300"
-                :class="open === i ? 'rotate-180 bg-[#2a72a8] text-white' : 'bg-[#eef5fb] text-[#2a72a8]'"
+                :class="open === i ? 'rotate-180 bg-[#101214] text-white' : 'bg-[#f0f1f2] text-[#101214]'"
                 aria-hidden="true"
               >
                 <ChevronDown :size="16" />
@@ -68,7 +68,7 @@ void props
             :class="open === i ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'"
           >
             <div class="overflow-hidden">
-              <p class="px-5 pb-5 text-[15px] leading-relaxed text-[#44546f] lg:px-6">{{ f.a }}</p>
+              <p class="max-w-2xl pb-6 pr-12 text-[16px] leading-relaxed text-[#292a2e]">{{ f.a }}</p>
             </div>
           </div>
         </div>

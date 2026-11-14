@@ -1,140 +1,96 @@
 <script setup lang="ts">
-/**
- * Dock de funciones con magnificación estilo macOS.
- * Al pasar el mouse, los íconos cercanos crecen según la distancia al cursor (una sola
- * variable CSS por ícono, actualizada en requestAnimationFrame). En táctil no hay
- * magnificación: el dock es un carril horizontal y se elige con un toque.
- */
-import { computed, ref } from 'vue'
 import { RouterLink } from 'vue-router'
-import { ArrowRight, Check } from '@lucide/vue'
+import { ArrowRight } from '@lucide/vue'
+import MktConfetti from '@/components/marketing/MktConfetti.vue'
 import MktIcon from '@/components/marketing/MktIcon.vue'
-import { ACCENT } from '@/components/marketing/accent'
 import { pagesOfKind } from '@/seo/marketing'
 import { showcaseByPath } from '@/seo/showcase'
 
 const items = pagesOfKind('solucion')
   .map((page) => ({ page, sc: showcaseByPath[page.path]! }))
   .filter((x) => !!x.sc)
-
-const active = ref(0)
-const current = computed(() => items[active.value]!)
-const dock = ref<HTMLElement | null>(null)
-const itemEls = ref<HTMLElement[]>([])
-let raf = 0
-let lastX = 0
-
-const RANGE = 140
-const BOOST = 0.55
-
-function apply() {
-  raf = 0
-  const host = dock.value
-  if (!host) return
-  // offsetLeft no incluye el transform: el centro real no “salta” al agrandarse el ícono.
-  const base = host.getBoundingClientRect().left - host.scrollLeft
-  for (const el of itemEls.value) {
-    const d = Math.abs(lastX - (base + el.offsetLeft + el.offsetWidth / 2))
-    const s = 1 + BOOST * Math.max(0, 1 - d / RANGE) ** 2
-    el.style.setProperty('--s', s.toFixed(3))
-  }
-}
-
-function onMove(e: PointerEvent) {
-  if (e.pointerType !== 'mouse') return
-  lastX = e.clientX
-  if (!raf) raf = requestAnimationFrame(apply)
-}
-
-function onLeave() {
-  cancelAnimationFrame(raf)
-  raf = 0
-  for (const el of itemEls.value) el.style.setProperty('--s', '1')
-}
 </script>
 
 <template>
-  <section id="funciones" class="relative overflow-hidden bg-[#2a72a8] py-20 text-white lg:py-28" aria-labelledby="dock-heading">
-    <!-- Fondo de escritorio: puntos sobre azul sólido -->
-    <div
-      class="pointer-events-none absolute inset-0 opacity-30"
-      aria-hidden="true"
-      style="background-image: radial-gradient(rgba(255, 255, 255, 0.4) 1px, transparent 1px); background-size: 22px 22px"
-    />
-    <div class="relative mx-auto max-w-6xl px-5 lg:px-8">
+  <section id="funciones" class="relative overflow-hidden bg-[#101214] py-20 text-white lg:py-28" aria-labelledby="features-heading">
+    <MktConfetti side="left" variant="b" />
+    <MktConfetti side="right" variant="a" />
+    <div class="relative mx-auto max-w-[1200px] px-10 sm:px-14 lg:px-[110px]">
       <div class="mx-auto max-w-2xl text-center">
         <p class="ql-eyebrow ql-eyebrow--light">Funciones</p>
-        <h2 id="dock-heading" class="mt-3 text-3xl font-bold text-white lg:text-[2.75rem] lg:leading-[1.1]">
-          Todo lo que necesitas, en un solo dock
+        <h2 id="features-heading" class="mt-3 text-[2rem] leading-[1.15] text-white lg:text-[3rem] lg:leading-[1.14]">
+          Todo lo que necesita tu equipo
         </h2>
-        <p class="mt-4 text-[15px] leading-relaxed text-white lg:text-lg">
-          Pasa el mouse o toca cada ícono. Sin pagar cinco apps distintas.
+        <p class="mt-4 text-[15px] leading-relaxed text-white/75 lg:text-lg">
+          Kanban, proyectos, presupuesto, IA e integraciones en un solo lugar. Sin pagar cinco apps.
         </p>
       </div>
 
-      <div class="mt-10 flex flex-col md:mt-12">
-      <!-- Tarjeta de la función activa (en celular va debajo del dock) -->
-      <div class="order-2 mx-auto mt-6 w-full max-w-3xl md:order-1 md:mt-0">
-        <Transition mode="out-in" enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0 translate-y-2" leave-active-class="transition duration-150" leave-to-class="opacity-0">
-          <article :key="current.page.path" class="rounded-[1.6rem] bg-white p-6 text-[#172b4d] shadow-[0_30px_60px_-30px_rgba(15,28,51,0.6)] sm:p-8">
-            <div class="flex items-start gap-4">
-              <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl" :class="ACCENT[current.sc.accent].tile">
-                <MktIcon :name="current.sc.icon" :size="24" />
-              </span>
-              <div class="min-w-0">
-                <h3 class="text-xl font-bold sm:text-2xl">{{ current.page.navLabel }}</h3>
-                <p class="mt-1 text-[15px] text-[#44546f]">{{ current.page.description }}</p>
-              </div>
-            </div>
-            <ul class="mt-6 grid gap-2.5 sm:grid-cols-3">
-              <li v-for="f in current.sc.features.slice(0, 3)" :key="f.title" class="flex items-start gap-2 rounded-xl bg-[#f6f8fb] p-3 text-sm">
-                <Check :size="16" class="mt-0.5 shrink-0 text-emerald-600" aria-hidden="true" />
-                <span><b class="block font-semibold">{{ f.title }}</b><span class="text-[#5e6c84]">{{ f.text }}</span></span>
-              </li>
-            </ul>
-            <RouterLink :to="current.page.path" class="ql-btn mt-6 py-2.5 text-sm">
-              Ver {{ current.page.navLabel.toLowerCase() }} <ArrowRight :size="15" aria-hidden="true" />
-            </RouterLink>
-          </article>
-        </Transition>
-      </div>
-
-      <!-- Dock (en celular va arriba para elegir sin hacer scroll) -->
-      <div class="order-1 flex justify-center md:order-2 md:mt-10">
-        <div
-          ref="dock"
-          class="ql-dock relative max-w-full overflow-x-auto bg-white/15 ring-1 ring-white/30 backdrop-blur-xl [scrollbar-width:none] md:overflow-visible"
-          role="toolbar"
-          aria-label="Funciones de QuinList"
-          @pointermove="onMove"
-          @pointerleave="onLeave"
-        >
-          <button
-            v-for="(it, i) in items"
-            :key="it.page.path"
-            ref="itemEls"
-            type="button"
-            class="ql-dock__item group bg-white shadow-[0_6px_14px_-6px_rgba(15,28,51,0.5)]"
-            :aria-pressed="active === i"
-            :aria-label="it.page.navLabel"
-            @click="active = i"
-            @mouseenter="active = i"
-            @focus="active = i"
+      <ul class="features-rail mt-12">
+        <li v-for="it in items" :key="it.page.path" class="features-rail__item">
+          <RouterLink
+            :to="it.page.path"
+            class="group flex h-full flex-col rounded-2xl border border-white/10 bg-white/[0.04] p-5 transition-colors hover:border-white/20 hover:bg-white/[0.07] sm:p-6"
           >
-            <span class="flex h-full w-full items-center justify-center rounded-[0.9rem]" :class="ACCENT[it.sc.accent].tile">
-              <MktIcon :name="it.sc.icon" :size="24" />
+            <span class="flex h-10 w-10 items-center justify-center rounded-lg border border-white/15 text-white/85">
+              <MktIcon :name="it.sc.icon" :size="20" :stroke-width="1.4" />
             </span>
-            <!-- Etiqueta tipo macOS -->
-            <span
-              class="pointer-events-none absolute -top-9 left-1/2 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-[#1a2b4a] px-2 py-1 text-[11px] font-semibold text-white opacity-0 transition-opacity group-hover:opacity-100 md:block"
-              aria-hidden="true"
-            >
-              {{ it.page.navLabel }}
+            <h3 class="mt-4 text-base font-semibold text-white">{{ it.page.navLabel }}</h3>
+            <p class="mt-1.5 flex-1 text-sm leading-relaxed text-white/60">{{ it.page.description }}</p>
+            <span class="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-white/80 group-hover:text-white">
+              Ver más
+              <ArrowRight :size="14" class="transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
             </span>
-          </button>
-        </div>
-      </div>
-      </div>
+          </RouterLink>
+        </li>
+      </ul>
     </div>
   </section>
 </template>
+
+<style scoped>
+.features-rail {
+  display: flex;
+  gap: 0.875rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 1.25rem;
+  margin-inline: -1.25rem;
+  padding: 0.25rem 1.25rem 0.85rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+
+.features-rail::-webkit-scrollbar {
+  height: 6px;
+}
+
+.features-rail::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+}
+
+.features-rail__item {
+  flex: 0 0 min(78%, 300px);
+  scroll-snap-align: start;
+}
+
+@media (min-width: 640px) {
+  .features-rail__item {
+    flex-basis: 280px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .features-rail {
+    margin-inline: 0;
+    padding-inline: 0;
+    scroll-padding-inline: 0;
+  }
+
+  .features-rail__item {
+    flex-basis: 300px;
+  }
+}
+</style>

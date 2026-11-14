@@ -1,5 +1,5 @@
 /** Precio del plan VIP. Landa Pay cobra los dólares en pesos a la tasa del día. */
-export const VIP_PRICE_USD = 15
+export const VIP_PRICE_USD = 7
 
 export const FREE_BOARD_LIMIT = 1
 export const FREE_PROJECT_LIMIT = 1

@@ -17,6 +17,7 @@ export { PRERENDER_PATHS }
 export { marketingPages, landingFaqs, PRODUCT, CONTENT_UPDATED } from '@/seo/marketing'
 export { SITE_URL } from '@/seo/config'
 export { showcaseByPath } from '@/seo/showcase'
+export { blogPosts, blogSegments, postPath, segmentPath, BLOG_UPDATED } from '@/seo/blog'
 
 export async function render(url: string) {
   const app = createSSRApp(App)

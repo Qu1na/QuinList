@@ -40,7 +40,7 @@ PRODUCTO (fuente única de verdad: no inventes funciones, precios ni clientes)
 - NO tiene (no lo prometas): app nativa en tiendas, facturación electrónica, contabilidad formal,
   control de horas/timesheets, sincronización con Google Calendar o GitHub, importador automático
   desde Trello o Excel, reglas de automatización configurables por el usuario.
-- Precios: Gratis para siempre (1 tablero + 1 proyecto, sin tarjeta). VIP 15 USD/mes (tableros y
+- Precios: Gratis para siempre (1 tablero + 1 proyecto, sin tarjeta). VIP 7 USD/mes (tableros y
   proyectos ilimitados + asistente de IA). Cobro en pesos colombianos a la tasa del día con Landa Pay.
   Sin contrato de permanencia.
 - Contacto: contacto@matubyte.com

@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { Check, Sparkles } from '@lucide/vue'
-import { useAuthStore } from '@/stores/auth'
+import { computed, onMounted, ref } from 'vue'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
+import { Check, ChevronDown, Minus } from '@lucide/vue'
+import { FREE_BOARD_LIMIT, FREE_PROJECT_LIMIT } from '@/config/plans'
 import { useBillingStore } from '@/stores/billing'
 import { useProjectsStore } from '@/stores/projects'
 import { formatMoney } from '@/utils/currency'
+import PlanBadge from '@/components/billing/PlanBadge.vue'
 
 const billing = useBillingStore()
 const projects = useProjectsStore()
-const auth = useAuthStore()
 const route = useRoute()
 const router = useRouter()
 
@@ -18,17 +18,7 @@ const priceCop = computed(() =>
   billing.offer.vipPriceCop ? formatMoney(billing.offer.vipPriceCop, 'COP') : '',
 )
 
-const boardUsage = computed(() => {
-  const userId = auth.currentUserId
-  if (!userId) return 0
-  return billing.countOwnedBoards(userId)
-})
-
-const projectUsage = computed(() => {
-  const userId = auth.currentUserId
-  if (!userId) return 0
-  return billing.countOwnedProjects(userId)
-})
+const atLimit = computed(() => billing.freeLimitReached)
 
 const periodEnd = computed(() => {
   const raw = billing.subscription?.currentPeriodEnd
@@ -37,6 +27,58 @@ const periodEnd = computed(() => {
   if (Number.isNaN(date.getTime())) return ''
   return date.toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' })
 })
+
+const PREVIEW = 4
+const showMoreFree = ref(false)
+const showMoreVip = ref(false)
+
+/** Funciones compartidas (después de los límites de cantidad). */
+const sharedFeatures = [
+  'Kanban con responsables, fechas, etiquetas, checklist y adjuntos',
+  'Proyectos con lista, Kanban y cronograma Gantt',
+  'Hitos, entregables y matriz de riesgos',
+  'Presupuesto, ingresos, egresos, flujo de caja y rentabilidad',
+  'Chat de equipo, calendario y notificaciones',
+  'Roles: Propietario, Administrador, Miembro y Observador',
+  '9 monedas (COP, MXN, USD…)',
+]
+
+type PlanRow = { id: string; label: string; kind: 'ok' | 'warn' | 'no'; detail?: string }
+
+const freeRows = computed((): PlanRow[] => [
+  {
+    id: 'boards',
+    kind: billing.boardLimitReached ? 'warn' : 'ok',
+    label: `${FREE_BOARD_LIMIT} tablero Kanban`,
+    detail: !billing.isVip
+      ? `· ${billing.boardUsage} en uso${billing.boardLimitReached ? ' (límite)' : ''}`
+      : undefined,
+  },
+  {
+    id: 'projects',
+    kind: billing.projectLimitReached ? 'warn' : 'ok',
+    label: `${FREE_PROJECT_LIMIT} proyecto completo`,
+    detail: !billing.isVip
+      ? `· ${billing.projectUsage} en uso${billing.projectLimitReached ? ' (límite)' : ''}`
+      : undefined,
+  },
+  ...sharedFeatures.map((label, i) => ({ id: `s${i}`, kind: 'ok' as const, label })),
+  { id: 'ai', kind: 'no', label: 'Sin asistente de IA' },
+])
+
+const vipRows = computed((): PlanRow[] => [
+  { id: 'boards', kind: 'ok', label: 'Tableros Kanban ilimitados' },
+  { id: 'projects', kind: 'ok', label: 'Proyectos ilimitados' },
+  ...sharedFeatures.map((label, i) => ({ id: `s${i}`, kind: 'ok' as const, label })),
+  { id: 'ai', kind: 'ok', label: 'Asistente de IA (priorizar, resumir, redactar)' },
+])
+
+const freeVisible = computed(() =>
+  showMoreFree.value ? freeRows.value : freeRows.value.slice(0, PREVIEW),
+)
+const vipVisible = computed(() =>
+  showMoreVip.value ? vipRows.value : vipRows.value.slice(0, PREVIEW),
+)
 
 onMounted(async () => {
   await Promise.all([billing.init(), projects.init()])
@@ -54,57 +96,106 @@ onMounted(async () => {
 </script>
 
 <template>
+  <div class="h-full overflow-y-auto">
   <div class="mx-auto w-full max-w-4xl px-6 py-8">
     <div class="mb-8">
-      <p class="text-xs font-semibold tracking-wide text-[#6554c0] uppercase">Planes</p>
+      <div class="flex flex-wrap items-center gap-2">
+        <p class="text-xs font-semibold tracking-wide text-[#6554c0] uppercase">Planes</p>
+        <PlanBadge tone="onLight" size="md" />
+      </div>
       <h1 class="mt-1 text-2xl font-bold text-[#172b4d]">Elige cómo trabajar en QuinList</h1>
       <p class="mt-2 max-w-2xl text-sm leading-relaxed text-[#626f86]">
-        Gratis incluye un tablero y un proyecto. VIP son ${{ priceUsd }} USD al mes: ilimitado y con
-        asistente de IA. Landa Pay lo cobra en pesos a la tasa del día.
+        Estás en el plan <span class="font-semibold text-[#172b4d]">{{ billing.planLabel }}</span>.
+        Ambos planes incluyen las mismas funciones de trabajo; VIP quita los límites y suma la IA.
       </p>
     </div>
+
+    <p
+      v-if="!billing.isVip && atLimit"
+      class="mb-4 text-[13px] text-[#626f86]"
+      role="status"
+    >
+      Límite alcanzado ·
+      <span :class="billing.boardLimitReached ? 'font-medium text-[#172b4d]' : ''">
+        {{ billing.boardUsage }}/{{ FREE_BOARD_LIMIT }} tableros
+      </span>
+      ·
+      <span :class="billing.projectLimitReached ? 'font-medium text-[#172b4d]' : ''">
+        {{ billing.projectUsage }}/{{ FREE_PROJECT_LIMIT }} proyectos
+      </span>
+      — no puedes crear más en Gratis.
+    </p>
 
     <p v-if="billing.checkoutError" class="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
       {{ billing.checkoutError }}
     </p>
 
-    <div class="grid gap-4 md:grid-cols-2">
-      <section class="rounded-2xl border border-[#091e4221] bg-white p-6 shadow-sm">
-        <div class="flex items-center justify-between">
-          <h2 class="text-lg font-bold text-[#172b4d]">Gratis</h2>
+    <div class="grid items-stretch gap-4 md:grid-cols-2">
+      <!-- Gratis -->
+      <section
+        class="flex flex-col rounded-2xl border bg-white p-6 shadow-sm"
+        :class="!billing.isVip ? 'border-[#6554c0] ring-1 ring-[#6554c0]/20' : 'border-[#091e4221]'"
+      >
+        <div class="flex items-center justify-between gap-2">
+          <div>
+            <p class="text-[11px] font-semibold tracking-wide text-[#626f86] uppercase">Para empezar</p>
+            <h2 class="mt-1 text-lg font-bold text-[#172b4d]">Gratis</h2>
+          </div>
           <span
             v-if="!billing.isVip"
-            class="rounded-full bg-[#091e420f] px-2.5 py-1 text-xs font-semibold text-[#44546f]"
+            class="rounded-full bg-[#6554c0] px-2.5 py-1 text-xs font-semibold text-white"
           >
             Plan actual
           </span>
         </div>
-        <p class="mt-3 text-3xl font-extrabold text-[#172b4d]">{{ formatMoney(0, 'COP') }}</p>
-        <p class="text-sm text-[#626f86]">Para empezar</p>
-        <ul class="mt-5 space-y-2 text-sm text-[#172b4d]">
-          <li class="flex items-start gap-2">
-            <Check :size="16" class="mt-0.5 shrink-0 text-emerald-600" />
-            1 tablero
-            <span v-if="!billing.isVip" class="text-[#626f86]">· {{ boardUsage }} en uso</span>
-          </li>
-          <li class="flex items-start gap-2">
-            <Check :size="16" class="mt-0.5 shrink-0 text-emerald-600" />
-            1 proyecto
-            <span v-if="!billing.isVip" class="text-[#626f86]">· {{ projectUsage }} en uso</span>
-          </li>
-          <li class="flex items-start gap-2 text-[#626f86]">
-            <Check :size="16" class="mt-0.5 shrink-0" />
-            Sin asistente de IA
+
+        <p class="mt-4 text-3xl font-extrabold text-[#172b4d]">$0</p>
+        <p class="mt-1 text-sm text-[#626f86]">Para siempre · sin tarjeta</p>
+
+        <ul class="mt-5 space-y-2.5 text-sm text-[#172b4d]">
+          <li
+            v-for="row in freeVisible"
+            :key="row.id"
+            class="flex items-start gap-2"
+            :class="row.kind === 'no' ? 'text-[#626f86]' : ''"
+          >
+            <Minus v-if="row.kind === 'no'" :size="16" class="mt-0.5 shrink-0" />
+            <Check
+              v-else
+              :size="16"
+              class="mt-0.5 shrink-0"
+              :class="row.kind === 'warn' ? 'text-amber-600' : 'text-emerald-600'"
+            />
+            <span>
+              {{ row.label }}
+              <span
+                v-if="row.detail"
+                class="font-medium"
+                :class="row.kind === 'warn' ? 'text-amber-700' : 'text-[#626f86]'"
+              >
+                {{ row.detail }}
+              </span>
+            </span>
           </li>
         </ul>
+        <button
+          v-if="freeRows.length > PREVIEW"
+          type="button"
+          class="mt-3 inline-flex items-center gap-1 text-[13px] font-semibold text-[#0c66e4] hover:underline"
+          @click="showMoreFree = !showMoreFree"
+        >
+          {{ showMoreFree ? 'Ver menos' : 'Ver más' }}
+          <ChevronDown :size="14" class="transition-transform" :class="showMoreFree ? 'rotate-180' : ''" />
+        </button>
       </section>
 
-      <section class="rounded-2xl border border-[#6554c0] bg-white p-6 shadow-sm">
-        <div class="flex items-center justify-between">
-          <h2 class="flex items-center gap-2 text-lg font-bold text-[#172b4d]">
-            <Sparkles :size="18" class="text-[#6554c0]" />
-            VIP
-          </h2>
+      <!-- VIP -->
+      <section class="flex flex-col rounded-2xl border border-[#6554c0] bg-white p-6 shadow-sm">
+        <div class="flex items-center justify-between gap-2">
+          <div>
+            <p class="text-[11px] font-semibold tracking-wide text-[#6554c0] uppercase">Para equipos</p>
+            <h2 class="mt-1 text-lg font-bold text-[#172b4d]">VIP</h2>
+          </div>
           <span
             v-if="billing.isVip"
             class="rounded-full bg-[#6554c0] px-2.5 py-1 text-xs font-semibold text-white"
@@ -112,24 +203,31 @@ onMounted(async () => {
             Plan actual
           </span>
         </div>
-        <p class="mt-3 text-4xl font-extrabold text-[#172b4d]">${{ priceUsd }} <span class="text-lg">USD</span></p>
-        <p class="text-sm text-[#626f86]">
-          al mes<span v-if="priceCop"> · aprox. {{ priceCop }}</span>
+
+        <p class="mt-4 text-3xl font-extrabold text-[#172b4d]">
+          ${{ priceUsd }} <span class="text-lg font-bold">USD</span>
         </p>
-        <ul class="mt-5 space-y-2 text-sm text-[#172b4d]">
-          <li class="flex items-start gap-2">
+        <p class="mt-1 text-sm text-[#626f86]">
+          al mes<span v-if="priceCop"> · aprox. {{ priceCop }}</span>
+          · cancela cuando quieras
+        </p>
+
+        <ul class="mt-5 flex-1 space-y-2.5 text-sm text-[#172b4d]">
+          <li v-for="row in vipVisible" :key="row.id" class="flex items-start gap-2">
             <Check :size="16" class="mt-0.5 shrink-0 text-[#6554c0]" />
-            Tableros ilimitados
-          </li>
-          <li class="flex items-start gap-2">
-            <Check :size="16" class="mt-0.5 shrink-0 text-[#6554c0]" />
-            Proyectos ilimitados
-          </li>
-          <li class="flex items-start gap-2">
-            <Check :size="16" class="mt-0.5 shrink-0 text-[#6554c0]" />
-            Asistente de IA
+            {{ row.label }}
           </li>
         </ul>
+        <button
+          v-if="vipRows.length > PREVIEW"
+          type="button"
+          class="mt-3 inline-flex items-center gap-1 text-[13px] font-semibold text-[#0c66e4] hover:underline"
+          @click="showMoreVip = !showMoreVip"
+        >
+          {{ showMoreVip ? 'Ver menos' : 'Ver más' }}
+          <ChevronDown :size="14" class="transition-transform" :class="showMoreVip ? 'rotate-180' : ''" />
+        </button>
+
         <button
           v-if="!billing.isVip"
           type="button"
@@ -160,5 +258,10 @@ onMounted(async () => {
         </div>
       </section>
     </div>
+
+    <p class="mt-5 pb-4 text-center text-[12px] text-[#626f86]">
+      Precio en USD. En Colombia el cobro se hace en pesos a la tasa del día, con Landa Pay.
+    </p>
+  </div>
   </div>
 </template>

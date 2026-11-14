@@ -1,6 +1,9 @@
 import type { RouteRecordRaw } from 'vue-router'
 import LandingView from '@/views/LandingView.vue'
 import { marketingPages } from '@/seo/marketing'
+import { BLOG_PATHS, blogPosts, blogSegments, postPath, segmentPath } from '@/seo/blog'
+
+const BlogView = () => import('@/views/blog/BlogView.vue')
 
 /**
  * Rutas públicas e indexables. Las usa el router del navegador y el prerender
@@ -18,6 +21,19 @@ export const publicRoutes: RouteRecordRaw[] = [
     name: `mkt:${page.path}`,
     component: () => import('@/views/marketing/MarketingPageView.vue'),
     meta: { marketingPath: page.path, seoPublic: true },
+  })),
+  { path: '/blog', name: 'blog', component: BlogView, meta: { blogKind: 'index', blogPath: '/blog', seoPublic: true } },
+  ...blogSegments.map<RouteRecordRaw>((s) => ({
+    path: segmentPath(s),
+    name: `blog:${s.slug}`,
+    component: BlogView,
+    meta: { blogKind: 'segment', blogPath: segmentPath(s), seoPublic: true },
+  })),
+  ...blogPosts.map<RouteRecordRaw>((p) => ({
+    path: postPath(p),
+    name: `post:${p.segment}/${p.slug}`,
+    component: BlogView,
+    meta: { blogKind: 'post', blogPath: postPath(p), seoPublic: true },
   })),
   {
     path: '/ayuda',
@@ -49,6 +65,7 @@ export const notFoundRoute: RouteRecordRaw = {
 export const PRERENDER_PATHS = [
   '/',
   ...marketingPages.map((p) => p.path),
+  ...BLOG_PATHS,
   '/ayuda',
   '/privacidad',
   '/terminos',

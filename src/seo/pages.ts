@@ -19,6 +19,17 @@ import {
   webPageSchema,
 } from '@/seo/schema'
 import { getMarketingPage, landingFaqs, pagesOfKind, type MarketingPage } from '@/seo/marketing'
+import {
+  BLOG_UPDATED,
+  getPostByPath,
+  getSegment,
+  getSegmentByPath,
+  postPath,
+  postsOfSegment,
+  segmentPath,
+  sortedPosts,
+  type BlogPost,
+} from '@/seo/blog'
 
 export type PageSeoDefinition = {
   path: string
@@ -150,6 +161,130 @@ function marketingSeo(page: MarketingPage): PageSeoDefinition {
   }
 }
 
+/* ------------------------------- Blog ------------------------------- */
+
+const ORG_REF = { '@id': `${absoluteUrl('/').replace(/\/$/, '')}/#organization` }
+
+function postListSchema(posts: BlogPost[]) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    itemListElement: posts.map((p, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      url: absoluteUrl(postPath(p)),
+      name: p.h1,
+    })),
+  }
+}
+
+function blogSeo(key: string): PageSeoDefinition | null {
+  if (key === '/blog') {
+    const title = 'Blog de QuinList: gestión de proyectos y equipos'
+    const description =
+      'Guías prácticas sobre gestión de proyectos, finanzas, equipos y herramientas para empresas de Latinoamérica. Ideas para trabajar sin caos.'
+    const breadcrumbs = [
+      { name: 'Inicio', path: '/' },
+      { name: 'Blog', path: '/blog' },
+    ]
+    return {
+      path: key,
+      title,
+      description,
+      keywords: keywordsFor('blog de gestión de proyectos', 'consejos de gestión de proyectos'),
+      robots: INDEX_ROBOTS,
+      breadcrumbs,
+      jsonLd: [
+        organizationSchema(),
+        webPageSchema({ title, description, path: key, type: 'CollectionPage', dateModified: BLOG_UPDATED }),
+        {
+          '@context': 'https://schema.org',
+          '@type': 'Blog',
+          '@id': `${absoluteUrl('/blog')}#blog`,
+          name: 'Blog de QuinList',
+          url: absoluteUrl('/blog'),
+          inLanguage: 'es',
+          publisher: ORG_REF,
+        },
+        breadcrumbSchema(breadcrumbs),
+        postListSchema(sortedPosts),
+      ],
+    }
+  }
+
+  const segment = getSegmentByPath(key)
+  if (segment) {
+    const title = `${segment.name} | Blog QuinList`
+    const description = `${segment.description} Artículos prácticos del blog de QuinList.`
+    const breadcrumbs = [
+      { name: 'Inicio', path: '/' },
+      { name: 'Blog', path: '/blog' },
+      { name: segment.name, path: segmentPath(segment) },
+    ]
+    return {
+      path: key,
+      title,
+      description,
+      keywords: keywordsFor(segment.name.toLowerCase(), `blog de ${segment.name.toLowerCase()}`),
+      robots: INDEX_ROBOTS,
+      breadcrumbs,
+      jsonLd: [
+        organizationSchema(),
+        webPageSchema({ title, description, path: key, type: 'CollectionPage', dateModified: BLOG_UPDATED }),
+        breadcrumbSchema(breadcrumbs),
+        postListSchema(postsOfSegment(segment.slug)),
+      ],
+    }
+  }
+
+  const post = getPostByPath(key)
+  if (post) {
+    const seg = getSegment(post.segment)!
+    const url = absoluteUrl(key)
+    const breadcrumbs = [
+      { name: 'Inicio', path: '/' },
+      { name: 'Blog', path: '/blog' },
+      { name: seg.name, path: segmentPath(seg) },
+      { name: post.title, path: key },
+    ]
+    const jsonLd: Record<string, unknown>[] = [
+      organizationSchema(),
+      webPageSchema({ title: post.title, description: post.description, path: key, dateModified: post.updated }),
+      breadcrumbSchema(breadcrumbs),
+      {
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        '@id': `${url}#article`,
+        headline: post.h1,
+        description: post.description,
+        url,
+        mainEntityOfPage: { '@id': `${url}#webpage` },
+        image: DEFAULT_OG_IMAGE,
+        inLanguage: 'es',
+        datePublished: post.published,
+        dateModified: post.updated,
+        articleSection: seg.name,
+        keywords: post.keywords.join(', '),
+        isPartOf: { '@id': `${absoluteUrl('/blog')}#blog` },
+        author: ORG_REF,
+        publisher: ORG_REF,
+      },
+    ]
+    if (post.faqs.length) jsonLd.push(faqPageSchema(post.faqs, key))
+    return {
+      path: key,
+      title: post.title,
+      description: post.description,
+      keywords: keywordsFor(...post.keywords),
+      robots: INDEX_ROBOTS,
+      ogType: 'article',
+      breadcrumbs,
+      jsonLd,
+    }
+  }
+  return null
+}
+
 export function resolvePageSeo(path: string): PageSeoDefinition {
   const normalized = path.split('?')[0]?.replace(/\/$/, '') || '/'
   const key = normalized === '' ? '/' : normalized
@@ -165,6 +300,9 @@ export function resolvePageSeo(path: string): PageSeoDefinition {
       jsonLd: landingSchemas(landingFaqs),
     }
   }
+
+  const blog = blogSeo(key)
+  if (blog) return { ...blog, image: DEFAULT_OG_IMAGE }
 
   const marketing = getMarketingPage(key)
   if (marketing) return { ...marketingSeo(marketing), image: DEFAULT_OG_IMAGE }

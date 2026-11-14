@@ -47,13 +47,13 @@ const chaos = [
 
 <template>
   <section id="problema" ref="root" class="py-20 lg:py-28" aria-labelledby="pain-heading">
-    <div class="mx-auto max-w-6xl px-5 lg:px-8">
+    <div class="mx-auto max-w-[1200px] px-5 lg:px-8">
       <div class="mx-auto max-w-2xl text-center">
         <p class="ql-eyebrow">El problema</p>
-        <h2 id="pain-heading" class="mt-3 text-3xl font-bold text-[#172b4d] lg:text-[2.75rem] lg:leading-[1.1]">
-          Tu equipo trabaja duro. <span class="text-[#2a72a8]">La información, no.</span>
+        <h2 id="pain-heading" class="mt-3 text-[2rem] leading-[1.15] text-[#101214] lg:text-[3rem] lg:leading-[1.14]">
+          Tu equipo trabaja duro. <span class="ql-mark">La información, no.</span>
         </h2>
-        <p class="mt-4 text-[15px] leading-relaxed text-[#44546f] lg:text-lg">
+        <p class="mt-4 text-[15px] leading-relaxed text-[#42526e] lg:text-lg">
           Cuando el trabajo vive en cinco lugares distintos, se pierden horas, entregas y plata. Mira la diferencia.
         </p>
 
@@ -77,7 +77,7 @@ const chaos = [
         <div
           id="ba-antes"
           role="tabpanel"
-          class="ba-panel relative h-[380px] overflow-hidden rounded-3xl border border-[#e4e9f0] bg-[#f6f8fb] sm:h-[420px]"
+          class="ba-panel relative h-[380px] overflow-hidden rounded-[20px] border border-[#f0f1f2] bg-[#f0f1f2] sm:h-[420px]"
           :class="mode === 'antes' ? 'is-active' : ''"
           :aria-hidden="mode !== 'antes'"
         >
@@ -104,7 +104,7 @@ const chaos = [
         <div
           id="ba-despues"
           role="tabpanel"
-          class="ba-panel absolute inset-0 overflow-hidden rounded-3xl border border-[#dbeaf6] bg-white"
+          class="ba-panel absolute inset-0 overflow-hidden rounded-[20px] border border-[#cfe1fd] bg-white"
           :class="mode === 'despues' ? 'is-active' : ''"
           :aria-hidden="mode !== 'despues'"
         >
@@ -116,13 +116,13 @@ const chaos = [
             <li
               v-for="(row, i) in landingBeforeAfter"
               :key="row.after"
-              class="ba-row flex items-start gap-3 rounded-2xl bg-[#f6f8fb] p-3 sm:p-4"
+              class="ba-row flex items-start gap-3 rounded-[20px] bg-[#f0f1f2] p-3 sm:p-4"
               :style="{ transitionDelay: `${120 + i * 60}ms` }"
             >
               <CheckCircle2 :size="20" class="mt-0.5 shrink-0 text-emerald-600" aria-hidden="true" />
               <span class="min-w-0">
-                <span class="block text-[14px] font-semibold text-[#172b4d]">{{ row.after }}</span>
-                <span class="mt-0.5 flex items-center gap-1 text-xs text-[#5e6c84]">
+                <span class="block text-[14px] font-semibold text-[#101214]">{{ row.after }}</span>
+                <span class="mt-0.5 flex items-center gap-1 text-xs text-[#42526e]">
                   <X :size="12" class="text-red-600" aria-hidden="true" /> Antes: {{ row.before }}
                 </span>
               </span>

@@ -26,6 +26,8 @@ import type { DesktopMenuItem } from '@/components/workspace/DesktopContextMenu.
 import type { ProjectStatus } from '@/types/projects'
 import { PROJECT_CREATION_ENABLED, PROJECTS_MODULE_ENABLED } from '@/config/features'
 import { useBillingStore } from '@/stores/billing'
+import PlanBadge from '@/components/billing/PlanBadge.vue'
+import PlanLimitCard from '@/components/billing/PlanLimitCard.vue'
 
 const store = useQuinListStore()
 const projectsStore = useProjectsStore()
@@ -243,9 +245,10 @@ onUnmounted(() => {
     <header class="shrink-0 border-b border-[#091e4214] bg-white px-6 py-4 lg:px-10">
       <div class="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <div class="flex items-center gap-2">
+          <div class="flex flex-wrap items-center gap-2">
             <FolderKanban :size="22" class="text-brand-coral" />
             <h1 class="text-xl font-semibold text-[#172b4d]">Proyectos</h1>
+            <PlanBadge tone="onLight" size="md" />
           </div>
           <p class="mt-0.5 text-sm text-[#626f86]">
             {{ store.currentWorkspace?.name }} · Escritorio de gestión
@@ -300,6 +303,10 @@ onUnmounted(() => {
         </div>
       </div>
     </header>
+
+    <div class="px-6 pt-3 lg:px-10">
+      <PlanLimitCard context="projects" />
+    </div>
 
     <!-- Escritorio -->
     <div

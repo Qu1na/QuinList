@@ -15,7 +15,7 @@ import {
 } from './matu.mjs'
 
 const PORT = Number(process.env.BILLING_PORT || 4012)
-const DEFAULT_VIP_CENTS = 1_500
+const DEFAULT_VIP_CENTS = 700
 const DEFAULT_VIP_CURRENCY = 'USD'
 const USD_COP_FALLBACK = 3185
 
@@ -64,12 +64,19 @@ function bearer(req) {
 }
 
 async function requireUser(req, res) {
-  const user = await userFromAccessToken(bearer(req))
-  if (!user) {
-    res.status(401).json({ error: 'Inicia sesión para continuar.' })
+  try {
+    const user = await userFromAccessToken(bearer(req))
+    if (!user) {
+      res.status(401).json({ error: 'Inicia sesión para continuar.' })
+      return null
+    }
+    return user
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'No se pudo validar la sesión.'
+    console.error('[billing] auth', message)
+    res.status(503).json({ error: message })
     return null
   }
-  return user
 }
 
 function publicSubscription(row, userId) {
@@ -134,7 +141,7 @@ app.get('/api/billing/offer', async (_req, res) => {
       ? Math.round(vipPriceUsd * rate)
       : Math.round(cents / 100)
   res.json({
-    vipPriceUsd: vipPriceUsd ?? 15,
+    vipPriceUsd: vipPriceUsd ?? 7,
     vipPriceCop,
     currency: 'USD',
     interval: 'monthly',

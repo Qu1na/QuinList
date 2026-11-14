@@ -10,8 +10,8 @@ export type IconName =
   | 'FolderKanban'
   | 'LayoutGrid'
   | 'SquareChartGantt'
-  | 'Wallet'
-  | 'Bot'
+  | 'CircleDollarSign'
+  | 'Cpu'
   | 'ListChecks'
   | 'Workflow'
   | 'Briefcase'
@@ -36,7 +36,7 @@ export type IconName =
   | 'Coins'
   | 'ChartPie'
   | 'TrendingUp'
-  | 'Sparkles'
+  | 'PenLine'
   | 'Zap'
   | 'Webhook'
   | 'Layers'
@@ -105,7 +105,7 @@ export const showcaseByPath: Record<string, Showcase> = {
       { icon: 'SquareChartGantt', title: 'Lista, Kanban y Gantt', text: 'Las mismas tareas en tres vistas. Cada persona trabaja como le sirve.' },
       { icon: 'Milestone', title: 'Hitos y entregables', text: 'Puntos de control con fecha y entregables con flujo de aprobación.' },
       { icon: 'TriangleAlert', title: 'Riesgos e incidencias', text: 'Severidad, responsable y plan de mitigación antes de que el problema crezca.' },
-      { icon: 'Wallet', title: 'Finanzas del proyecto', text: 'Presupuesto, ingresos, egresos, flujo de caja y rentabilidad.' },
+      { icon: 'CircleDollarSign', title: 'Finanzas del proyecto', text: 'Presupuesto, ingresos, egresos, flujo de caja y rentabilidad.' },
       { icon: 'FileText', title: 'Documentos y archivos', text: 'Documentación, centro de archivos y actividad de todo el proyecto.' },
     ],
     idealFor: ['Pymes', 'Agencias', 'Constructoras', 'Consultoras', 'Equipos de tecnología'],
@@ -157,7 +157,7 @@ export const showcaseByPath: Record<string, Showcase> = {
     idealFor: ['Obras', 'Lanzamientos', 'Eventos', 'Implementaciones', 'Consultorías'],
   },
   '/control-de-presupuesto-de-proyectos': {
-    icon: 'Wallet',
+    icon: 'CircleDollarSign',
     menuDesc: 'Ingresos, gastos, flujo de caja y rentabilidad',
     accent: 'emerald',
     visual: 'finance',
@@ -180,7 +180,7 @@ export const showcaseByPath: Record<string, Showcase> = {
     idealFor: ['Agencias', 'Constructoras', 'Consultoras', 'Software a la medida', 'Eventos'],
   },
   '/gestion-de-proyectos-con-ia': {
-    icon: 'Bot',
+    icon: 'Cpu',
     menuDesc: 'Un asistente que conoce tus proyectos',
     accent: 'violet',
     visual: 'ai',
@@ -189,7 +189,7 @@ export const showcaseByPath: Record<string, Showcase> = {
       { value: '1 clic', label: 'sin copiar ni pegar contexto' },
       { value: 'Contexto', label: 'de tus tableros y proyectos' },
       { value: 'VIP', label: 'incluido en el plan' },
-      { value: '15 USD', label: 'al mes, todo incluido' },
+      { value: '7 USD', label: 'al mes, todo incluido' },
     ],
     featuresTitle: 'Pregúntale lo que le preguntarías a tu PM',
     features: [
@@ -197,7 +197,7 @@ export const showcaseByPath: Record<string, Showcase> = {
       { icon: 'Target', title: 'Prioriza', text: '“¿En qué debería enfocarse el equipo hoy?”' },
       { icon: 'FileText', title: 'Resume el avance', text: '“Resume el proyecto para enviárselo al cliente.”' },
       { icon: 'ListChecks', title: 'Divide tareas', text: '“Parte esta tarea grande en pasos.”' },
-      { icon: 'Sparkles', title: 'Redacta', text: '“Escribe la descripción de esta tarjeta.”' },
+      { icon: 'PenLine', title: 'Redacta', text: '“Escribe la descripción de esta tarjeta.”' },
       { icon: 'Lock', title: 'Contexto acotado', text: 'Solo usa el resumen del espacio de trabajo en el que estás.' },
     ],
     idealFor: ['Gerentes de proyecto', 'Dueños de pyme', 'Líderes de equipo', 'Consultores'],
@@ -302,16 +302,16 @@ export const showcaseByPath: Record<string, Showcase> = {
     visualLabel: 'Resumen de proyectos de una pyme en QuinList',
     facts: [
       { value: '0 USD', label: 'plan gratis para siempre' },
-      { value: '15 USD', label: 'al mes el plan VIP' },
+      { value: '7 USD', label: 'al mes el plan VIP' },
       { value: '1 tarde', label: 'para aprenderlo' },
       { value: '4', label: 'roles para tu equipo' },
     ],
     featuresTitle: 'Lo que una pyme necesita, sin lo que sobra',
     features: [
       { icon: 'Lightbulb', title: 'Fácil de aprender', text: 'El equipo lo usa sin capacitación.' },
-      { icon: 'Coins', title: 'Precio simple', text: 'Gratis para empezar y 15 USD al mes en VIP.' },
+      { icon: 'Coins', title: 'Precio simple', text: 'Gratis para empezar y 7 USD al mes en VIP.' },
       { icon: 'LayoutGrid', title: 'Kanban y proyectos', text: 'Del tablero diario al proyecto completo.' },
-      { icon: 'Wallet', title: 'Dinero del proyecto', text: 'Presupuesto en tu moneda, sin hojas de cálculo.' },
+      { icon: 'CircleDollarSign', title: 'Dinero del proyecto', text: 'Presupuesto en tu moneda, sin hojas de cálculo.' },
       { icon: 'Shield', title: 'Roles', text: 'Separa lo que ve el dueño, el administrador y el equipo.' },
       { icon: 'MessagesSquare', title: 'Chat de equipo', text: 'Las tareas dejan de perderse en WhatsApp.' },
     ],
@@ -336,7 +336,7 @@ export const showcaseByPath: Record<string, Showcase> = {
       { icon: 'Rocket', title: 'Lanzamientos', text: 'Planea versiones y lo que entra en cada una.' },
       { icon: 'Target', title: 'OKRs', text: 'Objetivos trimestrales, semestrales o anuales.' },
       { icon: 'Webhook', title: 'Eventos a Slack', text: 'Avisos cuando una tarjeta cambia de columna.' },
-      { icon: 'Wallet', title: 'Contratos con clientes', text: 'Hitos, entregables y rentabilidad del desarrollo a la medida.' },
+      { icon: 'CircleDollarSign', title: 'Contratos con clientes', text: 'Hitos, entregables y rentabilidad del desarrollo a la medida.' },
     ],
     idealFor: ['Software factories', 'Startups', 'Equipos de producto', 'Freelancers'],
   },
@@ -362,6 +362,93 @@ export const showcaseByPath: Record<string, Showcase> = {
       { icon: 'QrCode', title: 'Invitación fácil', text: 'Suma personas con un enlace o un código QR.' },
     ],
     idealFor: ['Equipos híbridos', 'Startups', 'Agencias remotas', 'Empresas con sedes'],
+  },
+
+  /* ---------------------------- Comparativas + precios ---------------------------- */
+  '/precios': {
+    icon: 'Coins',
+    menuDesc: 'Gratis para siempre o VIP sin límites',
+    accent: 'sky',
+    visual: 'dashboard',
+    visualLabel: 'Ticket del plan QuinList: Gratis o VIP con todo lo que incluye',
+    facts: [
+      { value: '$0', label: 'plan Gratis, para siempre' },
+      { value: '$7', label: 'VIP al mes' },
+      { value: '0', label: 'contratos de permanencia' },
+      { value: '9', label: 'monedas por proyecto' },
+    ],
+    featuresTitle: 'Lo que pagas y lo que obtienes',
+    features: [],
+    idealFor: [],
+  },
+  '/alternativa-a-excel-para-proyectos': {
+    icon: 'FileText',
+    menuDesc: 'Deja el Excel compartido y el caos de versiones',
+    accent: 'amber',
+    visual: 'tasks',
+    visualLabel: 'Lista de tareas en QuinList con responsables y fechas',
+    facts: [
+      { value: '1', label: 'fuente de verdad' },
+      { value: '3', label: 'vistas del trabajo' },
+      { value: '9', label: 'monedas' },
+      { value: 'Live', label: 'avance en tiempo real' },
+    ],
+    featuresTitle: 'Lo que Excel no te da solo',
+    features: [
+      { icon: 'Users', title: 'Responsables claros', text: 'Cada tarea con dueño; se acabó la columna que nadie actualiza.' },
+      { icon: 'SquareChartGantt', title: 'Gantt automático', text: 'Las fechas de las tareas arman el cronograma sin pintar barras.' },
+      { icon: 'CircleDollarSign', title: 'Presupuesto vivo', text: 'Ingresos, egresos, flujo de caja y rentabilidad sin fórmulas.' },
+      { icon: 'Paperclip', title: 'Archivos en su sitio', text: 'Documentos junto al proyecto, no en carpetas sueltas de Drive.' },
+      { icon: 'MessagesSquare', title: 'Conversación ordenada', text: 'Comentarios y chat; las decisiones no se pierden en WhatsApp.' },
+      { icon: 'Gauge', title: 'Avance visible', text: 'Dashboard con % de avance sin reuniones de “¿cómo vamos?”.' },
+    ],
+    idealFor: ['Pymes', 'Agencias', 'Consultoras', 'Equipos que viven en Excel'],
+  },
+  '/alternativa-a-trello': {
+    icon: 'LayoutGrid',
+    menuDesc: 'Kanban simple + proyecto completo',
+    accent: 'sky',
+    visual: 'kanban',
+    visualLabel: 'Tablero Kanban de QuinList con columnas Por hacer, En curso y Hecho',
+    facts: [
+      { value: 'Kanban', label: 'igual de simple' },
+      { value: 'Gantt', label: 'sin Power-Ups' },
+      { value: 'Caja', label: 'por proyecto' },
+      { value: 'Chat', label: 'incluido' },
+    ],
+    featuresTitle: 'Kanban, y todo lo que el proyecto pide',
+    features: [
+      { icon: 'LayoutGrid', title: 'Tablero familiar', text: 'Arrastra tarjetas, checklist, etiquetas, fechas y adjuntos.' },
+      { icon: 'SquareChartGantt', title: 'Cronograma', text: 'La misma tarea se ve en Gantt sin instalar nada.' },
+      { icon: 'CircleDollarSign', title: 'Dinero del proyecto', text: 'Presupuesto y flujo de caja junto al tablero.' },
+      { icon: 'TriangleAlert', title: 'Riesgos y entregables', text: 'Severidad, aprobación y plan de mitigación incluidos.' },
+      { icon: 'MessagesSquare', title: 'Chat de equipo', text: 'Canales y menciones sin salir de QuinList.' },
+      { icon: 'Shield', title: 'Roles', text: 'Decide quién ve finanzas y quién solo mueve tarjetas.' },
+    ],
+    idealFor: ['Equipos que usan Trello', 'Agencias', 'Product managers', 'Startups'],
+  },
+  '/alternativa-a-asana-y-monday': {
+    icon: 'Target',
+    menuDesc: 'Precio fijo y finanzas incluidas',
+    accent: 'violet',
+    visual: 'finance',
+    visualLabel: 'Finanzas de un proyecto en QuinList con flujo de caja',
+    facts: [
+      { value: '$7', label: 'VIP al mes' },
+      { value: 'Sin', label: 'cobro por asiento' },
+      { value: '9', label: 'monedas' },
+      { value: 'LATAM', label: 'soporte cercano' },
+    ],
+    featuresTitle: 'Lo esencial, sin precio por asiento',
+    features: [
+      { icon: 'Coins', title: 'Precio simple', text: 'Gratis para empezar; VIP a 7 USD/mes sin módulos sorpresa.' },
+      { icon: 'CircleDollarSign', title: 'Finanzas del proyecto', text: 'Presupuesto, egresos, flujo de caja y rentabilidad.' },
+      { icon: 'Globe', title: 'Moneda local', text: 'COP, MXN, PEN, CLP, ARS, USD y más, por proyecto.' },
+      { icon: 'LayoutGrid', title: 'Kanban + Gantt', text: 'Las mismas tareas en tablero y cronograma.' },
+      { icon: 'Cpu', title: 'IA en VIP', text: 'Prioriza, resume y redacta con el contexto de tus proyectos.' },
+      { icon: 'MessagesSquare', title: 'Chat incluido', text: 'El equipo habla donde trabaja.' },
+    ],
+    idealFor: ['Pymes LATAM', 'Agencias', 'Consultoras', 'Equipos que pagan por asiento'],
   },
 }
 

@@ -132,7 +132,7 @@ el sitemap y `llms.txt`.
 
 ### Datos estructurados
 `Organization` (MatuByte, Colombia, `areaServed` LATAM), `WebSite`, `SoftwareApplication` con dos
-`Offer` reales (Gratis 0 USD, VIP 15 USD/mes), `WebPage`, `BreadcrumbList`, `FAQPage`, `Article` y
+`Offer` reales (Gratis 0 USD, VIP 7 USD/mes), `WebPage`, `BreadcrumbList`, `FAQPage`, `Article` y
 `HowTo` en las guías. **Se quitaron `AggregateRating` y `Review`** hasta tener reseñas verificables.
 
 ### IA (GEO: Generative Engine Optimization)

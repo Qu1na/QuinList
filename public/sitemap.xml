@@ -244,6 +244,118 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/precios"/>
   </url>
   <url>
+    <loc>https://quinlist.matubyte.com/blog</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/blog"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/blog"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/blog/gestion-de-proyectos</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/blog/gestion-de-proyectos"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/blog/gestion-de-proyectos"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/blog/finanzas-de-proyectos</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/blog/finanzas-de-proyectos"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/blog/finanzas-de-proyectos"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/blog/equipos-y-productividad</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/blog/equipos-y-productividad"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/blog/equipos-y-productividad"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/blog/herramientas</loc>
+    <lastmod>2026-11-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/blog/herramientas"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/blog/herramientas"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/blog/gestion-de-proyectos/senales-de-que-necesitas-un-software-de-proyectos</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/blog/gestion-de-proyectos/senales-de-que-necesitas-un-software-de-proyectos"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/blog/gestion-de-proyectos/senales-de-que-necesitas-un-software-de-proyectos"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/blog/gestion-de-proyectos/como-priorizar-tareas-cuando-todo-es-urgente</loc>
+    <lastmod>2026-11-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/blog/gestion-de-proyectos/como-priorizar-tareas-cuando-todo-es-urgente"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/blog/gestion-de-proyectos/como-priorizar-tareas-cuando-todo-es-urgente"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/blog/gestion-de-proyectos/reunion-de-seguimiento-de-15-minutos</loc>
+    <lastmod>2026-11-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/blog/gestion-de-proyectos/reunion-de-seguimiento-de-15-minutos"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/blog/gestion-de-proyectos/reunion-de-seguimiento-de-15-minutos"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/blog/finanzas-de-proyectos/como-cobrar-por-hitos-a-tus-clientes</loc>
+    <lastmod>2026-11-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/blog/finanzas-de-proyectos/como-cobrar-por-hitos-a-tus-clientes"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/blog/finanzas-de-proyectos/como-cobrar-por-hitos-a-tus-clientes"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/blog/finanzas-de-proyectos/errores-al-presupuestar-un-proyecto</loc>
+    <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/blog/finanzas-de-proyectos/errores-al-presupuestar-un-proyecto"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/blog/finanzas-de-proyectos/errores-al-presupuestar-un-proyecto"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/blog/equipos-y-productividad/de-whatsapp-a-un-sistema-de-trabajo</loc>
+    <lastmod>2026-11-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/blog/equipos-y-productividad/de-whatsapp-a-un-sistema-de-trabajo"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/blog/equipos-y-productividad/de-whatsapp-a-un-sistema-de-trabajo"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/blog/equipos-y-productividad/como-delegar-tareas-sin-perder-el-control</loc>
+    <lastmod>2026-11-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/blog/equipos-y-productividad/como-delegar-tareas-sin-perder-el-control"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/blog/equipos-y-productividad/como-delegar-tareas-sin-perder-el-control"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/blog/herramientas/excel-vs-software-de-gestion-de-proyectos</loc>
+    <lastmod>2026-11-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/blog/herramientas/excel-vs-software-de-gestion-de-proyectos"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/blog/herramientas/excel-vs-software-de-gestion-de-proyectos"/>
+  </url>
+  <url>
+    <loc>https://quinlist.matubyte.com/blog/herramientas/kanban-o-gantt-cual-usar</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="es-419" href="https://quinlist.matubyte.com/blog/herramientas/kanban-o-gantt-cual-usar"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://quinlist.matubyte.com/blog/herramientas/kanban-o-gantt-cual-usar"/>
+  </url>
+  <url>
     <loc>https://quinlist.matubyte.com/register</loc>
     <lastmod>2026-11-13</lastmod>
     <changefreq>monthly</changefreq>

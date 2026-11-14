@@ -12,7 +12,7 @@ const shortcuts = [
 </script>
 
 <template>
-  <div class="landing-page bg-white text-[#172b4d]">
+  <div class="landing-page bg-white text-[#101214]">
     <MarketingHeader />
     <main class="mx-auto max-w-2xl px-5 pb-24 pt-32 text-center">
       <p class="text-sm font-semibold text-[#c2410c]">Error 404</p>

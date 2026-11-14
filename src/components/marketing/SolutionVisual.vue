@@ -3,7 +3,7 @@
  * Ilustraciones del producto para las páginas de solución. Son HTML (no imágenes): pesan casi
  * nada, se ven nítidas en cualquier pantalla y salen en el HTML prerenderizado.
  */
-import { Bot, Check, CheckCircle2, Hash, Send, Sparkles, TriangleAlert, Webhook, Zap } from '@lucide/vue'
+import { Check, CheckCircle2, Cpu, Hash, Send, TriangleAlert, Webhook, Zap } from '@lucide/vue'
 import ProductMockup from '@/components/landing/ProductMockup.vue'
 import type { VisualKind } from '@/seo/showcase'
 
@@ -157,8 +157,8 @@ const risks = [
               ¿Qué está atrasado esta semana?
             </div>
             <div class="flex gap-2">
-              <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-violet-100 text-violet-700"><Bot :size="15" /></span>
-              <div class="rounded-2xl rounded-tl-sm bg-[#f6f5ff] px-3 py-2 leading-relaxed">
+              <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-[#dfe1e6] text-[#101214]"><Cpu :size="14" :stroke-width="1.5" /></span>
+              <div class="rounded-xl rounded-tl-sm border border-[#eee] bg-[#f7f8fa] px-3 py-2 leading-relaxed">
                 Hay <strong>3 tareas vencidas</strong> en “Lanzamiento web”:
                 <ul class="mt-1.5 space-y-1">
                   <li class="flex gap-1.5"><TriangleAlert :size="13" class="mt-0.5 shrink-0 text-red-700" /> Pruebas de pago (2 días)</li>
@@ -168,8 +168,8 @@ const risks = [
                 <p class="mt-1.5">Te sugiero empezar por las pruebas de pago: bloquean el lanzamiento.</p>
               </div>
             </div>
-            <div class="flex items-center gap-2 rounded-full border border-[#eee] px-3 py-2 text-[#666]">
-              <Sparkles :size="14" class="text-violet-600" /> Pregunta sobre tus proyectos…
+            <div class="flex items-center gap-2 rounded-lg border border-[#eee] px-3 py-2 text-[#666]">
+              <Cpu :size="14" :stroke-width="1.5" class="text-[#101214]" /> Pregunta sobre tus proyectos…
               <Send :size="14" class="ml-auto" />
             </div>
           </div>

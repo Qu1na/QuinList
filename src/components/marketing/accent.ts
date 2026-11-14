@@ -1,15 +1,14 @@
 import type { Accent } from '@/seo/showcase'
 
 /**
- * Acentos por solución, tomados de la paleta de la app (azul, cielo, coral) más tres
- * tonos de apoyo. Literales para que Tailwind los detecte.
- * tile: fondo + ícono · soft: fondo de sección · text: texto accesible (AA) · ring: borde · solid: color pleno.
+ * Acentos de marketing — neutros, sin pasteles “SaaS IA”.
+ * Literales para Tailwind. No afectan el dashboard de la app.
  */
-export const ACCENT: Record<Accent, { tile: string; soft: string; text: string; ring: string; solid: string }> = {
-  coral: { tile: 'bg-[#fff1ea] text-[#c2410c]', soft: 'bg-[#fff8f5]', text: 'text-[#c2410c]', ring: 'ring-[#f4845f]/30', solid: 'bg-[#f4845f]' },
-  sky: { tile: 'bg-[#e6f4fb] text-[#2a72a8]', soft: 'bg-[#f2f9fd]', text: 'text-[#2a72a8]', ring: 'ring-[#5bbce4]/35', solid: 'bg-[#5bbce4]' },
-  emerald: { tile: 'bg-emerald-50 text-emerald-700', soft: 'bg-emerald-50/60', text: 'text-emerald-700', ring: 'ring-emerald-300/50', solid: 'bg-emerald-500' },
-  violet: { tile: 'bg-violet-50 text-violet-700', soft: 'bg-violet-50/60', text: 'text-violet-700', ring: 'ring-violet-300/50', solid: 'bg-violet-500' },
-  amber: { tile: 'bg-amber-50 text-amber-700', soft: 'bg-amber-50/60', text: 'text-amber-800', ring: 'ring-amber-300/50', solid: 'bg-amber-400' },
-  rose: { tile: 'bg-rose-50 text-rose-700', soft: 'bg-rose-50/60', text: 'text-rose-700', ring: 'ring-rose-300/50', solid: 'bg-rose-400' },
+export const ACCENT: Record<Accent, { tile: string; soft: string; text: string; ring: string }> = {
+  coral: { tile: 'bg-[#f0f1f2] text-[#101214]', soft: 'bg-[#f7f8fa]', text: 'text-[#1b4f72]', ring: 'ring-[#101214]/15' },
+  sky: { tile: 'bg-[#f0f1f2] text-[#101214]', soft: 'bg-[#f7f8fa]', text: 'text-[#1b4f72]', ring: 'ring-[#101214]/15' },
+  emerald: { tile: 'bg-[#f0f1f2] text-[#101214]', soft: 'bg-[#f7f8fa]', text: 'text-[#0f6b4c]', ring: 'ring-[#101214]/15' },
+  violet: { tile: 'bg-[#f0f1f2] text-[#101214]', soft: 'bg-[#f7f8fa]', text: 'text-[#3d4a66]', ring: 'ring-[#101214]/15' },
+  amber: { tile: 'bg-[#f0f1f2] text-[#101214]', soft: 'bg-[#f7f8fa]', text: 'text-[#5a4a2e]', ring: 'ring-[#101214]/15' },
+  rose: { tile: 'bg-[#f0f1f2] text-[#101214]', soft: 'bg-[#f7f8fa]', text: 'text-[#5a3a3a]', ring: 'ring-[#101214]/15' },
 }

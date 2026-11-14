@@ -12,6 +12,8 @@ import { isProjectsModuleVisible } from '@/config/features'
 import ProjectFolderIcon from '@/components/projects/shared/ProjectFolderIcon.vue'
 import DesktopContextMenu from '@/components/workspace/DesktopContextMenu.vue'
 import type { DesktopMenuItem } from '@/components/workspace/DesktopContextMenu.vue'
+import PlanBadge from '@/components/billing/PlanBadge.vue'
+import PlanLimitCard from '@/components/billing/PlanLimitCard.vue'
 
 const store = useQuinListStore()
 const projectsStore = useProjectsStore()
@@ -115,11 +117,14 @@ async function onContextMenuSelect(id: string) {
     class="workspace-desktop min-h-full w-full bg-white px-6 py-6 lg:px-10"
     @contextmenu="onContextMenu"
   >
-    <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
       <div>
-        <h1 class="text-2xl font-bold text-[#172b4d]">
-          {{ store.currentWorkspace?.name }}
-        </h1>
+        <div class="flex flex-wrap items-center gap-2.5">
+          <h1 class="text-2xl font-bold text-[#172b4d]">
+            {{ store.currentWorkspace?.name }}
+          </h1>
+          <PlanBadge tone="onLight" size="md" />
+        </div>
         <p class="mt-0.5 text-sm text-[#626f86]">Tableros y proyectos de tu espacio de trabajo</p>
       </div>
       <div class="flex flex-wrap gap-2">
@@ -134,11 +139,16 @@ async function onContextMenuSelect(id: string) {
         <button
           v-if="canCreate"
           class="btn-brand"
+          :title="billing.boardLimitReached ? 'Límite del plan Gratis alcanzado' : undefined"
           @click="billing.requestCreateBoard()"
         >
           Crear tablero
         </button>
       </div>
+    </div>
+
+    <div class="mb-6">
+      <PlanLimitCard context="home" />
     </div>
 
     <section v-if="starredBoards.length" class="mb-10">

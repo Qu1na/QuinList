@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { Sparkles, LayoutGrid, FolderKanban } from '@lucide/vue'
+import { Cpu, LayoutGrid, FolderKanban } from '@lucide/vue'
 import { useBillingStore } from '@/stores/billing'
 import AppWindow from '@/components/ui/AppWindow.vue'
 
@@ -52,7 +52,7 @@ function goToPlans() {
             Proyectos ilimitados
           </li>
           <li class="flex items-center gap-2">
-            <Sparkles :size="16" class="text-[#6554c0]" />
+            <Cpu :size="16" class="text-[#6554c0]" />
             Asistente de IA
           </li>
         </ul>

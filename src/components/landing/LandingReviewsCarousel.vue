@@ -123,13 +123,13 @@ watch(
       <div
         v-for="(t, i) in loopReviews"
         :key="`${t.id}-${i}`"
-        class="landing-review-card flex w-[280px] shrink-0 flex-col rounded-2xl border border-[#eee] bg-white p-5 text-left shadow-sm sm:w-[300px]"
+        class="landing-review-card flex w-[280px] shrink-0 flex-col rounded-[20px] border border-[#eee] bg-white p-5 text-left shadow-sm sm:w-[300px]"
         role="listitem"
         :aria-hidden="i >= reviews.length ? 'true' : undefined"
       >
         <div class="flex items-center justify-between gap-2">
           <span class="text-sm leading-none tracking-[0.15em]" role="img" :aria-label="`${t.rating} de 5 estrellas`">
-            <span class="text-[#f4845f]">{{ '★'.repeat(t.rating) }}</span><span class="text-[#e5e5e5]">{{ '★'.repeat(5 - t.rating) }}</span>
+            <span class="text-[#a35a00]">{{ '★'.repeat(t.rating) }}</span><span class="text-[#e5e5e5]">{{ '★'.repeat(5 - t.rating) }}</span>
           </span>
         </div>
         <p class="mt-3 flex-1 text-sm leading-relaxed text-[#555]">“{{ t.quote }}”</p>
@@ -141,7 +141,7 @@ watch(
             {{ t.name.charAt(0) }}
           </span>
           <div class="min-w-0">
-            <p class="truncate text-sm font-bold text-[#172b4d]">{{ t.name }}</p>
+            <p class="truncate text-sm font-bold text-[#101214]">{{ t.name }}</p>
             <p class="truncate text-xs text-[#666]">{{ t.role }} · {{ t.company }}</p>
           </div>
         </div>

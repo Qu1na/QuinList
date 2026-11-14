@@ -34,13 +34,28 @@ export async function userFromAccessToken(token) {
   const { url, projectId, apiKey } = matuConfig()
   if (!url || !projectId || !apiKey || !token) return null
 
-  const res = await fetch(`${url}/api/projects/${projectId}/auth/user`, {
-    headers: {
-      'Content-Type': 'application/json',
-      apikey: apiKey,
-      Authorization: `Bearer ${token}`,
-    },
-  })
+  let res
+  try {
+    res = await fetch(`${url}/api/projects/${projectId}/auth/user`, {
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: apiKey,
+        Authorization: `Bearer ${token}`,
+      },
+      signal: AbortSignal.timeout(12_000),
+    })
+  } catch (error) {
+    const cause = error instanceof Error ? error.cause : null
+    const code = cause && typeof cause === 'object' && 'code' in cause ? String(cause.code) : ''
+    const hint =
+      code === 'ENOTFOUND' || code === 'ECONNREFUSED'
+        ? `No se pudo conectar a MatuDB (${url}). Revisa red/DNS.`
+        : error instanceof Error
+          ? error.message
+          : 'No se pudo validar la sesión.'
+    throw new Error(hint)
+  }
+
   const json = await res.json().catch(() => ({}))
   if (!res.ok) return null
 

@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, watch, onUnmounted, ref, useAttrs } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { LayoutGrid, Search, Bell, ChevronDown, Plus, UserPlus, X, Users, BarChart3, LogOut, FolderKanban, Sparkles } from '@lucide/vue'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
+import { LayoutGrid, Search, Bell, ChevronDown, Plus, UserPlus, X, Users, BarChart3, LogOut, FolderKanban, Cpu } from '@lucide/vue'
 import { useQuinListStore } from '@/stores/quinlist'
 import AppLogo from '@/components/brand/AppLogo.vue'
+import PlanBadge from '@/components/billing/PlanBadge.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notifications'
 import { useUiStore } from '@/stores/ui'
@@ -237,9 +238,19 @@ onUnmounted(() => {
     </div>
 
     <div class="ml-auto flex items-center gap-2">
+      <RouterLink
+        to="/app/planes"
+        class="hidden sm:inline-flex"
+        :title="billing.isVip ? 'Plan VIP' : 'Plan Gratis — ver planes'"
+      >
+        <PlanBadge />
+      </RouterLink>
+
       <button
         v-if="!isBoard"
         class="flex items-center gap-1.5 rounded-full bg-white/25 px-3 py-1.5 text-sm font-medium shadow-sm hover:bg-white/35"
+        :class="billing.boardLimitReached ? 'opacity-80' : ''"
+        :title="billing.boardLimitReached ? 'Límite del plan Gratis alcanzado' : 'Crear tablero'"
         @click="billing.requestCreateBoard()"
       >
         <Plus :size="16" />
@@ -323,7 +334,10 @@ onUnmounted(() => {
               {{ auth.currentUser?.initials }}
             </span>
             <div class="min-w-0">
-              <p class="truncate text-sm font-semibold text-[#172b4d]">{{ auth.currentUser?.name }}</p>
+              <div class="flex items-center gap-2">
+                <p class="truncate text-sm font-semibold text-[#172b4d]">{{ auth.currentUser?.name }}</p>
+                <PlanBadge tone="onLight" />
+              </div>
               <p class="truncate text-xs text-[#626f86]">{{ auth.currentUser?.email }}</p>
             </div>
           </div>
@@ -335,17 +349,18 @@ onUnmounted(() => {
           </p>
           <RouterLink
             to="/app/planes"
-            class="block px-4 py-2 text-sm text-[#172b4d] hover:bg-[#091e420a]"
+            class="flex items-center justify-between gap-2 px-4 py-2 text-sm text-[#172b4d] hover:bg-[#091e420a]"
             @click="showAccountMenu = false"
           >
-            Plan {{ billing.planLabel }}
+            <span>Planes y facturación</span>
+            <span class="text-xs font-semibold text-[#6554c0]">{{ billing.planLabel }}</span>
           </RouterLink>
           <RouterLink
             to="/app/ia"
             class="flex items-center gap-2 px-4 py-2 text-sm text-[#172b4d] hover:bg-[#091e420a]"
             @click="showAccountMenu = false"
           >
-            <Sparkles :size="14" />
+            <Cpu :size="14" />
             Asistente de IA
           </RouterLink>
           <RouterLink

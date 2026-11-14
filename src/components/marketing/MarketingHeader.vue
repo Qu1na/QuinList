@@ -4,7 +4,6 @@ import { RouterLink } from 'vue-router'
 import { ArrowRight, ChevronDown, FileSpreadsheet, Menu, X } from '@lucide/vue'
 import AppLogo from '@/components/brand/AppLogo.vue'
 import MktIcon from '@/components/marketing/MktIcon.vue'
-import { ACCENT } from '@/components/marketing/accent'
 import { pagesOfKind } from '@/seo/marketing'
 import { showcaseByPath } from '@/seo/showcase'
 import { rememberStartPlan } from '@/lib/startPlan'
@@ -12,7 +11,6 @@ import { rememberStartPlan } from '@/lib/startPlan'
 const menuOpen = ref(false)
 const solutionsOpen = ref(false)
 const mobileSolutions = ref(true)
-const scrolled = ref(false)
 let closeTimer: ReturnType<typeof setTimeout> | undefined
 
 function withShowcase(kind: 'solucion' | 'industria') {
@@ -28,6 +26,7 @@ const links = [
   { to: '/precios', label: 'Precios' },
   { to: '/alternativa-a-excel-para-proyectos', label: 'Deja el Excel' },
   { to: '/guias', label: 'Guías' },
+  { to: '/blog', label: 'Blog' },
 ]
 
 function openSolutions() {
@@ -46,22 +45,14 @@ function close() {
 function onKey(e: KeyboardEvent) {
   if (e.key === 'Escape') close()
 }
-function onScroll() {
-  scrolled.value = window.scrollY > 12
-}
 
 // En celular, el menú ocupa la pantalla: bloquea el scroll de fondo mientras está abierto.
 watch(menuOpen, (open) => {
   document.documentElement.style.overflow = open ? 'hidden' : ''
 })
 
-onMounted(() => {
-  window.addEventListener('scroll', onScroll, { passive: true })
-  window.addEventListener('keydown', onKey)
-  onScroll()
-})
+onMounted(() => window.addEventListener('keydown', onKey))
 onUnmounted(() => {
-  window.removeEventListener('scroll', onScroll)
   window.removeEventListener('keydown', onKey)
   document.documentElement.style.overflow = ''
   clearTimeout(closeTimer)
@@ -69,22 +60,19 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <header
-    class="landing-nav fixed inset-x-0 top-0 z-50 transition-all duration-300"
-    :class="scrolled || menuOpen || solutionsOpen ? 'landing-nav--solid' : 'landing-nav--top'"
-  >
-    <div class="mx-auto flex h-16 max-w-6xl items-center gap-4 px-5 lg:h-[68px] lg:gap-6 lg:px-8">
+  <header class="landing-nav fixed inset-x-0 top-0 z-50">
+    <div class="mx-auto flex h-16 max-w-[1200px] items-center gap-4 px-5 lg:gap-6 lg:px-8">
       <RouterLink to="/" class="flex shrink-0 items-center gap-2.5" aria-label="QuinList, inicio" @click="close">
         <AppLogo size="sm" eager />
-        <span class="text-[16px] font-bold tracking-tight text-[#172b4d]">QuinList</span>
+        <span class="ql-display text-[18px] font-semibold text-[#101214]">QuinList</span>
       </RouterLink>
 
       <!-- Navegación de escritorio -->
-      <nav class="ml-2 hidden flex-1 items-center justify-center gap-0.5 lg:flex" aria-label="Principal">
+      <nav class="ml-4 hidden flex-1 items-center gap-0.5 lg:flex" aria-label="Principal">
         <button
           type="button"
           class="landing-nav-link inline-flex items-center gap-1"
-          :class="solutionsOpen ? 'bg-[#eef5fb] text-[#172b4d]' : ''"
+          :class="solutionsOpen ? 'text-[#1868db]' : ''"
           :aria-expanded="solutionsOpen"
           aria-controls="mkt-solutions"
           @click="solutionsOpen ? close() : openSolutions()"
@@ -99,8 +87,8 @@ onUnmounted(() => {
         </RouterLink>
       </nav>
 
-      <div class="ml-auto hidden items-center gap-1.5 sm:flex">
-        <RouterLink to="/login" class="landing-nav-login">Iniciar sesión</RouterLink>
+      <div class="ml-auto hidden items-center gap-3 sm:flex">
+        <RouterLink to="/login" class="landing-nav-login">¿Ya eres cliente?</RouterLink>
         <RouterLink
           :to="{ path: '/register', query: { plan: 'free' } }"
           class="landing-nav-cta"
@@ -112,7 +100,7 @@ onUnmounted(() => {
 
       <button
         type="button"
-        class="ml-auto inline-flex h-10 w-10 items-center justify-center rounded-xl text-[#172b4d] hover:bg-[#eef5fb] sm:ml-1 lg:hidden"
+        class="ml-auto inline-flex h-10 w-10 items-center justify-center rounded-full text-[#101214] hover:bg-[#f0f1f2] sm:ml-1 lg:hidden"
         :aria-expanded="menuOpen"
         aria-controls="mkt-mobile-menu"
         :aria-label="menuOpen ? 'Cerrar menú' : 'Abrir menú'"
@@ -123,12 +111,12 @@ onUnmounted(() => {
       </button>
     </div>
 
-    <!-- Mega menú “Soluciones” (escritorio): panel de vidrio -->
+    <!-- Mega menú “Soluciones” (escritorio) -->
     <Transition
       enter-active-class="transition duration-200 ease-out"
-      enter-from-class="opacity-0 -translate-y-2 scale-[0.99]"
+      enter-from-class="opacity-0 -translate-y-1"
       leave-active-class="transition duration-150 ease-in"
-      leave-to-class="opacity-0 -translate-y-1"
+      leave-to-class="opacity-0"
     >
       <div
         v-show="solutionsOpen"
@@ -137,55 +125,55 @@ onUnmounted(() => {
         @mouseenter="openSolutions"
         @mouseleave="scheduleClose"
       >
-        <div class="ql-glass mx-auto grid max-w-5xl grid-cols-[1fr_1fr_16.5rem] gap-1 rounded-[1.4rem] p-2.5">
-          <div class="rounded-2xl bg-white/70 p-3">
-            <p class="px-3 pb-1 text-[11px] font-bold uppercase tracking-[0.1em] text-[#5e6c84]">Funciones</p>
+        <div class="ql-card mx-auto grid max-w-[1100px] grid-cols-[1fr_1fr_17rem] gap-2 p-3 shadow-[0_24px_48px_-24px_rgba(9,30,66,0.35),0_0_1px_rgba(9,30,66,0.31)]">
+          <div class="p-3">
+            <p class="px-3 pb-2 text-[13px] font-medium text-[#42526e]">Funciones</p>
             <ul>
               <li v-for="{ page, sc } in features" :key="page.path">
                 <RouterLink
                   :to="page.path"
-                  class="group flex items-start gap-3 rounded-xl px-3 py-2 transition-colors hover:bg-[#eef5fb]"
+                  class="group flex items-start gap-3 rounded-xl px-3 py-2 transition-colors hover:bg-[#f0f1f2]"
                   @click="close"
                 >
-                  <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] transition-transform duration-200 group-hover:scale-110" :class="ACCENT[sc.accent].tile">
-                    <MktIcon :name="sc.icon" :size="18" />
+                  <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#dfe1e6] text-[#101214]">
+                    <MktIcon :name="sc.icon" :size="18" :stroke-width="1.4" />
                   </span>
                   <span class="min-w-0">
-                    <span class="block text-sm font-semibold text-[#172b4d]">{{ page.navLabel }}</span>
-                    <span class="block text-xs leading-snug text-[#5e6c84]">{{ sc.menuDesc }}</span>
+                    <span class="block text-[14px] font-medium text-[#101214] group-hover:text-[#1868db]">{{ page.navLabel }}</span>
+                    <span class="block text-[13px] leading-snug text-[#42526e]">{{ sc.menuDesc }}</span>
                   </span>
                 </RouterLink>
               </li>
             </ul>
           </div>
 
-          <div class="rounded-2xl bg-white/70 p-3">
-            <p class="px-3 pb-1 text-[11px] font-bold uppercase tracking-[0.1em] text-[#5e6c84]">Por tipo de equipo</p>
+          <div class="border-l border-[#f0f1f2] p-3">
+            <p class="px-3 pb-2 text-[13px] font-medium text-[#42526e]">Por tipo de equipo</p>
             <ul>
               <li v-for="{ page, sc } in teams" :key="page.path">
                 <RouterLink
                   :to="page.path"
-                  class="group flex items-start gap-3 rounded-xl px-3 py-2 transition-colors hover:bg-[#eef5fb]"
+                  class="group flex items-start gap-3 rounded-xl px-3 py-2 transition-colors hover:bg-[#f0f1f2]"
                   @click="close"
                 >
-                  <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] transition-transform duration-200 group-hover:scale-110" :class="ACCENT[sc.accent].tile">
-                    <MktIcon :name="sc.icon" :size="18" />
+                  <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#dfe1e6] text-[#101214]">
+                    <MktIcon :name="sc.icon" :size="18" :stroke-width="1.4" />
                   </span>
                   <span class="min-w-0">
-                    <span class="block text-sm font-semibold text-[#172b4d]">{{ page.navLabel }}</span>
-                    <span class="block text-xs leading-snug text-[#5e6c84]">{{ sc.menuDesc }}</span>
+                    <span class="block text-[14px] font-medium text-[#101214] group-hover:text-[#1868db]">{{ page.navLabel }}</span>
+                    <span class="block text-[13px] leading-snug text-[#42526e]">{{ sc.menuDesc }}</span>
                   </span>
                 </RouterLink>
               </li>
             </ul>
-            <div class="mx-3 mt-2 border-t border-[#e4e9f0] pt-3">
-              <p class="text-[11px] font-bold uppercase tracking-[0.1em] text-[#5e6c84]">Comparativas</p>
+            <div class="mx-3 mt-3 border-t border-[#f0f1f2] pt-3">
+              <p class="text-[13px] font-medium text-[#42526e]">Comparativas</p>
               <div class="mt-2 flex flex-wrap gap-1.5">
                 <RouterLink
                   v-for="c in pagesOfKind('comparativa')"
                   :key="c.path"
                   :to="c.path"
-                  class="rounded-full bg-[#eef5fb] px-2.5 py-1 text-xs font-semibold text-[#2a72a8] hover:bg-[#dbeaf6]"
+                  class="rounded-full bg-[#f0f1f2] px-2.5 py-1 text-[13px] font-medium text-[#42526e] hover:bg-[#e9f2fe] hover:text-[#1868db]"
                   @click="close"
                 >
                   {{ c.navLabel }}
@@ -194,29 +182,25 @@ onUnmounted(() => {
             </div>
           </div>
 
-          <!-- Destacado en azul de marca (como el header de la app) -->
-          <div class="flex flex-col rounded-2xl bg-[#2a72a8] p-5 text-white">
-            <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15">
-              <FileSpreadsheet :size="20" aria-hidden="true" />
-            </span>
-            <p class="mt-4 text-base font-bold leading-snug">¿Tus proyectos viven en Excel y WhatsApp?</p>
-            <p class="mt-2 text-[13px] leading-relaxed text-white">
-              Pásalos a un solo lugar en una tarde. Plan gratis para siempre, VIP por 15 USD al mes.
-            </p>
+          <!-- Banda lavanda destacada -->
+          <div class="flex flex-col rounded-[20px] bg-[#eed7fc] p-6 text-[#101214]">
+            <FileSpreadsheet :size="26" aria-hidden="true" />
+            <p class="ql-display mt-4 text-[20px] font-medium leading-snug">¿Tus proyectos viven en Excel y WhatsApp?</p>
+            <p class="mt-2 text-[14px] leading-relaxed">Pásalos a un solo lugar en una tarde. Gratis para siempre; VIP por 7 USD al mes.</p>
             <div class="mt-auto pt-5">
               <RouterLink
                 :to="{ path: '/register', query: { plan: 'free' } }"
-                class="ql-btn ql-btn--light w-full py-2.5 text-sm"
+                class="ql-btn w-full py-2.5 text-[14px]"
                 @click="rememberStartPlan('free'); close()"
               >
-                Empieza gratis <ArrowRight :size="15" aria-hidden="true" />
+                Empieza gratis
               </RouterLink>
               <RouterLink
                 to="/alternativa-a-excel-para-proyectos"
-                class="mt-2 block text-center text-xs font-semibold text-white underline-offset-2 hover:underline"
+                class="mt-3 flex items-center justify-center gap-1.5 text-[14px] font-medium text-[#101214] underline-offset-4 hover:underline"
                 @click="close"
               >
-                Cómo dejar el Excel
+                Cómo dejar el Excel <ArrowRight :size="14" aria-hidden="true" />
               </RouterLink>
             </div>
           </div>
@@ -224,31 +208,29 @@ onUnmounted(() => {
       </div>
     </Transition>
 
-    <!-- Menú móvil y tablet: pantalla completa.
-         Va con `absolute` + altura explícita: el backdrop-filter del header convierte al header
-         en el contenedor de los `fixed`, así que `fixed inset-0` quedaría con 0 px de alto. -->
+    <!-- Menú móvil y tablet: pantalla completa (absolute + altura explícita bajo el header). -->
     <div
       v-if="menuOpen"
       id="mkt-mobile-menu"
-      class="absolute inset-x-0 top-full flex h-[calc(100dvh-4rem)] flex-col border-t border-[#e4e9f0] bg-[#f6f8fb] lg:hidden"
+      class="absolute inset-x-0 top-full flex h-[calc(100dvh-4rem)] flex-col bg-white lg:hidden"
     >
-      <nav class="flex-1 overflow-y-auto px-5 pb-6 pt-4" aria-label="Menú móvil">
+      <nav class="flex-1 overflow-y-auto px-5 pb-6 pt-2" aria-label="Menú móvil">
         <ul class="ql-grouped">
           <li v-for="l in links" :key="l.to">
             <RouterLink
               :to="l.to"
-              class="flex items-center justify-between px-4 py-3.5 text-[15px] font-semibold text-[#172b4d] active:bg-[#eef5fb]"
+              class="ql-display flex items-center justify-between py-4 text-[20px] font-medium text-[#101214]"
               @click="close"
             >
               {{ l.label }}
-              <ChevronDown :size="16" class="-rotate-90 text-[#5e6c84]" aria-hidden="true" />
+              <ArrowRight :size="18" class="text-[#1868db]" aria-hidden="true" />
             </RouterLink>
           </li>
         </ul>
 
         <button
           type="button"
-          class="mt-6 flex w-full items-center justify-between px-1 text-[12px] font-bold uppercase tracking-[0.1em] text-[#5e6c84]"
+          class="mt-6 flex w-full items-center justify-between text-[13px] font-medium text-[#42526e]"
           :aria-expanded="mobileSolutions"
           aria-controls="mkt-mobile-solutions"
           @click="mobileSolutions = !mobileSolutions"
@@ -261,23 +243,23 @@ onUnmounted(() => {
             <li v-for="{ page, sc } in [...features, ...teams]" :key="page.path">
               <RouterLink
                 :to="page.path"
-                class="flex h-full flex-col gap-2.5 rounded-2xl bg-white p-3.5 shadow-[0_1px_2px_rgba(23,43,77,0.06)] ring-1 ring-[#e4e9f0] active:scale-[0.98]"
+                class="flex h-full flex-col gap-2.5 rounded-[20px] bg-[#f0f1f2] p-4 active:bg-[#e9f2fe]"
                 @click="close"
               >
-                <span class="flex h-9 w-9 items-center justify-center rounded-[10px]" :class="ACCENT[sc.accent].tile">
-                  <MktIcon :name="sc.icon" :size="18" />
+                <span class="flex h-9 w-9 items-center justify-center rounded-lg border border-[#dfe1e6] bg-white text-[#101214]">
+                  <MktIcon :name="sc.icon" :size="18" :stroke-width="1.4" />
                 </span>
-                <span class="text-[13px] font-semibold leading-tight text-[#172b4d]">{{ page.navLabel }}</span>
+                <span class="text-[14px] font-medium leading-tight text-[#101214]">{{ page.navLabel }}</span>
               </RouterLink>
             </li>
           </ul>
         </div>
       </nav>
-      <div class="grid grid-cols-2 gap-2 border-t border-[#e4e9f0] bg-white/90 px-5 py-4 backdrop-blur">
-        <RouterLink to="/login" class="ql-btn--ghost py-3" @click="close">Iniciar sesión</RouterLink>
+      <div class="grid grid-cols-2 gap-2 border-t border-[#f0f1f2] bg-white px-5 py-4">
+        <RouterLink to="/login" class="py-3 text-center text-[15px] font-medium text-[#42526e]" @click="close">¿Ya eres cliente?</RouterLink>
         <RouterLink
           :to="{ path: '/register', query: { plan: 'free' } }"
-          class="ql-btn py-3"
+          class="ql-btn py-3 text-[15px]"
           @click="rememberStartPlan('free'); close()"
         >
           Empieza gratis

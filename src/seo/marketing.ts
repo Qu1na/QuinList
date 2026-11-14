@@ -63,7 +63,7 @@ export const PRODUCT = {
   country: 'Colombia',
   url: 'https://quinlist.matubyte.com',
   email: 'contacto@matubyte.com',
-  vipPriceUsd: 15,
+  vipPriceUsd: 7,
   freeBoards: 1,
   freeProjects: 1,
   currencies: ['COP', 'USD', 'MXN', 'PEN', 'CLP', 'ARS', 'BRL', 'EUR', 'GBP'],
@@ -86,7 +86,7 @@ export const landingFaqs: MarketingFaq[] = [
   },
   {
     q: '¿Cuánto cuesta QuinList?',
-    a: 'Hay un plan Gratis para siempre, con 1 tablero y 1 proyecto, sin tarjeta de crédito. El plan VIP cuesta 15 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA. El cobro se hace en pesos colombianos, a la tasa del día, a través de Landa Pay.',
+    a: 'Hay un plan Gratis para siempre, con 1 tablero y 1 proyecto, sin tarjeta de crédito. El plan VIP cuesta 7 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA. El cobro se hace en pesos colombianos, a la tasa del día, a través de Landa Pay.',
   },
   {
     q: '¿En qué se diferencia de Trello, Asana o Monday?',
@@ -148,7 +148,7 @@ const U = CONTENT_UPDATED
 
 const CTA_FAQ_PRICE: MarketingFaq = {
   q: '¿Cuánto cuesta?',
-  a: 'Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 15 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.',
+  a: 'Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 7 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.',
 }
 
 function countryPage(input: {
@@ -168,7 +168,7 @@ function countryPage(input: {
     kind: 'pais',
     navLabel: input.name,
     title: `Software de gestión de proyectos en ${input.name} | QuinList`,
-    description: `Gestiona proyectos en ${input.name} con QuinList: Kanban, cronograma Gantt y presupuesto en ${input.currency}. Plan gratis para siempre y VIP por 15 USD/mes.`,
+    description: `Gestiona proyectos en ${input.name} con QuinList: Kanban, cronograma Gantt y presupuesto en ${input.currency}. Plan gratis para siempre y VIP por 7 USD/mes.`,
     keywords: [
       `software de gestión de proyectos ${input.name}`,
       `gestor de proyectos ${input.name}`,
@@ -213,7 +213,7 @@ function countryPage(input: {
       {
         heading: 'Precio claro, en dólares',
         body: [
-          `El plan Gratis incluye 1 tablero y 1 proyecto, para siempre. El plan VIP cuesta 15 USD al mes con tableros y proyectos ilimitados y asistente de IA. ${input.paymentNote}`,
+          `El plan Gratis incluye 1 tablero y 1 proyecto, para siempre. El plan VIP cuesta 7 USD al mes con tableros y proyectos ilimitados y asistente de IA. ${input.paymentNote}`,
         ],
       },
     ],
@@ -384,7 +384,7 @@ export const marketingPages: MarketingPage[] = [
     faqs: [
       {
         q: '¿El tablero Kanban es gratis?',
-        a: 'Sí. El plan Gratis incluye 1 tablero Kanban para siempre. El plan VIP (15 USD/mes) incluye tableros ilimitados.',
+        a: 'Sí. El plan Gratis incluye 1 tablero Kanban para siempre. El plan VIP (7 USD/mes) incluye tableros ilimitados.',
       },
       {
         q: '¿Varias personas pueden editar el tablero a la vez?',
@@ -589,7 +589,7 @@ export const marketingPages: MarketingPage[] = [
     faqs: [
       {
         q: '¿El asistente de IA está en el plan gratis?',
-        a: 'No. El asistente de IA está incluido en el plan VIP, que cuesta 15 USD al mes.',
+        a: 'No. El asistente de IA está incluido en el plan VIP, que cuesta 7 USD al mes.',
       },
       {
         q: '¿Qué información usa la IA?',
@@ -850,7 +850,7 @@ export const marketingPages: MarketingPage[] = [
     navLabel: 'Pymes',
     title: 'Software de gestión de proyectos para pymes | QuinList',
     description:
-      'El software de proyectos que una pyme sí puede usar: fácil de usar, con plan gratis y VIP de 15 USD/mes. Tareas, Kanban, presupuesto y equipo.',
+      'El software de proyectos que una pyme sí puede usar: fácil de usar, con plan gratis y VIP de 7 USD/mes. Tareas, Kanban, presupuesto y equipo.',
     keywords: [
       'software para pymes',
       'gestión de proyectos para pymes',
@@ -865,7 +865,7 @@ export const marketingPages: MarketingPage[] = [
     highlights: [
       'Se aprende en una tarde',
       'Plan gratis para siempre',
-      'VIP por 15 USD/mes',
+      'VIP por 7 USD/mes',
       'Soporte directo',
     ],
     sections: [
@@ -873,7 +873,7 @@ export const marketingPages: MarketingPage[] = [
         heading: 'Por qué las pymes eligen QuinList',
         bullets: [
           'Interfaz simple: el equipo lo usa sin capacitación',
-          'Un solo pago de 15 USD al mes en el plan VIP',
+          'Un solo pago de 7 USD al mes en el plan VIP',
           'Kanban, proyectos, chat de equipo y calendario en una sola herramienta',
           'Roles para separar lo que ve el dueño, el administrador y el equipo',
           'Presupuesto por proyecto en tu moneda',
@@ -1018,11 +1018,13 @@ export const marketingPages: MarketingPage[] = [
       'gestionar proyectos sin excel',
       'plantilla de proyectos excel',
       'organizar proyectos en google drive',
+      'software de proyectos en vez de excel',
+      'cronograma de proyectos sin excel',
     ],
     eyebrow: 'Excel, cuadernos y Drive',
     h1: 'La alternativa a Excel para gestionar tus proyectos',
     intro:
-      'Excel es excelente para calcular, pero no para coordinar personas. Si tu equipo trabaja con un archivo compartido, un cuaderno y una carpeta de Drive, QuinList es el siguiente paso natural.',
+      'Excel es excelente para calcular, pero no para coordinar personas. Si tu equipo trabaja con un archivo compartido, un cuaderno y una carpeta de Drive, QuinList es el siguiente paso natural: una sola versión del proyecto, con responsables, fechas, dinero y archivos en el mismo lugar.',
     highlights: [
       'Una sola versión de la verdad',
       'Responsables y fechas',
@@ -1031,6 +1033,13 @@ export const marketingPages: MarketingPage[] = [
     ],
     sections: [
       {
+        heading: '¿Por qué Excel no alcanza para gestionar proyectos?',
+        body: [
+          'Una hoja de cálculo sirve para números y listas. Un proyecto real necesita responsables, fechas límite, conversación, archivos y un presupuesto que se mueva con el trabajo. Cuando eso vive en Excel + WhatsApp + Drive, cada persona actualiza su copia y nadie ve el mismo estado.',
+          'QuinList no pretende reemplazar Excel para análisis financieros puntuales. Reemplaza la parte operativa: quién hace qué, cuándo entrega, cuánto se ha gastado y qué está atrasado, sin preguntar en el grupo.',
+        ],
+      },
+      {
         heading: 'Señales de que tu empresa ya superó el Excel',
         bullets: [
           'Hay varias versiones del mismo archivo y nadie sabe cuál es la última',
@@ -1038,6 +1047,18 @@ export const marketingPages: MarketingPage[] = [
           'Los archivos del proyecto están repartidos entre Drive, el correo y el celular',
           'Te enteras de los atrasos cuando el cliente se queja',
           'El presupuesto se revisa al final, no durante el proyecto',
+          'El cronograma es una imagen o una presentación que nadie actualiza',
+        ],
+      },
+      {
+        heading: 'Qué ganas al pasar a QuinList',
+        bullets: [
+          'Dashboard con el avance en % de cada proyecto, sin reuniones de seguimiento',
+          'Tareas en lista, Kanban y Gantt con el mismo dato',
+          'Presupuesto, ingresos, egresos, flujo de caja y rentabilidad por proyecto',
+          'Centro de archivos y documentación dentro del proyecto',
+          'Chat, comentarios y menciones junto al trabajo',
+          'Historial de actividad: sabes quién cambió qué y cuándo',
         ],
       },
       {
@@ -1045,19 +1066,19 @@ export const marketingPages: MarketingPage[] = [
         steps: [
           {
             title: 'Crea el proyecto',
-            text: 'Usa el mismo nombre, cliente, fechas y presupuesto de tu hoja.',
+            text: 'Usa el mismo nombre, cliente, fechas y presupuesto de tu hoja. Elige la moneda (COP, MXN, USD…).',
           },
           {
             title: 'Pasa las filas a tareas',
-            text: 'Cada fila de tu Excel se vuelve una tarea con responsable y fecha.',
+            text: 'Cada fila de tu Excel se vuelve una tarea con responsable, fecha y prioridad.',
           },
           {
             title: 'Sube los archivos clave',
-            text: 'Adjunta los documentos a las tareas o a la documentación del proyecto.',
+            text: 'Adjunta contratos, planos o entregables a las tareas o a la documentación del proyecto.',
           },
           {
             title: 'Invita al equipo',
-            text: 'Desde ese día, el estado del proyecto se actualiza solo.',
+            text: 'Comparte un enlace o un código QR. Desde ese día, el estado del proyecto se actualiza solo.',
           },
         ],
       },
@@ -1073,6 +1094,7 @@ export const marketingPages: MarketingPage[] = [
         ['Archivos', 'Carpetas sueltas', 'Centro de archivos por proyecto'],
         ['Conversación', 'Grupo de WhatsApp', 'Comentarios y chat del equipo'],
         ['Historial', 'No existe', 'Registro de actividad'],
+        ['Roles y permisos', 'El archivo lo edita cualquiera', '4 roles por módulo'],
       ],
     },
     faqs: [
@@ -1080,12 +1102,21 @@ export const marketingPages: MarketingPage[] = [
         q: '¿Puedo seguir usando Excel para algunas cosas?',
         a: 'Claro. Excel sigue siendo útil para análisis puntuales. QuinList reemplaza la parte de coordinar al equipo, seguir tareas y controlar el presupuesto del proyecto.',
       },
+      {
+        q: '¿Cuánto tarda migrar un proyecto típico?',
+        a: 'Un proyecto con 20–40 tareas se arma en una tarde: creas el proyecto, pasas las filas a tareas e invitas al equipo. Si tienes muchos proyectos, escríbenos y te orientamos.',
+      },
+      {
+        q: '¿Pierdo mis fórmulas de presupuesto?',
+        a: 'No necesitas fórmulas. En QuinList registras presupuesto base, ingresos y egresos; el libro mayor, el flujo de caja y la rentabilidad se calculan solos.',
+      },
       CTA_FAQ_PRICE,
     ],
     related: [
       '/guias/como-organizar-proyectos-de-una-empresa',
       '/software-de-proyectos-para-pymes',
       '/software-gestion-de-proyectos',
+      '/control-de-presupuesto-de-proyectos',
     ],
     updated: U,
     disclaimer:
@@ -1097,38 +1128,70 @@ export const marketingPages: MarketingPage[] = [
     navLabel: 'Alternativa a Trello',
     title: 'Alternativa a Trello con gestión de proyectos | QuinList',
     description:
-      'Si te gusta el Kanban de Trello pero necesitas cronograma, presupuesto, riesgos y chat, prueba QuinList: Kanban + gestión de proyectos completa.',
+      'Si te gusta el Kanban de Trello pero necesitas cronograma, presupuesto, riesgos y chat, prueba QuinList: Kanban + gestión de proyectos completa. Empieza gratis.',
     keywords: [
       'alternativa a trello',
       'trello en español',
       'mejor que trello',
       'trello vs quinlist',
       'herramienta tipo trello',
+      'alternativa a trello con presupuesto',
+      'kanban con gantt y finanzas',
     ],
-    eyebrow: 'Comparativa',
+    eyebrow: 'Comparativa · Trello',
     h1: 'Una alternativa a Trello con gestión de proyectos completa',
     intro:
-      'Trello popularizó el tablero Kanban. QuinList mantiene esa experiencia simple de mover tarjetas y le suma lo que un proyecto real necesita: cronograma, presupuesto, entregables, riesgos y chat de equipo.',
+      'Trello popularizó el tablero Kanban. QuinList mantiene esa experiencia simple de mover tarjetas y le suma lo que un proyecto real necesita: cronograma, presupuesto, entregables, riesgos y chat de equipo — sin Power-Ups ni módulos aparte.',
     highlights: [
       'Mismo Kanban sencillo',
-      'Más módulos de proyecto',
-      'Finanzas incluidas',
+      'Gantt y presupuesto incluidos',
+      'Chat de equipo',
       'Hecho en Latinoamérica',
     ],
     sections: [
       {
-        heading: 'Cuándo conviene QuinList',
+        heading: 'Trello es genial para tableros. Un proyecto pide más.',
+        body: [
+          'Si tu equipo solo necesita listas y tarjetas, un tablero Kanban basta. Cuando aparece un cliente, un presupuesto, un cronograma y entregables con aprobación, el tablero solo ya no alcanza: terminas otra vez en Excel, Drive y WhatsApp.',
+          'QuinList une el Kanban que ya conoces con los módulos de proyecto (dashboard, Gantt, finanzas, riesgos, archivos y chat) en un solo espacio de trabajo en español.',
+        ],
+      },
+      {
+        heading: 'Cuándo conviene QuinList frente a Trello',
         bullets: [
           'Necesitas controlar el presupuesto del proyecto además de las tareas',
-          'Quieres cronograma Gantt sin instalar complementos',
-          'Quieres soporte directo del equipo que construye la herramienta',
-          'Quieres el chat del equipo junto al trabajo',
+          'Quieres cronograma Gantt sin instalar complementos ni pagar extras',
+          'Quieres riesgos, hitos y entregables con flujo de aprobación',
+          'Quieres el chat del equipo junto al trabajo, no en otra app',
+          'Quieres soporte directo del equipo que construye la herramienta, en tu zona horaria',
+          'Prefieres un precio simple en dólares, sin sorpresas por asiento o Power-Up',
         ],
       },
       {
         heading: 'Cuándo puede convenir Trello',
         body: [
-          'Si solo necesitas un tablero personal muy sencillo y ya usas el ecosistema de Atlassian, Trello puede ser suficiente. QuinList brilla cuando el tablero hace parte de un proyecto con fechas, dinero y entregables.',
+          'Si solo necesitas un tablero personal muy sencillo y ya usas el ecosistema de Atlassian (Jira, Confluence), Trello puede ser suficiente. QuinList brilla cuando el tablero hace parte de un proyecto con fechas, dinero y entregables.',
+        ],
+      },
+      {
+        heading: 'Cómo probar QuinList si vienes de Trello',
+        steps: [
+          {
+            title: 'Crea un tablero o un proyecto',
+            text: 'Replica tus listas (Por hacer, En curso, Hecho) o crea un proyecto con las mismas columnas en la vista Kanban.',
+          },
+          {
+            title: 'Pasa las tarjetas clave',
+            text: 'Crea las tarjetas activas con responsable, fecha y prioridad. El resto puedes irlo migrando con calma.',
+          },
+          {
+            title: 'Activa lo que Trello no traía',
+            text: 'Define presupuesto, mira el Gantt y sube los archivos al centro del proyecto.',
+          },
+          {
+            title: 'Invita al equipo',
+            text: 'Comparte un enlace. En minutos todos ven el mismo tablero y el mismo avance.',
+          },
         ],
       },
     ],
@@ -1138,10 +1201,11 @@ export const marketingPages: MarketingPage[] = [
       rows: [
         ['Tablero Kanban', 'Sí', 'Sí'],
         ['Presupuesto y flujo de caja por proyecto', 'No es su enfoque', 'Incluido'],
-        ['Cronograma Gantt', 'Según plan', 'Incluido en proyectos'],
+        ['Cronograma Gantt', 'Según plan / Power-Ups', 'Incluido en proyectos'],
         ['Riesgos y entregables', 'No es su enfoque', 'Incluido'],
         ['Chat de equipo', 'No incluido', 'Incluido'],
         ['Asistente de IA', 'Según plan', 'Plan VIP'],
+        ['Precio simple en USD', 'Por asiento / plan', 'Gratis + VIP 7 USD/mes'],
       ],
     },
     faqs: [
@@ -1149,12 +1213,21 @@ export const marketingPages: MarketingPage[] = [
         q: '¿Puedo pasar mis tableros de Trello a QuinList?',
         a: 'Hoy puedes recrear tus listas y tarjetas en QuinList en pocos minutos. Si tienes muchos tableros, escríbenos a contacto@matubyte.com y te ayudamos.',
       },
+      {
+        q: '¿QuinList tiene Power-Ups?',
+        a: 'No hace falta. Cronograma, presupuesto, riesgos, chat y archivos vienen en el producto, sin instalar complementos.',
+      },
+      {
+        q: '¿El Kanban se siente igual de simple?',
+        a: 'Sí. Arrastras tarjetas entre columnas, asignas responsables, fechas, etiquetas, checklist y adjuntos. La diferencia es que esas tarjetas también viven dentro de un proyecto con Gantt y dinero.',
+      },
       CTA_FAQ_PRICE,
     ],
     related: [
       '/tablero-kanban-online',
       '/alternativa-a-asana-y-monday',
       '/software-gestion-de-proyectos',
+      '/control-de-presupuesto-de-proyectos',
     ],
     updated: U,
     disclaimer:
@@ -1166,44 +1239,99 @@ export const marketingPages: MarketingPage[] = [
     navLabel: 'Alternativa a Asana y Monday',
     title: 'Alternativa a Asana y Monday para Latinoamérica | QuinList',
     description:
-      'Una alternativa a Asana y Monday con precio simple de 15 USD/mes y finanzas del proyecto incluidas. Pensada para equipos de Latinoamérica.',
+      'Una alternativa a Asana y Monday con precio simple de 7 USD/mes y finanzas del proyecto incluidas. Pensada para equipos de Latinoamérica.',
     keywords: [
       'alternativa a asana',
       'alternativa a monday',
       'asana en español',
       'monday alternativa barata',
       'software de proyectos latinoamérica',
+      'asana vs monday vs quinlist',
+      'software de proyectos precio fijo',
     ],
-    eyebrow: 'Comparativa',
+    eyebrow: 'Comparativa · Asana y Monday',
     h1: 'Una alternativa a Asana y Monday hecha para Latinoamérica',
     intro:
-      'Asana y Monday son herramientas potentes y muy completas. QuinList se enfoca en lo que piden los equipos de la región: precio simple, soporte cercano y el dinero del proyecto junto a las tareas.',
+      'Asana y Monday son herramientas potentes y muy completas. QuinList se enfoca en lo que piden los equipos de la región: precio simple, soporte cercano y el dinero del proyecto junto a las tareas — sin cotizaciones ni módulos que se suman al final del mes.',
     highlights: [
-      'Precio simple: 15 USD/mes',
+      'Precio simple: 7 USD/mes',
       'Finanzas del proyecto',
       'Moneda local',
       'Soporte cercano',
     ],
     sections: [
       {
+        heading: '¿Por qué buscar una alternativa a Asana o Monday?',
+        body: [
+          'Las herramientas globales escalan muy bien en corporaciones con procesos complejos e integraciones a medida. Para una pyme o un equipo de Latinoamérica, el costo por asiento, la curva de aprendizaje y la falta de presupuesto del proyecto en moneda local suelen ser el freno.',
+          'QuinList ofrece Kanban, lista, Gantt, hitos, entregables, riesgos, chat e IA, con finanzas del proyecto incluidas y un plan VIP a precio fijo.',
+        ],
+      },
+      {
         heading: 'Lo que hace distinto a QuinList',
         bullets: [
-          'Precio fijo del plan VIP: 15 USD al mes, sin módulos extra',
+          'Precio fijo del plan VIP: 7 USD al mes, sin módulos extra ni cobro por asiento',
           'Presupuesto, ingresos, egresos y rentabilidad en cada proyecto',
           'Moneda por proyecto: COP, MXN, PEN, CLP, ARS, USD y más',
-          'Chat de equipo integrado',
-          'Equipo detrás del producto en Colombia, en tu zona horaria',
+          'Chat de equipo integrado, con menciones y presencia',
+          'Interfaz y soporte en español, con el equipo en Colombia (zona horaria LATAM)',
+          'Plan Gratis para siempre para probar sin tarjeta',
         ],
       },
       {
         heading: 'Cuándo conviene una herramienta global',
         body: [
-          'Si tu empresa ya tiene cientos de integraciones conectadas o necesita flujos muy específicos de gran corporación, una herramienta global puede convenir. Para equipos que quieren ordenarse rápido y controlar tiempos y dinero, QuinList es más directo.',
+          'Si tu empresa ya tiene cientos de integraciones conectadas, flujos de aprobación muy específicos o necesita un ecosistema corporativo amplio, Asana o Monday pueden convenir. Para equipos que quieren ordenarse rápido y controlar tiempos y dinero sin un proyecto de implementación, QuinList es más directo.',
+        ],
+      },
+      {
+        heading: 'Cómo evaluar el cambio en una semana',
+        steps: [
+          {
+            title: 'Elige un proyecto piloto',
+            text: 'Uno real, con cliente, fechas y presupuesto. No un tablero de prueba vacío.',
+          },
+          {
+            title: 'Arma tareas, Gantt y caja',
+            text: 'Pasa el trabajo a QuinList y registra el presupuesto base en tu moneda.',
+          },
+          {
+            title: 'Invita a 3–5 personas',
+            text: 'Asigna roles y deja que el equipo mueva tarjetas y comente durante unos días.',
+          },
+          {
+            title: 'Decide con datos',
+            text: 'Si el dashboard y el flujo de caja te ahorran reuniones, el paso a VIP es natural.',
+          },
         ],
       },
     ],
-    faqs: [CTA_FAQ_PRICE, landingFaqs[3]!],
-    related: ['/alternativa-a-trello', '/control-de-presupuesto-de-proyectos', '/precios'],
+    comparison: {
+      caption: 'Enfoque general (revisa precios oficiales de cada herramienta)',
+      headers: ['Tema', 'Asana / Monday', 'QuinList'],
+      rows: [
+        ['Enfoque', 'Trabajo y flujos complejos', 'Proyectos + finanzas juntos'],
+        ['Presupuesto del proyecto', 'No es el núcleo', 'Incluido (caja, flujo, rentabilidad)'],
+        ['Moneda local por proyecto', 'Depende de la cuenta', 'COP, MXN, PEN, CLP, ARS, USD…'],
+        ['Modelo de precio', 'Por asiento / plan', 'Gratis + VIP 7 USD/mes'],
+        ['Soporte en zona LATAM', 'Global', 'Equipo en Colombia'],
+        ['Kanban + Gantt', 'Sí (según plan)', 'Incluido en proyectos'],
+        ['Chat de equipo', 'Según producto', 'Incluido'],
+      ],
+    },
+    faqs: [
+      CTA_FAQ_PRICE,
+      {
+        q: '¿QuinList reemplaza por completo a Asana o Monday?',
+        a: 'Para equipos que necesitan tareas, cronograma, presupuesto y chat en un solo lugar, sí puede ser el sistema principal. Si dependes de integraciones muy específicas del ecosistema de Asana o Monday, evalúa un proyecto piloto antes de migrar todo.',
+      },
+      {
+        q: '¿Hay cobro por usuario?',
+        a: 'No. El plan Gratis incluye 1 tablero y 1 proyecto. El plan VIP cuesta 7 USD al mes con tableros y proyectos ilimitados y asistente de IA, sin cobro por asiento.',
+      },
+      landingFaqs[3]!,
+    ],
+    related: ['/alternativa-a-trello', '/control-de-presupuesto-de-proyectos', '/precios', '/software-de-proyectos-para-pymes'],
     updated: U,
     disclaimer:
       'Asana es una marca registrada de Asana, Inc. Monday.com es una marca registrada de monday.com Ltd. QuinList no está afiliado a estas empresas. Revisa el sitio oficial de cada herramienta para ver sus funciones y precios actuales.',
@@ -1783,66 +1911,91 @@ export const marketingPages: MarketingPage[] = [
     path: '/precios',
     kind: 'precios',
     navLabel: 'Precios',
-    title: 'Precios de QuinList: plan Gratis y VIP por 15 USD/mes',
+    title: 'Precios de QuinList: plan Gratis y VIP por 7 USD/mes',
     description:
-      'QuinList tiene plan Gratis para siempre (1 tablero y 1 proyecto) y plan VIP por 15 USD al mes con todo ilimitado y asistente de IA. Sin contratos.',
+      'QuinList tiene plan Gratis para siempre (1 tablero y 1 proyecto) y plan VIP por 7 USD al mes con todo ilimitado y asistente de IA. Sin contratos ni cobro por asiento.',
     keywords: [
       'precio software gestión de proyectos',
       'software de proyectos barato',
       'quinlist precio',
       'gestor de proyectos gratis',
       'software de proyectos gratis',
+      'software de proyectos 7 dólares',
+      'plan vip gestión de proyectos',
     ],
     eyebrow: 'Precios',
-    h1: 'Precios simples: empieza gratis, crece con VIP',
+    h1: 'Empieza gratis. Crece por 7 USD al mes.',
     intro:
-      'Sin cotizaciones ni letra pequeña. Usa QuinList gratis el tiempo que quieras y pasa a VIP cuando tu equipo necesite más tableros, más proyectos y el asistente de IA.',
-    highlights: [
-      'Plan Gratis para siempre',
-      'VIP: 15 USD al mes',
-      'Sin tarjeta para empezar',
-      'Cancela cuando quieras',
-    ],
+      'Sin cotizaciones, sin cobro por usuario y sin letra pequeña. Prueba QuinList el tiempo que quieras; pasa a VIP cuando necesites más proyectos y el asistente de IA.',
+    highlights: ['Sin tarjeta', 'Cancela cuando quieras', 'Precio fijo en USD'],
     sections: [
       {
-        heading: 'Qué incluye cada plan',
-        bullets: [
-          'Gratis: 1 tablero Kanban y 1 proyecto con todos sus módulos',
-          'Gratis: chat de equipo, calendario, notificaciones y roles',
-          'VIP: tableros ilimitados',
-          'VIP: proyectos ilimitados',
-          'VIP: asistente de IA',
+        heading: 'Cómo se cobra',
+        body: [
+          'El plan VIP cuesta 7 USD al mes. En Colombia el cobro se hace en pesos a la tasa del día, con Landa Pay (Nequi, PSE, Bancolombia y más). No pedimos tarjeta para crear la cuenta.',
         ],
       },
       {
-        heading: 'Cómo se paga',
-        body: [
-          'El plan VIP cuesta 15 USD al mes. El cobro se hace en pesos colombianos a la tasa del día, a través de Landa Pay.',
+        heading: 'Cómo elegir',
+        steps: [
+          {
+            title: 'Empieza gratis',
+            text: 'Un tablero y un proyecto completos, para siempre, sin tarjeta.',
+          },
+          {
+            title: 'Prueba con un proyecto real',
+            text: 'Si el flujo le sirve a tu equipo, ya sabes que vale la pena.',
+          },
+          {
+            title: 'Pasa a VIP',
+            text: 'Tableros y proyectos ilimitados + IA, por 7 USD al mes.',
+          },
         ],
       },
     ],
     faqs: [
       {
         q: '¿El plan gratis tiene fecha de vencimiento?',
-        a: 'No. El plan Gratis es para siempre, con 1 tablero y 1 proyecto.',
+        a: 'No. Es para siempre, con 1 tablero y 1 proyecto.',
       },
       {
-        q: '¿Necesito tarjeta de crédito para empezar?',
-        a: 'No. Creas tu cuenta y empiezas en el plan Gratis sin tarjeta.',
+        q: '¿Necesito tarjeta para empezar?',
+        a: 'No. Creas tu cuenta y entras al plan Gratis sin tarjeta.',
       },
       {
-        q: '¿Puedo cancelar el plan VIP?',
-        a: 'Sí. Es una suscripción mensual sin contrato de permanencia.',
+        q: '¿Cobran por usuario?',
+        a: 'No. VIP es 7 USD al mes, sin importar cuántas personas invites.',
       },
       {
-        q: '¿Tienen planes para empresas grandes?',
-        a: 'Escríbenos a contacto@matubyte.com y armamos una propuesta para tu empresa.',
+        q: '¿Puedo cancelar VIP?',
+        a: 'Sí. Suscripción mensual, sin permanencia.',
+      },
+      {
+        q: '¿Tienen plan para empresas grandes?',
+        a: 'Escríbenos a contacto@matubyte.com y armamos una propuesta.',
       },
     ],
+    comparison: {
+      caption: 'Qué incluye cada plan',
+      headers: ['Función', 'Gratis', 'VIP'],
+      rows: [
+        ['Tableros Kanban', '1', 'Ilimitados'],
+        ['Proyectos con todos los módulos', '1', 'Ilimitados'],
+        ['Cronograma Gantt e hitos', 'Sí', 'Sí'],
+        ['Entregables y riesgos', 'Sí', 'Sí'],
+        ['Presupuesto, flujo de caja y rentabilidad', 'Sí', 'Sí'],
+        ['Chat de equipo y notificaciones', 'Sí', 'Sí'],
+        ['Calendario, OKRs y reportes', 'Sí', 'Sí'],
+        ['Roles y permisos', 'Sí', 'Sí'],
+        ['Asistente de IA', 'No', 'Sí'],
+        ['Precio', '0 USD', '7 USD al mes'],
+      ],
+    },
     related: [
       '/software-gestion-de-proyectos',
       '/gestion-de-proyectos-con-ia',
       '/software-de-proyectos-para-pymes',
+      '/alternativa-a-asana-y-monday',
     ],
     updated: U,
   },

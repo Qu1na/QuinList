@@ -29,6 +29,11 @@ const {
   CONTENT_UPDATED,
   SITE_URL,
   showcaseByPath,
+  blogPosts,
+  blogSegments,
+  postPath,
+  segmentPath,
+  BLOG_UPDATED,
 } = ssr
 
 const template = readFileSync(join(dist, 'index.html'), 'utf8')
@@ -94,6 +99,9 @@ const sitemapEntries = [
     changefreq: p.kind === 'guia' ? 'monthly' : 'weekly',
     lastmod: p.updated,
   })),
+  { path: '/blog', priority: 0.8, changefreq: 'weekly', lastmod: BLOG_UPDATED },
+  ...blogSegments.map((s) => ({ path: segmentPath(s), priority: 0.6, changefreq: 'weekly', lastmod: BLOG_UPDATED })),
+  ...blogPosts.map((p) => ({ path: postPath(p), priority: 0.7, changefreq: 'monthly', lastmod: p.updated })),
   { path: '/register', priority: 0.6, changefreq: 'monthly', lastmod: CONTENT_UPDATED },
   { path: '/ayuda', priority: 0.5, changefreq: 'monthly', lastmod: CONTENT_UPDATED },
   { path: '/privacidad', priority: 0.2, changefreq: 'yearly', lastmod: CONTENT_UPDATED },
@@ -234,6 +242,17 @@ ${group('pais').map(linkLine).join('\n')}
 ## Guías
 ${group('guia').map(linkLine).join('\n')}
 
+## Blog
+${blogSegments
+  .map(
+    (s) =>
+      `### ${s.name}\n${blogPosts
+        .filter((p) => p.segment === s.slug)
+        .map((p) => `- [${p.h1}](${loc(postPath(p))}): ${p.description}`)
+        .join('\n')}`,
+  )
+  .join('\n\n')}
+
 ## Opcional
 - [Contenido completo para IA](${SITE_URL}/llms-full.txt)
 - [Centro de ayuda](${SITE_URL}/ayuda)
@@ -277,6 +296,31 @@ const mdPage = (p) =>
     p.disclaimer ? `_${p.disclaimer}_\n` : '',
   ].join('\n')
 
+const mdPost = (p) =>
+  [
+    `## ${p.h1}`,
+    `URL: ${loc(postPath(p))}`,
+    '',
+    p.excerpt,
+    '',
+    ...p.body.map((b) => {
+      if (b.type === 'h2') return `### ${b.text}`
+      if (b.type === 'h3') return `#### ${b.text}`
+      if (b.type === 'ul') return b.items.map((i) => `- ${i}`).join('\n')
+      if (b.type === 'ol') return b.items.map((i, k) => `${k + 1}. ${i}`).join('\n')
+      if (b.type === 'table')
+        return [
+          `| ${b.headers.join(' | ')} |`,
+          `| ${b.headers.map(() => '---').join(' | ')} |`,
+          ...b.rows.map((r) => `| ${r.join(' | ')} |`),
+        ].join('\n')
+      if (b.type === 'tip') return `**${b.title}:** ${b.text}`
+      if (b.type === 'cta') return ''
+      return b.text
+    }),
+    '',
+  ].join('\n')
+
 const llmsFull = `# QuinList: contenido completo
 
 > ${PRODUCT.oneLiner}
@@ -286,8 +330,42 @@ Actualizado: ${CONTENT_UPDATED}. Empresa: ${PRODUCT.company} (${PRODUCT.country}
 ## Preguntas frecuentes generales
 ${landingFaqs.map((f) => `**${f.q}**\n${f.a}\n`).join('\n')}
 ${marketingPages.map(mdPage).join('\n---\n\n')}
+
+# Blog
+
+${blogPosts.map(mdPost).join('\n---\n\n')}
 `
 writeBoth('llms-full.txt', llmsFull)
+
+/* 7b. RSS del blog */
+{
+  const items = [...blogPosts]
+    .sort((a, b) => b.published.localeCompare(a.published))
+    .map(
+      (p) => `    <item>
+      <title>${xmlEsc(p.h1)}</title>
+      <link>${loc(postPath(p))}</link>
+      <guid isPermaLink="true">${loc(postPath(p))}</guid>
+      <pubDate>${new Date(p.published + 'T12:00:00Z').toUTCString()}</pubDate>
+      <category>${xmlEsc(blogSegments.find((s) => s.slug === p.segment)?.name ?? '')}</category>
+      <description>${xmlEsc(p.description)}</description>
+    </item>`,
+    )
+    .join('\n')
+  const rssXml = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Blog de QuinList</title>
+    <link>${SITE_URL}/blog</link>
+    <atom:link href="${SITE_URL}/blog/rss.xml" rel="self" type="application/rss+xml"/>
+    <description>Gestión de proyectos, finanzas, equipos y herramientas para empresas de Latinoamérica.</description>
+    <language>es</language>
+${items}
+  </channel>
+</rss>
+`
+  write('blog/rss.xml', rssXml)
+}
 
 /* 8. serve.json: archivos estáticos primero, la app privada al shell y 404 real para lo demás */
 const SPA_ROUTES = [

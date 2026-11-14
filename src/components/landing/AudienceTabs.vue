@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { ArrowRight } from '@lucide/vue'
+import CountryFlag from '@/components/marketing/CountryFlag.vue'
 import MktIcon from '@/components/marketing/MktIcon.vue'
 import SolutionVisual from '@/components/marketing/SolutionVisual.vue'
 import { ACCENT } from '@/components/marketing/accent'
@@ -18,11 +19,11 @@ const current = computed(() => teams[active.value]!)
 </script>
 
 <template>
-  <section id="para-quien" class="bg-[#f6f8fb] py-20 lg:py-28" aria-labelledby="audience-heading">
-    <div class="mx-auto max-w-6xl px-5 lg:px-8">
+  <section id="para-quien" class="bg-[#eed7fc] py-20 lg:py-24" aria-labelledby="audience-heading">
+    <div class="mx-auto max-w-[1200px] px-5 lg:px-8">
       <div class="mx-auto max-w-2xl text-center">
         <p class="ql-eyebrow">Para quién es</p>
-        <h2 id="audience-heading" class="mt-3 text-3xl font-bold text-[#172b4d] lg:text-[2.75rem] lg:leading-[1.1]">
+        <h2 id="audience-heading" class="mt-3 text-[2rem] leading-[1.15] text-[#101214] lg:text-[3rem] lg:leading-[1.14]">
           Se adapta a la forma en que trabaja tu equipo
         </h2>
       </div>
@@ -58,40 +59,41 @@ const current = computed(() => teams[active.value]!)
           :key="current.page.path"
           role="tabpanel"
           :aria-labelledby="`aud-tab-${active}`"
-          class="mt-10 grid items-center gap-10 rounded-[2rem] bg-white p-6 ring-1 ring-[#e4e9f0] sm:p-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-14"
+          class="ql-card mt-10 grid items-center gap-10 p-6 sm:p-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-14"
         >
           <div class="min-w-0">
             <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold" :class="ACCENT[current.sc.accent].tile">
               <MktIcon :name="current.sc.icon" :size="14" /> {{ current.page.eyebrow }}
             </span>
-            <h3 class="mt-4 text-2xl font-bold leading-tight text-[#172b4d] lg:text-3xl">{{ current.page.h1 }}</h3>
-            <p class="mt-3 text-[15px] leading-relaxed text-[#44546f]">{{ current.page.intro }}</p>
+            <h3 class="mt-4 text-2xl font-bold leading-tight text-[#101214] lg:text-3xl">{{ current.page.h1 }}</h3>
+            <p class="mt-3 text-[15px] leading-relaxed text-[#42526e]">{{ current.page.intro }}</p>
             <ul class="mt-6 grid grid-cols-2 gap-3">
               <li v-for="f in current.sc.features.slice(0, 4)" :key="f.title" class="flex items-start gap-2.5">
                 <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg" :class="ACCENT[current.sc.accent].tile">
                   <MktIcon :name="f.icon" :size="16" />
                 </span>
-                <span class="text-sm font-semibold leading-snug text-[#172b4d]">{{ f.title }}</span>
+                <span class="text-sm font-semibold leading-snug text-[#101214]">{{ f.title }}</span>
               </li>
             </ul>
             <RouterLink :to="current.page.path" class="ql-btn mt-8 py-2.5 text-sm">
               Ver solución para {{ current.page.navLabel.toLowerCase() }} <ArrowRight :size="15" aria-hidden="true" />
             </RouterLink>
           </div>
-          <div class="min-w-0">
-            <SolutionVisual :kind="current.sc.visual" :label="current.sc.visualLabel" />
+          <div class="ql-shot min-w-0 p-6">
+            <div class="ql-shot__tilt"><SolutionVisual :kind="current.sc.visual" :label="current.sc.visualLabel" /></div>
           </div>
         </div>
       </Transition>
 
       <nav class="mt-12 text-center" aria-label="QuinList por país">
-        <p class="text-sm font-semibold text-[#44546f]">Disponible en toda Latinoamérica</p>
+        <p class="text-[14px] font-medium text-[#101214]">Disponible en toda Latinoamérica</p>
         <ul class="mt-3 flex flex-wrap justify-center gap-2">
           <li v-for="c in countries" :key="c.path">
             <RouterLink
               :to="c.path"
-              class="inline-flex rounded-full bg-white px-4 py-1.5 text-sm font-semibold text-[#2a72a8] ring-1 ring-[#dbeaf6] transition-colors hover:bg-[#eef5fb]"
+              class="inline-flex items-center gap-1.5 rounded-full border border-[#101214] px-3.5 py-1.5 text-[14px] font-medium text-[#101214] transition-colors hover:bg-white"
             >
+              <CountryFlag :code="c.country?.code" :size="16" />
               {{ c.navLabel }}
             </RouterLink>
           </li>

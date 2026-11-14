@@ -12,7 +12,7 @@ QuinList es un software de gestión de proyectos en la nube para empresas, hecho
 Para equipos y empresas de Latinoamérica que hoy llevan sus proyectos en Excel, cuadernos, grupos de WhatsApp o carpetas de Google Drive: agencias, consultoras, constructoras, equipos de software, pymes y áreas de operaciones. Funciona igual para un equipo de 3 personas que para varias áreas de una empresa.
 
 **¿Cuánto cuesta QuinList?**
-Hay un plan Gratis para siempre, con 1 tablero y 1 proyecto, sin tarjeta de crédito. El plan VIP cuesta 15 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA. El cobro se hace en pesos colombianos, a la tasa del día, a través de Landa Pay.
+Hay un plan Gratis para siempre, con 1 tablero y 1 proyecto, sin tarjeta de crédito. El plan VIP cuesta 7 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA. El cobro se hace en pesos colombianos, a la tasa del día, a través de Landa Pay.
 
 **¿En qué se diferencia de Trello, Asana o Monday?**
 QuinList está pensado para empresas de Latinoamérica: precio simple, soporte directo del equipo que lo construye y presupuesto del proyecto en tu moneda (COP, MXN, PEN, CLP, ARS, USD y más). Además del Kanban, cada proyecto trae finanzas (ingresos, egresos, flujo de caja y rentabilidad), cronograma Gantt, hitos, entregables y riesgos, sin integraciones extra.
@@ -73,7 +73,7 @@ No. QuinList funciona en el navegador, desde computador, tablet o celular.
 Puedes invitar a tu equipo a tu espacio de trabajo y asignar a cada persona un rol: Propietario, Administrador, Miembro u Observador.
 
 **¿Cuánto cuesta?**
-Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 15 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
+Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 7 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
 
 
 ---
@@ -110,7 +110,7 @@ En la mayoría de herramientas el Kanban se queda solo. En QuinList cualquier ta
 
 ### Preguntas frecuentes
 **¿El tablero Kanban es gratis?**
-Sí. El plan Gratis incluye 1 tablero Kanban para siempre. El plan VIP (15 USD/mes) incluye tableros ilimitados.
+Sí. El plan Gratis incluye 1 tablero Kanban para siempre. El plan VIP (7 USD/mes) incluye tableros ilimitados.
 
 **¿Varias personas pueden editar el tablero a la vez?**
 Sí. Los cambios se ven en tiempo real para todos los miembros del tablero.
@@ -228,7 +228,7 @@ Un chat de IA común no sabe nada de tu empresa. El asistente de QuinList recibe
 
 ### Preguntas frecuentes
 **¿El asistente de IA está en el plan gratis?**
-No. El asistente de IA está incluido en el plan VIP, que cuesta 15 USD al mes.
+No. El asistente de IA está incluido en el plan VIP, que cuesta 7 USD al mes.
 
 **¿Qué información usa la IA?**
 Usa un resumen del espacio de trabajo en el que estás: nombres de tableros y proyectos, tarjetas abiertas y conteo de tareas. Solo se envía cuando haces una pregunta.
@@ -310,7 +310,7 @@ Hoy envía un evento cuando una tarjeta se mueve de columna y cuando se agrega u
 Sí. Cualquier herramienta que reciba webhooks por URL puede recibir los eventos de QuinList.
 
 **¿Cuánto cuesta?**
-Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 15 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
+Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 7 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
 
 _Slack, Zapier, Make y n8n son marcas de sus respectivos dueños. QuinList no está afiliado a estas empresas._
 
@@ -346,7 +346,7 @@ Registra las horas, herramientas y servicios que cuesta cada cuenta. QuinList ca
 Sí. Puedes compartir un proyecto con un enlace público de solo lectura.
 
 **¿Cuánto cuesta?**
-Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 15 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
+Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 7 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
 
 
 ---
@@ -393,7 +393,7 @@ Las pymes no necesitan un sistema que tome meses implementar. Necesitan que el e
 
 ### Lo que una pyme necesita, sin lo que sobra
 - **Fácil de aprender**: El equipo lo usa sin capacitación.
-- **Precio simple**: Gratis para empezar y 15 USD al mes en VIP.
+- **Precio simple**: Gratis para empezar y 7 USD al mes en VIP.
 - **Kanban y proyectos**: Del tablero diario al proyecto completo.
 - **Dinero del proyecto**: Presupuesto en tu moneda, sin hojas de cálculo.
 - **Roles**: Separa lo que ve el dueño, el administrador y el equipo.
@@ -402,7 +402,7 @@ Ideal para: Servicios, Comercio, Manufactura, Distribuidoras, Emprendimientos.
 
 ### Por qué las pymes eligen QuinList
 - Interfaz simple: el equipo lo usa sin capacitación
-- Un solo pago de 15 USD al mes en el plan VIP
+- Un solo pago de 7 USD al mes en el plan VIP
 - Kanban, proyectos, chat de equipo y calendario en una sola herramienta
 - Roles para separar lo que ve el dueño, el administrador y el equipo
 - Presupuesto por proyecto en tu moneda
@@ -414,7 +414,7 @@ Ideal para: Servicios, Comercio, Manufactura, Distribuidoras, Emprendimientos.
 
 ### Preguntas frecuentes
 **¿Cuánto cuesta?**
-Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 15 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
+Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 7 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
 
 **¿Sirve para equipos remotos?**
 Sí. Todo se sincroniza en tiempo real: tableros, comentarios, chat de equipo con menciones y notificaciones. Funciona en cualquier navegador, desde computador o celular.
@@ -495,7 +495,20 @@ Sí. QuinList es una herramienta en la nube: todo el equipo ve los mismos tabler
 ## La alternativa a Excel para gestionar tus proyectos
 URL: https://quinlist.matubyte.com/alternativa-a-excel-para-proyectos
 
-Excel es excelente para calcular, pero no para coordinar personas. Si tu equipo trabaja con un archivo compartido, un cuaderno y una carpeta de Drive, QuinList es el siguiente paso natural.
+Excel es excelente para calcular, pero no para coordinar personas. Si tu equipo trabaja con un archivo compartido, un cuaderno y una carpeta de Drive, QuinList es el siguiente paso natural: una sola versión del proyecto, con responsables, fechas, dinero y archivos en el mismo lugar.
+
+### Lo que Excel no te da solo
+- **Responsables claros**: Cada tarea con dueño; se acabó la columna que nadie actualiza.
+- **Gantt automático**: Las fechas de las tareas arman el cronograma sin pintar barras.
+- **Presupuesto vivo**: Ingresos, egresos, flujo de caja y rentabilidad sin fórmulas.
+- **Archivos en su sitio**: Documentos junto al proyecto, no en carpetas sueltas de Drive.
+- **Conversación ordenada**: Comentarios y chat; las decisiones no se pierden en WhatsApp.
+- **Avance visible**: Dashboard con % de avance sin reuniones de “¿cómo vamos?”.
+Ideal para: Pymes, Agencias, Consultoras, Equipos que viven en Excel.
+
+### ¿Por qué Excel no alcanza para gestionar proyectos?
+Una hoja de cálculo sirve para números y listas. Un proyecto real necesita responsables, fechas límite, conversación, archivos y un presupuesto que se mueva con el trabajo. Cuando eso vive en Excel + WhatsApp + Drive, cada persona actualiza su copia y nadie ve el mismo estado.
+QuinList no pretende reemplazar Excel para análisis financieros puntuales. Reemplaza la parte operativa: quién hace qué, cuándo entrega, cuánto se ha gastado y qué está atrasado, sin preguntar en el grupo.
 
 ### Señales de que tu empresa ya superó el Excel
 - Hay varias versiones del mismo archivo y nadie sabe cuál es la última
@@ -503,12 +516,21 @@ Excel es excelente para calcular, pero no para coordinar personas. Si tu equipo 
 - Los archivos del proyecto están repartidos entre Drive, el correo y el celular
 - Te enteras de los atrasos cuando el cliente se queja
 - El presupuesto se revisa al final, no durante el proyecto
+- El cronograma es una imagen o una presentación que nadie actualiza
+
+### Qué ganas al pasar a QuinList
+- Dashboard con el avance en % de cada proyecto, sin reuniones de seguimiento
+- Tareas en lista, Kanban y Gantt con el mismo dato
+- Presupuesto, ingresos, egresos, flujo de caja y rentabilidad por proyecto
+- Centro de archivos y documentación dentro del proyecto
+- Chat, comentarios y menciones junto al trabajo
+- Historial de actividad: sabes quién cambió qué y cuándo
 
 ### Cómo pasarte de Excel a QuinList
-1. **Crea el proyecto**: Usa el mismo nombre, cliente, fechas y presupuesto de tu hoja.
-2. **Pasa las filas a tareas**: Cada fila de tu Excel se vuelve una tarea con responsable y fecha.
-3. **Sube los archivos clave**: Adjunta los documentos a las tareas o a la documentación del proyecto.
-4. **Invita al equipo**: Desde ese día, el estado del proyecto se actualiza solo.
+1. **Crea el proyecto**: Usa el mismo nombre, cliente, fechas y presupuesto de tu hoja. Elige la moneda (COP, MXN, USD…).
+2. **Pasa las filas a tareas**: Cada fila de tu Excel se vuelve una tarea con responsable, fecha y prioridad.
+3. **Sube los archivos clave**: Adjunta contratos, planos o entregables a las tareas o a la documentación del proyecto.
+4. **Invita al equipo**: Comparte un enlace o un código QR. Desde ese día, el estado del proyecto se actualiza solo.
 
 ### Excel y carpetas frente a QuinList
 | Necesidad | Excel + Drive + WhatsApp | QuinList |
@@ -520,13 +542,20 @@ Excel es excelente para calcular, pero no para coordinar personas. Si tu equipo 
 | Archivos | Carpetas sueltas | Centro de archivos por proyecto |
 | Conversación | Grupo de WhatsApp | Comentarios y chat del equipo |
 | Historial | No existe | Registro de actividad |
+| Roles y permisos | El archivo lo edita cualquiera | 4 roles por módulo |
 
 ### Preguntas frecuentes
 **¿Puedo seguir usando Excel para algunas cosas?**
 Claro. Excel sigue siendo útil para análisis puntuales. QuinList reemplaza la parte de coordinar al equipo, seguir tareas y controlar el presupuesto del proyecto.
 
+**¿Cuánto tarda migrar un proyecto típico?**
+Un proyecto con 20–40 tareas se arma en una tarde: creas el proyecto, pasas las filas a tareas e invitas al equipo. Si tienes muchos proyectos, escríbenos y te orientamos.
+
+**¿Pierdo mis fórmulas de presupuesto?**
+No necesitas fórmulas. En QuinList registras presupuesto base, ingresos y egresos; el libro mayor, el flujo de caja y la rentabilidad se calculan solos.
+
 **¿Cuánto cuesta?**
-Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 15 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
+Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 7 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
 
 _Excel es una marca registrada de Microsoft Corporation. Google Drive es una marca de Google LLC. QuinList no está afiliado a estas empresas._
 
@@ -535,33 +564,61 @@ _Excel es una marca registrada de Microsoft Corporation. Google Drive es una mar
 ## Una alternativa a Trello con gestión de proyectos completa
 URL: https://quinlist.matubyte.com/alternativa-a-trello
 
-Trello popularizó el tablero Kanban. QuinList mantiene esa experiencia simple de mover tarjetas y le suma lo que un proyecto real necesita: cronograma, presupuesto, entregables, riesgos y chat de equipo.
+Trello popularizó el tablero Kanban. QuinList mantiene esa experiencia simple de mover tarjetas y le suma lo que un proyecto real necesita: cronograma, presupuesto, entregables, riesgos y chat de equipo — sin Power-Ups ni módulos aparte.
 
-### Cuándo conviene QuinList
+### Kanban, y todo lo que el proyecto pide
+- **Tablero familiar**: Arrastra tarjetas, checklist, etiquetas, fechas y adjuntos.
+- **Cronograma**: La misma tarea se ve en Gantt sin instalar nada.
+- **Dinero del proyecto**: Presupuesto y flujo de caja junto al tablero.
+- **Riesgos y entregables**: Severidad, aprobación y plan de mitigación incluidos.
+- **Chat de equipo**: Canales y menciones sin salir de QuinList.
+- **Roles**: Decide quién ve finanzas y quién solo mueve tarjetas.
+Ideal para: Equipos que usan Trello, Agencias, Product managers, Startups.
+
+### Trello es genial para tableros. Un proyecto pide más.
+Si tu equipo solo necesita listas y tarjetas, un tablero Kanban basta. Cuando aparece un cliente, un presupuesto, un cronograma y entregables con aprobación, el tablero solo ya no alcanza: terminas otra vez en Excel, Drive y WhatsApp.
+QuinList une el Kanban que ya conoces con los módulos de proyecto (dashboard, Gantt, finanzas, riesgos, archivos y chat) en un solo espacio de trabajo en español.
+
+### Cuándo conviene QuinList frente a Trello
 - Necesitas controlar el presupuesto del proyecto además de las tareas
-- Quieres cronograma Gantt sin instalar complementos
-- Quieres soporte directo del equipo que construye la herramienta
-- Quieres el chat del equipo junto al trabajo
+- Quieres cronograma Gantt sin instalar complementos ni pagar extras
+- Quieres riesgos, hitos y entregables con flujo de aprobación
+- Quieres el chat del equipo junto al trabajo, no en otra app
+- Quieres soporte directo del equipo que construye la herramienta, en tu zona horaria
+- Prefieres un precio simple en dólares, sin sorpresas por asiento o Power-Up
 
 ### Cuándo puede convenir Trello
-Si solo necesitas un tablero personal muy sencillo y ya usas el ecosistema de Atlassian, Trello puede ser suficiente. QuinList brilla cuando el tablero hace parte de un proyecto con fechas, dinero y entregables.
+Si solo necesitas un tablero personal muy sencillo y ya usas el ecosistema de Atlassian (Jira, Confluence), Trello puede ser suficiente. QuinList brilla cuando el tablero hace parte de un proyecto con fechas, dinero y entregables.
+
+### Cómo probar QuinList si vienes de Trello
+1. **Crea un tablero o un proyecto**: Replica tus listas (Por hacer, En curso, Hecho) o crea un proyecto con las mismas columnas en la vista Kanban.
+2. **Pasa las tarjetas clave**: Crea las tarjetas activas con responsable, fecha y prioridad. El resto puedes irlo migrando con calma.
+3. **Activa lo que Trello no traía**: Define presupuesto, mira el Gantt y sube los archivos al centro del proyecto.
+4. **Invita al equipo**: Comparte un enlace. En minutos todos ven el mismo tablero y el mismo avance.
 
 ### Funciones incluidas en QuinList
 | Función | Trello | QuinList |
 | --- | --- | --- |
 | Tablero Kanban | Sí | Sí |
 | Presupuesto y flujo de caja por proyecto | No es su enfoque | Incluido |
-| Cronograma Gantt | Según plan | Incluido en proyectos |
+| Cronograma Gantt | Según plan / Power-Ups | Incluido en proyectos |
 | Riesgos y entregables | No es su enfoque | Incluido |
 | Chat de equipo | No incluido | Incluido |
 | Asistente de IA | Según plan | Plan VIP |
+| Precio simple en USD | Por asiento / plan | Gratis + VIP 7 USD/mes |
 
 ### Preguntas frecuentes
 **¿Puedo pasar mis tableros de Trello a QuinList?**
 Hoy puedes recrear tus listas y tarjetas en QuinList en pocos minutos. Si tienes muchos tableros, escríbenos a contacto@matubyte.com y te ayudamos.
 
+**¿QuinList tiene Power-Ups?**
+No hace falta. Cronograma, presupuesto, riesgos, chat y archivos vienen en el producto, sin instalar complementos.
+
+**¿El Kanban se siente igual de simple?**
+Sí. Arrastras tarjetas entre columnas, asignas responsables, fechas, etiquetas, checklist y adjuntos. La diferencia es que esas tarjetas también viven dentro de un proyecto con Gantt y dinero.
+
 **¿Cuánto cuesta?**
-Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 15 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
+Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 7 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
 
 _Trello es una marca registrada de Atlassian. La comparación refleja el enfoque general de cada producto y puede cambiar; revisa el sitio oficial de cada herramienta. QuinList no está afiliado a Atlassian._
 
@@ -570,21 +627,58 @@ _Trello es una marca registrada de Atlassian. La comparación refleja el enfoque
 ## Una alternativa a Asana y Monday hecha para Latinoamérica
 URL: https://quinlist.matubyte.com/alternativa-a-asana-y-monday
 
-Asana y Monday son herramientas potentes y muy completas. QuinList se enfoca en lo que piden los equipos de la región: precio simple, soporte cercano y el dinero del proyecto junto a las tareas.
+Asana y Monday son herramientas potentes y muy completas. QuinList se enfoca en lo que piden los equipos de la región: precio simple, soporte cercano y el dinero del proyecto junto a las tareas — sin cotizaciones ni módulos que se suman al final del mes.
+
+### Lo esencial, sin precio por asiento
+- **Precio simple**: Gratis para empezar; VIP a 7 USD/mes sin módulos sorpresa.
+- **Finanzas del proyecto**: Presupuesto, egresos, flujo de caja y rentabilidad.
+- **Moneda local**: COP, MXN, PEN, CLP, ARS, USD y más, por proyecto.
+- **Kanban + Gantt**: Las mismas tareas en tablero y cronograma.
+- **IA en VIP**: Prioriza, resume y redacta con el contexto de tus proyectos.
+- **Chat incluido**: El equipo habla donde trabaja.
+Ideal para: Pymes LATAM, Agencias, Consultoras, Equipos que pagan por asiento.
+
+### ¿Por qué buscar una alternativa a Asana o Monday?
+Las herramientas globales escalan muy bien en corporaciones con procesos complejos e integraciones a medida. Para una pyme o un equipo de Latinoamérica, el costo por asiento, la curva de aprendizaje y la falta de presupuesto del proyecto en moneda local suelen ser el freno.
+QuinList ofrece Kanban, lista, Gantt, hitos, entregables, riesgos, chat e IA, con finanzas del proyecto incluidas y un plan VIP a precio fijo.
 
 ### Lo que hace distinto a QuinList
-- Precio fijo del plan VIP: 15 USD al mes, sin módulos extra
+- Precio fijo del plan VIP: 7 USD al mes, sin módulos extra ni cobro por asiento
 - Presupuesto, ingresos, egresos y rentabilidad en cada proyecto
 - Moneda por proyecto: COP, MXN, PEN, CLP, ARS, USD y más
-- Chat de equipo integrado
-- Equipo detrás del producto en Colombia, en tu zona horaria
+- Chat de equipo integrado, con menciones y presencia
+- Interfaz y soporte en español, con el equipo en Colombia (zona horaria LATAM)
+- Plan Gratis para siempre para probar sin tarjeta
 
 ### Cuándo conviene una herramienta global
-Si tu empresa ya tiene cientos de integraciones conectadas o necesita flujos muy específicos de gran corporación, una herramienta global puede convenir. Para equipos que quieren ordenarse rápido y controlar tiempos y dinero, QuinList es más directo.
+Si tu empresa ya tiene cientos de integraciones conectadas, flujos de aprobación muy específicos o necesita un ecosistema corporativo amplio, Asana o Monday pueden convenir. Para equipos que quieren ordenarse rápido y controlar tiempos y dinero sin un proyecto de implementación, QuinList es más directo.
+
+### Cómo evaluar el cambio en una semana
+1. **Elige un proyecto piloto**: Uno real, con cliente, fechas y presupuesto. No un tablero de prueba vacío.
+2. **Arma tareas, Gantt y caja**: Pasa el trabajo a QuinList y registra el presupuesto base en tu moneda.
+3. **Invita a 3–5 personas**: Asigna roles y deja que el equipo mueva tarjetas y comente durante unos días.
+4. **Decide con datos**: Si el dashboard y el flujo de caja te ahorran reuniones, el paso a VIP es natural.
+
+### Enfoque general (revisa precios oficiales de cada herramienta)
+| Tema | Asana / Monday | QuinList |
+| --- | --- | --- |
+| Enfoque | Trabajo y flujos complejos | Proyectos + finanzas juntos |
+| Presupuesto del proyecto | No es el núcleo | Incluido (caja, flujo, rentabilidad) |
+| Moneda local por proyecto | Depende de la cuenta | COP, MXN, PEN, CLP, ARS, USD… |
+| Modelo de precio | Por asiento / plan | Gratis + VIP 7 USD/mes |
+| Soporte en zona LATAM | Global | Equipo en Colombia |
+| Kanban + Gantt | Sí (según plan) | Incluido en proyectos |
+| Chat de equipo | Según producto | Incluido |
 
 ### Preguntas frecuentes
 **¿Cuánto cuesta?**
-Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 15 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
+Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 7 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
+
+**¿QuinList reemplaza por completo a Asana o Monday?**
+Para equipos que necesitan tareas, cronograma, presupuesto y chat en un solo lugar, sí puede ser el sistema principal. Si dependes de integraciones muy específicas del ecosistema de Asana o Monday, evalúa un proyecto piloto antes de migrar todo.
+
+**¿Hay cobro por usuario?**
+No. El plan Gratis incluye 1 tablero y 1 proyecto. El plan VIP cuesta 7 USD al mes con tableros y proyectos ilimitados y asistente de IA, sin cobro por asiento.
 
 **¿En qué se diferencia de Trello, Asana o Monday?**
 QuinList está pensado para empresas de Latinoamérica: precio simple, soporte directo del equipo que lo construye y presupuesto del proyecto en tu moneda (COP, MXN, PEN, CLP, ARS, USD y más). Además del Kanban, cada proyecto trae finanzas (ingresos, egresos, flujo de caja y rentabilidad), cronograma Gantt, hitos, entregables y riesgos, sin integraciones extra.
@@ -616,7 +710,7 @@ Si trabajas con clientes de otros países, cada proyecto puede usar una moneda d
 - Asistente de IA para priorizar y resumir el avance (plan VIP)
 
 ### Precio claro, en dólares
-El plan Gratis incluye 1 tablero y 1 proyecto, para siempre. El plan VIP cuesta 15 USD al mes con tableros y proyectos ilimitados y asistente de IA. En Colombia pagas en pesos, a la tasa del día, a través de Landa Pay.
+El plan Gratis incluye 1 tablero y 1 proyecto, para siempre. El plan VIP cuesta 7 USD al mes con tableros y proyectos ilimitados y asistente de IA. En Colombia pagas en pesos, a la tasa del día, a través de Landa Pay.
 
 ### Preguntas frecuentes
 **¿QuinList funciona en Colombia?**
@@ -629,7 +723,7 @@ Sí. Al crear un proyecto eliges la moneda (COP incluida) y todos los montos, el
 Sí. QuinList es un producto de MatuByte S.A.S., empresa colombiana. El soporte es en español y en hora de Colombia.
 
 **¿Cuánto cuesta?**
-Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 15 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
+Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 7 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
 
 
 ---
@@ -657,7 +751,7 @@ Si trabajas con clientes de otros países, cada proyecto puede usar una moneda d
 - Asistente de IA para priorizar y resumir el avance (plan VIP)
 
 ### Precio claro, en dólares
-El plan Gratis incluye 1 tablero y 1 proyecto, para siempre. El plan VIP cuesta 15 USD al mes con tableros y proyectos ilimitados y asistente de IA. El precio se publica en dólares para que sea el mismo en toda la región.
+El plan Gratis incluye 1 tablero y 1 proyecto, para siempre. El plan VIP cuesta 7 USD al mes con tableros y proyectos ilimitados y asistente de IA. El precio se publica en dólares para que sea el mismo en toda la región.
 
 ### Preguntas frecuentes
 **¿QuinList funciona en México?**
@@ -670,7 +764,7 @@ Sí. Al crear un proyecto eliges la moneda (MXN incluida) y todos los montos, el
 Sí. Cada proyecto puede tener su propia moneda, así que puedes llevar unos proyectos en MXN y otros en USD.
 
 **¿Cuánto cuesta?**
-Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 15 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
+Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 7 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
 
 
 ---
@@ -698,7 +792,7 @@ Si trabajas con clientes de otros países, cada proyecto puede usar una moneda d
 - Asistente de IA para priorizar y resumir el avance (plan VIP)
 
 ### Precio claro, en dólares
-El plan Gratis incluye 1 tablero y 1 proyecto, para siempre. El plan VIP cuesta 15 USD al mes con tableros y proyectos ilimitados y asistente de IA. El precio se publica en dólares para que sea el mismo en toda la región.
+El plan Gratis incluye 1 tablero y 1 proyecto, para siempre. El plan VIP cuesta 7 USD al mes con tableros y proyectos ilimitados y asistente de IA. El precio se publica en dólares para que sea el mismo en toda la región.
 
 ### Preguntas frecuentes
 **¿QuinList funciona en Perú?**
@@ -711,7 +805,7 @@ Sí. Al crear un proyecto eliges la moneda (PEN incluida) y todos los montos, el
 Sí. Cada proyecto tiene su moneda: puedes tener unos en PEN y otros en USD dentro del mismo espacio de trabajo.
 
 **¿Cuánto cuesta?**
-Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 15 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
+Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 7 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
 
 
 ---
@@ -739,7 +833,7 @@ Si trabajas con clientes de otros países, cada proyecto puede usar una moneda d
 - Asistente de IA para priorizar y resumir el avance (plan VIP)
 
 ### Precio claro, en dólares
-El plan Gratis incluye 1 tablero y 1 proyecto, para siempre. El plan VIP cuesta 15 USD al mes con tableros y proyectos ilimitados y asistente de IA. Como el precio está en dólares, en Ecuador no hay conversión de moneda.
+El plan Gratis incluye 1 tablero y 1 proyecto, para siempre. El plan VIP cuesta 7 USD al mes con tableros y proyectos ilimitados y asistente de IA. Como el precio está en dólares, en Ecuador no hay conversión de moneda.
 
 ### Preguntas frecuentes
 **¿QuinList funciona en Ecuador?**
@@ -752,7 +846,7 @@ Sí. Al crear un proyecto eliges la moneda (USD incluida) y todos los montos, el
 Sí. Ecuador y Colombia comparten zona horaria, así que el soporte en español funciona en tu mismo horario.
 
 **¿Cuánto cuesta?**
-Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 15 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
+Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 7 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
 
 
 ---
@@ -780,7 +874,7 @@ Si trabajas con clientes de otros países, cada proyecto puede usar una moneda d
 - Asistente de IA para priorizar y resumir el avance (plan VIP)
 
 ### Precio claro, en dólares
-El plan Gratis incluye 1 tablero y 1 proyecto, para siempre. El plan VIP cuesta 15 USD al mes con tableros y proyectos ilimitados y asistente de IA. El precio se publica en dólares para que sea el mismo en toda la región.
+El plan Gratis incluye 1 tablero y 1 proyecto, para siempre. El plan VIP cuesta 7 USD al mes con tableros y proyectos ilimitados y asistente de IA. El precio se publica en dólares para que sea el mismo en toda la región.
 
 ### Preguntas frecuentes
 **¿QuinList funciona en Chile?**
@@ -793,7 +887,7 @@ Sí. Al crear un proyecto eliges la moneda (CLP incluida) y todos los montos, el
 Sí. Al ser una herramienta en la nube, el equipo en terreno y el de la oficina ven la misma información en tiempo real.
 
 **¿Cuánto cuesta?**
-Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 15 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
+Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 7 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
 
 
 ---
@@ -821,7 +915,7 @@ Si trabajas con clientes de otros países, cada proyecto puede usar una moneda d
 - Asistente de IA para priorizar y resumir el avance (plan VIP)
 
 ### Precio claro, en dólares
-El plan Gratis incluye 1 tablero y 1 proyecto, para siempre. El plan VIP cuesta 15 USD al mes con tableros y proyectos ilimitados y asistente de IA. El precio se publica en dólares para que sea el mismo en toda la región.
+El plan Gratis incluye 1 tablero y 1 proyecto, para siempre. El plan VIP cuesta 7 USD al mes con tableros y proyectos ilimitados y asistente de IA. El precio se publica en dólares para que sea el mismo en toda la región.
 
 ### Preguntas frecuentes
 **¿QuinList funciona en Argentina?**
@@ -834,7 +928,7 @@ Sí. Al crear un proyecto eliges la moneda (ARS incluida) y todos los montos, el
 Sí. Cada proyecto tiene su propia moneda: ARS para clientes locales y USD para clientes del exterior, en el mismo espacio de trabajo.
 
 **¿Cuánto cuesta?**
-Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 15 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
+Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 7 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.
 
 
 ---
@@ -1064,17 +1158,37 @@ Si tus proyectos viven en Excel o en WhatsApp, empieza por la guía de cómo org
 ## Precios simples: empieza gratis, crece con VIP
 URL: https://quinlist.matubyte.com/precios
 
-Sin cotizaciones ni letra pequeña. Usa QuinList gratis el tiempo que quieras y pasa a VIP cuando tu equipo necesite más tableros, más proyectos y el asistente de IA.
+Sin cotizaciones, sin letra pequeña y sin cobro por usuario. Usa QuinList gratis el tiempo que quieras y pasa a VIP por 7 USD al mes cuando tu equipo necesite más tableros, más proyectos y el asistente de IA.
+
+### Qué desbloqueas con cada plan
+- **Tableros**: 1 en Gratis; ilimitados en VIP.
+- **Proyectos**: 1 completo en Gratis; ilimitados en VIP.
+- **Finanzas**: Presupuesto y flujo de caja desde el plan Gratis.
+- **Asistente de IA**: Incluido en VIP para priorizar y resumir.
+- **Equipo**: Invita personas sin pagar por asiento.
+- **Roles**: Propietario, Administrador, Miembro y Observador.
+Ideal para: Quienes empiezan gratis, Equipos en crecimiento, Pymes, Agencias.
+
+### Dos planes. Sin sorpresas.
+El plan Gratis existe para que pruebes QuinList con un proyecto real, no con una demo vacía. Incluye 1 tablero Kanban y 1 proyecto completo (tareas, Gantt, finanzas, riesgos, archivos y chat).
+El plan VIP quita los límites: tableros y proyectos ilimitados, más el asistente de IA. Un solo precio mensual, sin módulos extra ni cobro por asiento.
 
 ### Qué incluye cada plan
 - Gratis: 1 tablero Kanban y 1 proyecto con todos sus módulos
 - Gratis: chat de equipo, calendario, notificaciones y roles
+- Gratis: presupuesto, flujo de caja y rentabilidad del proyecto
 - VIP: tableros ilimitados
 - VIP: proyectos ilimitados
-- VIP: asistente de IA
+- VIP: asistente de IA para priorizar, resumir y redactar
 
 ### Cómo se paga
-El plan VIP cuesta 15 USD al mes. El cobro se hace en pesos colombianos a la tasa del día, a través de Landa Pay.
+El plan VIP cuesta 7 USD al mes. El cobro se hace en pesos colombianos a la tasa del día, a través de Landa Pay (Nequi, PSE, Bancolombia y más).
+No pedimos tarjeta para crear la cuenta. Pasas a VIP cuando tú quieras; es una suscripción mensual sin permanencia.
+
+### Cómo elegir el plan correcto
+1. **Empieza en Gratis**: Crea tu cuenta, arma un proyecto real e invita a tu equipo. Sin tarjeta.
+2. **Usa el límite a tu favor**: Con 1 tablero y 1 proyecto validas si el flujo les sirve antes de pagar.
+3. **Pasa a VIP cuando crezcas**: Cuando necesites más proyectos, más tableros o la IA, activas VIP por 7 USD/mes.
 
 ### Preguntas frecuentes
 **¿El plan gratis tiene fecha de vencimiento?**
@@ -1086,7 +1200,270 @@ No. Creas tu cuenta y empiezas en el plan Gratis sin tarjeta.
 **¿Puedo cancelar el plan VIP?**
 Sí. Es una suscripción mensual sin contrato de permanencia.
 
+**¿Cobran por usuario o por asiento?**
+No. El precio del VIP es fijo: 7 USD al mes, sin importar cuántas personas invites a tu espacio de trabajo.
+
+**¿En qué moneda se cobra?**
+El precio se publica en dólares. En Colombia el cobro se hace en pesos a la tasa del día vía Landa Pay.
+
 **¿Tienen planes para empresas grandes?**
 Escríbenos a contacto@matubyte.com y armamos una propuesta para tu empresa.
+
+
+
+# Blog
+
+## 7 señales de que tu empresa ya necesita un software de gestión de proyectos
+URL: https://quinlist.matubyte.com/blog/gestion-de-proyectos/senales-de-que-necesitas-un-software-de-proyectos
+
+Si reconoces tres o más de estas situaciones, tu equipo está perdiendo horas y plata por no tener un sistema. Te contamos cómo detectarlo y por dónde empezar.
+
+La mayoría de empresas no decide “comprar un software de proyectos” un día cualquiera. Llega un momento en que el desorden empieza a costar: una entrega tarde, un cliente molesto, un mes en que no cuadran los números. Estas son las señales más comunes de que ese momento ya llegó.
+### 1. Hay varias versiones del mismo archivo
+“Cronograma_final_v3”, “Cronograma_final_v3_AHORA_SI”, “Cronograma (copia)”. Cuando nadie está seguro de cuál es la versión buena, cada persona trabaja con información distinta y las decisiones se toman sobre datos viejos.
+### 2. Preguntas “¿cómo vas con…?” todos los días
+Si para saber el estado de un proyecto tienes que escribirle a cada persona, el avance no es visible. Un tablero compartido responde esa pregunta sin interrumpir a nadie.
+### 3. Las tareas se acuerdan en WhatsApp y se pierden
+Lo que se habló en el grupo queda enterrado entre audios, fotos y stickers. Una tarea sin responsable ni fecha, en la práctica, no existe.
+### 4. Los archivos del proyecto están regados
+Contratos en el correo, planos en Drive, fotos en el celular de alguien. Encontrar un documento toma media mañana y siempre falta algo.
+### 5. Te enteras de los atrasos cuando el cliente reclama
+Sin fechas visibles ni una línea de tiempo, los retrasos se descubren tarde, cuando ya no hay margen para corregir.
+### 6. El presupuesto se revisa al final
+Un proyecto puede ir a tiempo y aun así perder plata. Si solo sabes cuánto gastaste cuando el proyecto terminó, no puedes renegociar ni recortar a tiempo.
+### 7. Todo depende de una sola persona
+Si el proyecto se detiene cuando una persona se enferma o sale de vacaciones, la información vive en su cabeza y no en un sistema.
+**¿Cuántas marcaste?:** Con tres o más señales, ordenar el trabajo en una herramienta te va a devolver horas cada semana. No necesitas cambiar todo de golpe: empieza con un solo proyecto.
+### Por dónde empezar
+1. Elige el proyecto que más dolores de cabeza te da hoy.
+2. Pasa sus tareas a un tablero, cada una con responsable y fecha.
+3. Invita solo a las personas de ese proyecto.
+4. Revisen el tablero 10 minutos al día durante dos semanas.
+5. Cuando funcione, suma el siguiente proyecto.
+
+
+---
+
+## Cómo priorizar tareas cuando todo parece urgente
+URL: https://quinlist.matubyte.com/blog/gestion-de-proyectos/como-priorizar-tareas-cuando-todo-es-urgente
+
+Cuando todo es prioridad, nada lo es. Te mostramos una forma práctica de ordenar el trabajo del equipo y decir “esto va primero” con argumentos.
+
+Priorizar no es hacer más rápido; es decidir qué no se hace hoy. El problema en muchos equipos es que cada tarea llega marcada como urgente y no hay un criterio común para ordenarlas.
+### Separa lo urgente de lo importante
+Una herramienta clásica es la matriz de urgencia e importancia (conocida como matriz de Eisenhower). Clasifica cada tarea en uno de cuatro grupos:
+|  | Urgente | No urgente |
+| --- | --- | --- |
+| Importante | Hazlo ya (entregas con fecha, incidencias) | Planéalo (mejoras, preparación) |
+| No importante | Delégalo (pedidos menores) | Elimínalo o déjalo para después |
+La mayoría de equipos vive en el cuadrante “urgente”. El objetivo es pasar más tiempo en “importante, no urgente”: es donde se evitan los incendios de mañana.
+### Usa pocos niveles de prioridad
+Si tienes ocho niveles de prioridad, nadie los usa bien. Con tres o cuatro (por ejemplo: baja, media, alta y crítica) es suficiente para que el equipo entienda qué va primero.
+### Limita el trabajo en curso
+Empezar muchas cosas a la vez da la sensación de avanzar, pero retrasa todo. Acuerden un máximo de tareas “en curso” por persona; hasta que no se termine una, no se empieza otra.
+**Regla práctica:** Si una persona tiene más de tres tarjetas en curso, pregúntale cuál puede terminar hoy antes de asignarle algo nuevo.
+### Haz visible la prioridad
+- Marca la prioridad en cada tarea, no en un mensaje aparte.
+- Ordena la columna “Por hacer” de arriba (más importante) a abajo.
+- Revisa las prioridades una vez por semana con el equipo.
+- Cuando entre algo urgente, decidan juntos qué sale para hacerle espacio.
+### Cómo se ve en QuinList
+Cada tarjeta y cada tarea tiene prioridad, responsable y fecha límite. En los reportes ves las tareas por prioridad y estado, y el tablero muestra qué está en curso para detectar cuando alguien tiene demasiado.
+
+
+---
+
+## Cómo hacer una reunión de seguimiento de proyecto en 15 minutos
+URL: https://quinlist.matubyte.com/blog/gestion-de-proyectos/reunion-de-seguimiento-de-15-minutos
+
+Las reuniones de seguimiento largas no son señal de compromiso: son señal de que falta información visible. Esta es una agenda que cabe en 15 minutos.
+
+Una reunión de seguimiento sirve para una sola cosa: destrabar el trabajo. Si se usa para que cada persona cuente lo que hizo, se alarga y pierde valor. La información de “qué hice” debería estar ya en el tablero.
+### La agenda de 15 minutos
+1. Minutos 0–3: abran el tablero en pantalla y miren qué cambió desde ayer.
+2. Minutos 3–9: bloqueos. ¿Qué tarea está detenida y qué necesita para avanzar?
+3. Minutos 9–12: fechas en riesgo. ¿Qué vence esta semana y no va a llegar?
+4. Minutos 12–15: decisiones y responsables. Cada acuerdo queda escrito en una tarea.
+**La regla de oro:** Si un tema necesita más de dos minutos de discusión, se agenda aparte con las personas involucradas. La reunión de seguimiento no es para resolver, es para destrabar.
+### Lo que debe estar listo antes
+- Cada persona actualizó sus tarjetas antes de la reunión.
+- Las tareas tienen fecha y responsable.
+- Los riesgos conocidos están registrados con su severidad.
+### Errores comunes
+- Hacer la reunión sin mirar el tablero.
+- Repasar tareas que van bien en lugar de enfocarse en las detenidas.
+- Tomar decisiones que no quedan escritas en ningún lado.
+- Invitar a personas que no tienen nada que destrabar.
+### Con QuinList
+El dashboard del proyecto muestra el avance, las tareas pendientes y los próximos vencimientos; el módulo de riesgos muestra qué está abierto y con qué severidad. Con eso en pantalla, la reunión arranca con los datos ya sobre la mesa.
+
+
+---
+
+## Cómo cobrar por hitos a tus clientes y cuidar tu flujo de caja
+URL: https://quinlist.matubyte.com/blog/finanzas-de-proyectos/como-cobrar-por-hitos-a-tus-clientes
+
+Cobrar todo al final es financiar el proyecto de tu cliente. Te explicamos cómo partir el pago en hitos claros que el cliente acepte y que protejan tu caja.
+
+Cuando un proyecto se cobra al final, tu empresa pone la plata de nómina, materiales y herramientas durante semanas o meses. Cobrar por hitos reparte ese esfuerzo y te da señales tempranas: si un hito no se aprueba, algo anda mal.
+### Qué es un hito facturable
+Es un punto del proyecto con un entregable concreto que el cliente puede revisar y aprobar. “Diseño aprobado”, “Versión de pruebas entregada” u “Obra gris terminada” son buenos hitos. “Avance del 50%” no lo es: es difícil de verificar.
+### Una estructura de pagos común
+| Momento | Qué se entrega | Pago |
+| --- | --- | --- |
+| Firma | Contrato y plan de trabajo | Anticipo |
+| Hito 1 | Primer entregable aprobado | Pago parcial |
+| Hito 2 | Entregable principal aprobado | Pago parcial |
+| Cierre | Entrega final y acta de cierre | Saldo |
+Los porcentajes dependen de tu sector y de lo que puedas negociar. Lo importante es que el anticipo cubra los costos de arranque y que ningún tramo deje a tu empresa financiando demasiado tiempo.
+### Cómo hacer que el cliente lo acepte
+- Define los hitos en el contrato, con el entregable de cada uno.
+- Muestra el avance: un cliente que ve el progreso paga con más tranquilidad.
+- Pide la aprobación de cada entregable por escrito.
+- Factura apenas se aprueba el hito, no al final del mes.
+**Comparte el avance:** Un enlace de solo lectura al proyecto evita los correos de “¿cómo van?” y hace evidente cuándo se cumplió un hito.
+### Haz seguimiento a los pagos
+Registra cada ingreso apenas llega: anticipo, facturación o pago por hito completado. Así sabes en todo momento cuánto has recibido, cuánto has gastado y cuál es el saldo real del proyecto.
+### Cómo se hace en QuinList
+Cada proyecto tiene hitos con fecha y avance, entregables con estados (pendiente, en progreso, entregado, aprobado) y un módulo de finanzas donde registras los ingresos por anticipo, facturación o hito completado. El saldo y el flujo de caja se calculan solos.
+
+
+---
+
+## 6 errores comunes al presupuestar un proyecto y cómo evitarlos
+URL: https://quinlist.matubyte.com/blog/finanzas-de-proyectos/errores-al-presupuestar-un-proyecto
+
+La mayoría de proyectos que pierden plata no lo hacen por un gran error, sino por varios pequeños en el presupuesto. Estos son los más comunes.
+
+Un buen presupuesto no es el más barato ni el más alto: es el que refleja de verdad lo que cuesta entregar el proyecto y deja un margen sano. Estos errores son los que más se repiten.
+### 1. Presupuestar solo las horas visibles
+Se cuenta el tiempo de producción, pero no el de reuniones, revisiones, cambios y coordinación. Ese tiempo existe y alguien lo paga.
+### 2. No dejar margen para imprevistos
+Siempre aparece algo: un cambio del cliente, un proveedor que se retrasa, un material que sube de precio. Incluye una reserva explícita para contingencias.
+### 3. Olvidar los costos indirectos
+- Herramientas y licencias.
+- Transporte y viajes.
+- Servicios externos.
+- Parte de los gastos fijos de la empresa.
+### 4. No definir el alcance por escrito
+Si no está claro qué incluye el proyecto, cada pedido nuevo parece “parte de lo acordado”. Un alcance escrito permite cobrar los cambios.
+### 5. Presupuestar en una moneda y gastar en otra
+Si cobras en una moneda y algunos costos están en otra, las variaciones del tipo de cambio pueden comerse tu margen. Define la moneda del proyecto y registra los gastos en ella.
+### 6. Hacer el presupuesto y no volver a mirarlo
+El error más caro. Compara el porcentaje de presupuesto consumido con el porcentaje de avance: si gastaste el 70% y vas en el 40%, hay que actuar ya.
+**Un indicador que lo resume:** Presupuesto consumido vs. avance del proyecto. Si el primero va muy por delante del segundo, la rentabilidad está en riesgo.
+### Cómo ayuda QuinList
+Defines el presupuesto base y la moneda al crear el proyecto. Cada egreso queda registrado con su categoría y comprobante, y ves el saldo, el flujo de caja, el porcentaje de presupuesto consumido y la rentabilidad frente a tu meta.
+
+
+---
+
+## Cómo pasar la coordinación del equipo de WhatsApp a un sistema de trabajo
+URL: https://quinlist.matubyte.com/blog/equipos-y-productividad/de-whatsapp-a-un-sistema-de-trabajo
+
+Nadie quiere abandonar WhatsApp, y no hace falta. Lo que sí conviene sacar de ahí son las tareas, las fechas y las decisiones. Aquí tienes un plan paso a paso.
+
+WhatsApp es excelente para una pregunta rápida. El problema es cuando se vuelve el lugar donde se asignan tareas, se aprueban entregables y se comparten archivos. Ahí la información se pierde entre cientos de mensajes.
+### Qué sí y qué no dejar en WhatsApp
+| Tipo de información | WhatsApp | Sistema de trabajo |
+| --- | --- | --- |
+| Pregunta rápida o aviso urgente | Sí | Opcional |
+| Tarea con responsable y fecha | No | Sí |
+| Aprobación de un entregable | No | Sí |
+| Archivos del proyecto | No | Sí |
+| Decisiones que hay que recordar | No | Sí |
+### Plan de cuatro semanas
+#### Semana 1: un proyecto piloto
+Elige un solo proyecto y pasa sus tareas a un tablero. Cada tarea con responsable, fecha y prioridad.
+#### Semana 2: la regla del enlace
+Cuando alguien pida algo por WhatsApp, la respuesta es: “créalo como tarea y me mencionas”. Al principio cuesta; a los pocos días se vuelve costumbre.
+#### Semana 3: archivos y decisiones
+Los documentos se adjuntan a la tarea y las decisiones se escriben en los comentarios. Si no está en el sistema, no se acordó.
+#### Semana 4: chat del equipo
+Las conversaciones del proyecto pasan al chat del equipo, junto al trabajo. WhatsApp queda para lo personal y lo verdaderamente urgente.
+**Da el ejemplo:** El cambio funciona cuando el líder es el primero en crear tareas y responder en el sistema, no por WhatsApp.
+### Cómo lo resuelve QuinList
+Tableros con tareas asignadas, comentarios y menciones en cada tarjeta, archivos adjuntos, notificaciones cuando te asignan algo y un chat de equipo con canales. Todo queda junto al trabajo y con historial.
+
+
+---
+
+## Cómo delegar tareas en tu equipo sin perder el control
+URL: https://quinlist.matubyte.com/blog/equipos-y-productividad/como-delegar-tareas-sin-perder-el-control
+
+Muchos líderes no delegan porque sienten que pierden el control. El secreto no es delegar menos, sino delegar mejor: con claridad y visibilidad.
+
+Si todo pasa por tus manos, tú eres el cuello de botella. Delegar bien libera tu tiempo para lo que solo tú puedes hacer y hace crecer a tu equipo.
+### Los cinco elementos de una tarea bien delegada
+1. Resultado esperado: qué debe existir cuando la tarea esté terminada.
+2. Responsable: una sola persona a cargo.
+3. Fecha límite: cuándo se necesita, y por qué.
+4. Contexto: archivos, antecedentes y a quién preguntar.
+5. Nivel de autonomía: ¿decide sola, propone opciones o consulta antes?
+### Define el nivel de autonomía
+Muchos problemas al delegar vienen de no aclarar cuánto puede decidir la otra persona. Dilo explícitamente: “decide tú”, “tráeme dos opciones” o “consúltame antes de enviar”.
+### Seguimiento sin microgestión
+- Mira el tablero en lugar de preguntar “¿cómo vas?”.
+- Acuerda puntos de revisión, no revisiones constantes.
+- Pide visibilidad del avance con checklist dentro de la tarea.
+- Interviene solo cuando una fecha está en riesgo o hay un bloqueo.
+Delegar la tarea no es delegar la responsabilidad del resultado. Lo que cambia es que ahora tu trabajo es quitar obstáculos.
+### Cómo se ve en QuinList
+Cada tarea tiene responsable, fecha, prioridad, descripción, checklist y adjuntos. Los roles y permisos definen quién puede editar qué, y el historial de actividad muestra cada cambio sin que tengas que preguntar.
+
+
+---
+
+## Excel vs. software de gestión de proyectos: cuándo usar cada uno
+URL: https://quinlist.matubyte.com/blog/herramientas/excel-vs-software-de-gestion-de-proyectos
+
+Excel no es el enemigo: es una gran herramienta para calcular. Pero coordinar personas es otro trabajo. Comparamos ambos para que sepas cuándo dar el paso.
+
+Casi todas las empresas empiezan a gestionar proyectos en Excel. Tiene sentido: ya lo conocen y es flexible. El problema aparece cuando varias personas necesitan trabajar sobre la misma información al mismo tiempo.
+### Comparación directa
+| Necesidad | Excel | Software de proyectos |
+| --- | --- | --- |
+| Calcular y analizar datos | Excelente | Suficiente |
+| Varias personas editando a la vez | Se complica | Diseñado para eso |
+| Saber quién hace qué | Columna manual | Responsable por tarea |
+| Avisos y notificaciones | No | Sí |
+| Cronograma | Barras dibujadas a mano | Gantt automático |
+| Historial de cambios | Limitado | Registro de actividad |
+| Archivos y conversaciones | En otro lado | Junto a cada tarea |
+### Cuándo Excel es suficiente
+- Trabajas solo o con una persona más.
+- El proyecto es corto y con pocas tareas.
+- Necesitas hacer cálculos o análisis puntuales.
+### Cuándo conviene un software
+- Varias personas trabajan en varios proyectos a la vez.
+- Necesitas ver el avance sin preguntar a cada uno.
+- Hay fechas, entregables y clientes que esperan.
+- Quieres controlar el presupuesto mientras el proyecto avanza.
+**No es todo o nada:** Puedes seguir usando Excel para análisis y usar el software para coordinar. Lo importante es que la información del día a día viva en un solo lugar.
+
+
+---
+
+## Kanban o diagrama de Gantt: cuál usar en tu proyecto
+URL: https://quinlist.matubyte.com/blog/herramientas/kanban-o-gantt-cual-usar
+
+No son rivales. Kanban responde “¿en qué estado está el trabajo?” y Gantt responde “¿llegamos a tiempo?”. Te explicamos cuándo usar cada uno.
+
+Kanban y Gantt son dos formas de ver el mismo trabajo. Elegir uno u otro depende de qué pregunta necesitas responder con más frecuencia.
+### Kanban: el estado del trabajo
+Un tablero Kanban organiza las tareas en columnas por etapa (por hacer, en curso, hecho). Es ideal para el día a día del equipo: se ve qué está detenido y quién tiene demasiado.
+### Gantt: el tiempo del proyecto
+Un diagrama de Gantt muestra cada tarea como una barra en una línea de tiempo. Es ideal para planear, ver dependencias y detectar si el proyecto va a llegar a la fecha.
+|  | Kanban | Gantt |
+| --- | --- | --- |
+| Pregunta que responde | ¿En qué estado está el trabajo? | ¿Llegamos a tiempo? |
+| Mejor para | Ejecución diaria | Planeación y fechas |
+| Quién lo mira más | El equipo | Dirección y cliente |
+| Tipo de trabajo | Flujo continuo | Proyectos con fecha de entrega |
+### Por qué usar los dos
+El equipo trabaja moviendo tarjetas; la dirección revisa el cronograma. Si ambas vistas salen de las mismas tareas, nadie tiene que actualizar dos herramientas.
+**Consejo:** Pon fecha de inicio y fin a las tareas aunque trabajes en Kanban. Así el cronograma se arma solo cuando lo necesites.
+### En QuinList
+Las tareas de un proyecto se ven en lista, en Kanban y en cronograma tipo Gantt. Es la misma información en tres vistas: mueves una tarjeta y el resto se actualiza.
 
 

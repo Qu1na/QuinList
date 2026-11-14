@@ -7,7 +7,7 @@ QuinList es un producto de MatuByte S.A.S. (Colombia). Sitio: https://quinlist.m
 ## Datos clave
 - Categoría: software de gestión de proyectos (project management) en la nube, para empresas y equipos.
 - Idioma: español. Mercado: Latinoamérica (Colombia, México, Perú, Ecuador, Chile, Argentina y el resto de la región).
-- Precio: plan Gratis para siempre (1 tablero y 1 proyecto, sin tarjeta). Plan VIP: 15 USD/mes con tableros y proyectos ilimitados y asistente de IA. El cobro se hace en pesos colombianos a la tasa del día con Landa Pay.
+- Precio: plan Gratis para siempre (1 tablero y 1 proyecto, sin tarjeta). Plan VIP: 7 USD/mes con tableros y proyectos ilimitados y asistente de IA. El cobro se hace en pesos colombianos a la tasa del día con Landa Pay.
 - Monedas por proyecto: COP, USD, MXN, PEN, CLP, ARS, BRL, EUR, GBP.
 - Plataforma: web (navegador en computador, tablet o celular). No requiere instalación.
 - Diferencial: además de tareas y Kanban, cada proyecto incluye presupuesto, ingresos, egresos, libro mayor, flujo de caja y rentabilidad; cronograma Gantt; hitos; entregables con aprobación; riesgos e incidencias; chat de equipo y asistente de IA.
@@ -33,22 +33,22 @@ QuinList es un producto de MatuByte S.A.S. (Colombia). Sitio: https://quinlist.m
 ## Por tipo de equipo
 - [Agencias y consultoras](https://quinlist.matubyte.com/gestion-de-proyectos-para-agencias): Gestiona los proyectos de tus clientes: un espacio por cliente, entregables con aprobación, presupuesto y rentabilidad por proyecto. Empieza gratis.
 - [Construcción y obras](https://quinlist.matubyte.com/gestion-de-proyectos-de-construccion): Controla tus obras: cronograma Gantt, presupuesto de obra, gastos por categoría, riesgos, entregables y fotos de avance en un solo lugar.
-- [Pymes](https://quinlist.matubyte.com/software-de-proyectos-para-pymes): El software de proyectos que una pyme sí puede usar: fácil de usar, con plan gratis y VIP de 15 USD/mes. Tareas, Kanban, presupuesto y equipo.
+- [Pymes](https://quinlist.matubyte.com/software-de-proyectos-para-pymes): El software de proyectos que una pyme sí puede usar: fácil de usar, con plan gratis y VIP de 7 USD/mes. Tareas, Kanban, presupuesto y equipo.
 - [Equipos de software](https://quinlist.matubyte.com/gestion-de-proyectos-de-software): Organiza sprints, incidencias y lanzamientos de tu equipo de desarrollo: Kanban, releases, OKRs y webhooks a Slack. Empieza gratis.
 - [Equipos remotos](https://quinlist.matubyte.com/gestion-de-proyectos-para-equipos-remotos): Coordina a tu equipo remoto o híbrido: tableros en tiempo real, chat con menciones, calendario y avance visible sin reuniones de seguimiento.
 
 ## Comparativas
 - [Alternativa a Excel](https://quinlist.matubyte.com/alternativa-a-excel-para-proyectos): ¿Tus proyectos viven en Excel, cuadernos y carpetas de Drive? Pásate a QuinList: tareas, cronograma y presupuesto en tiempo real. Empieza gratis.
-- [Alternativa a Trello](https://quinlist.matubyte.com/alternativa-a-trello): Si te gusta el Kanban de Trello pero necesitas cronograma, presupuesto, riesgos y chat, prueba QuinList: Kanban + gestión de proyectos completa.
-- [Alternativa a Asana y Monday](https://quinlist.matubyte.com/alternativa-a-asana-y-monday): Una alternativa a Asana y Monday con precio simple de 15 USD/mes y finanzas del proyecto incluidas. Pensada para equipos de Latinoamérica.
+- [Alternativa a Trello](https://quinlist.matubyte.com/alternativa-a-trello): Si te gusta el Kanban de Trello pero necesitas cronograma, presupuesto, riesgos y chat, prueba QuinList: Kanban + gestión de proyectos completa. Empieza gratis.
+- [Alternativa a Asana y Monday](https://quinlist.matubyte.com/alternativa-a-asana-y-monday): Una alternativa a Asana y Monday con precio simple de 7 USD/mes y finanzas del proyecto incluidas. Pensada para equipos de Latinoamérica.
 
 ## Por país
-- [Colombia](https://quinlist.matubyte.com/software-gestion-de-proyectos/colombia): Gestiona proyectos en Colombia con QuinList: Kanban, cronograma Gantt y presupuesto en COP. Plan gratis para siempre y VIP por 15 USD/mes.
-- [México](https://quinlist.matubyte.com/software-gestion-de-proyectos/mexico): Gestiona proyectos en México con QuinList: Kanban, cronograma Gantt y presupuesto en MXN. Plan gratis para siempre y VIP por 15 USD/mes.
-- [Perú](https://quinlist.matubyte.com/software-gestion-de-proyectos/peru): Gestiona proyectos en Perú con QuinList: Kanban, cronograma Gantt y presupuesto en PEN. Plan gratis para siempre y VIP por 15 USD/mes.
-- [Ecuador](https://quinlist.matubyte.com/software-gestion-de-proyectos/ecuador): Gestiona proyectos en Ecuador con QuinList: Kanban, cronograma Gantt y presupuesto en USD. Plan gratis para siempre y VIP por 15 USD/mes.
-- [Chile](https://quinlist.matubyte.com/software-gestion-de-proyectos/chile): Gestiona proyectos en Chile con QuinList: Kanban, cronograma Gantt y presupuesto en CLP. Plan gratis para siempre y VIP por 15 USD/mes.
-- [Argentina](https://quinlist.matubyte.com/software-gestion-de-proyectos/argentina): Gestiona proyectos en Argentina con QuinList: Kanban, cronograma Gantt y presupuesto en ARS. Plan gratis para siempre y VIP por 15 USD/mes.
+- [Colombia](https://quinlist.matubyte.com/software-gestion-de-proyectos/colombia): Gestiona proyectos en Colombia con QuinList: Kanban, cronograma Gantt y presupuesto en COP. Plan gratis para siempre y VIP por 7 USD/mes.
+- [México](https://quinlist.matubyte.com/software-gestion-de-proyectos/mexico): Gestiona proyectos en México con QuinList: Kanban, cronograma Gantt y presupuesto en MXN. Plan gratis para siempre y VIP por 7 USD/mes.
+- [Perú](https://quinlist.matubyte.com/software-gestion-de-proyectos/peru): Gestiona proyectos en Perú con QuinList: Kanban, cronograma Gantt y presupuesto en PEN. Plan gratis para siempre y VIP por 7 USD/mes.
+- [Ecuador](https://quinlist.matubyte.com/software-gestion-de-proyectos/ecuador): Gestiona proyectos en Ecuador con QuinList: Kanban, cronograma Gantt y presupuesto en USD. Plan gratis para siempre y VIP por 7 USD/mes.
+- [Chile](https://quinlist.matubyte.com/software-gestion-de-proyectos/chile): Gestiona proyectos en Chile con QuinList: Kanban, cronograma Gantt y presupuesto en CLP. Plan gratis para siempre y VIP por 7 USD/mes.
+- [Argentina](https://quinlist.matubyte.com/software-gestion-de-proyectos/argentina): Gestiona proyectos en Argentina con QuinList: Kanban, cronograma Gantt y presupuesto en ARS. Plan gratis para siempre y VIP por 7 USD/mes.
 
 ## Guías
 - [Cómo organizar los proyectos de una empresa](https://quinlist.matubyte.com/guias/como-organizar-proyectos-de-una-empresa): Guía práctica para organizar los proyectos de tu empresa: de Excel, cuadernos y Drive a un sistema claro con responsables, fechas y presupuesto.
@@ -58,6 +58,24 @@ QuinList es un producto de MatuByte S.A.S. (Colombia). Sitio: https://quinlist.m
 - [Matriz de riesgos de un proyecto](https://quinlist.matubyte.com/guias/matriz-de-riesgos-de-un-proyecto): Cómo hacer una matriz de riesgos para tu proyecto: identificar, calificar por probabilidad e impacto, planes de mitigación y seguimiento.
 - [Qué son los OKR](https://quinlist.matubyte.com/guias/que-son-los-okr): Qué son los OKR (objetivos y resultados clave), cómo escribirlos, ejemplos para ventas, marketing y operaciones, y cómo hacerles seguimiento.
 - [Todas las guías](https://quinlist.matubyte.com/guias): Guías prácticas y gratuitas de gestión de proyectos: organizar el trabajo, cronogramas, Kanban, rentabilidad, riesgos y OKR, con ejemplos.
+
+## Blog
+### Gestión de proyectos
+- [7 señales de que tu empresa ya necesita un software de gestión de proyectos](https://quinlist.matubyte.com/blog/gestion-de-proyectos/senales-de-que-necesitas-un-software-de-proyectos): Versiones duplicadas, tareas perdidas en WhatsApp y presupuestos que se descubren al final. Siete señales de que tu equipo ya superó el Excel.
+- [Cómo priorizar tareas cuando todo parece urgente](https://quinlist.matubyte.com/blog/gestion-de-proyectos/como-priorizar-tareas-cuando-todo-es-urgente): Un método simple para decidir qué hacer primero cuando todo parece urgente: urgencia vs. importancia, límites de trabajo y prioridades visibles.
+- [Cómo hacer una reunión de seguimiento de proyecto en 15 minutos](https://quinlist.matubyte.com/blog/gestion-de-proyectos/reunion-de-seguimiento-de-15-minutos): Cómo hacer una reunión de seguimiento de proyectos de 15 minutos: agenda fija, tablero en pantalla, bloqueos primero y decisiones por escrito.
+
+### Finanzas de proyectos
+- [Cómo cobrar por hitos a tus clientes y cuidar tu flujo de caja](https://quinlist.matubyte.com/blog/finanzas-de-proyectos/como-cobrar-por-hitos-a-tus-clientes): Cobrar por hitos protege tu flujo de caja: cómo definir hitos facturables, cuánto pedir de anticipo y cómo hacer seguimiento a los pagos del proyecto.
+- [6 errores comunes al presupuestar un proyecto y cómo evitarlos](https://quinlist.matubyte.com/blog/finanzas-de-proyectos/errores-al-presupuestar-un-proyecto): Costos ocultos, cero margen para imprevistos y presupuestos que nadie revisa. Seis errores comunes al presupuestar un proyecto y cómo corregirlos.
+
+### Equipos y productividad
+- [Cómo pasar la coordinación del equipo de WhatsApp a un sistema de trabajo](https://quinlist.matubyte.com/blog/equipos-y-productividad/de-whatsapp-a-un-sistema-de-trabajo): WhatsApp sirve para conversar, no para gestionar tareas. Un plan de cuatro semanas para mover la coordinación del equipo a un sistema sin traumas.
+- [Cómo delegar tareas en tu equipo sin perder el control](https://quinlist.matubyte.com/blog/equipos-y-productividad/como-delegar-tareas-sin-perder-el-control): Delegar no es soltar y olvidar. Cómo asignar tareas con resultado claro, fecha y nivel de autonomía, y hacer seguimiento sin microgestionar.
+
+### Herramientas y comparativas
+- [Excel vs. software de gestión de proyectos: cuándo usar cada uno](https://quinlist.matubyte.com/blog/herramientas/excel-vs-software-de-gestion-de-proyectos): ¿Excel o un software de gestión de proyectos? Comparamos colaboración, seguimiento, cronograma, presupuesto e historial para que decidas con criterio.
+- [Kanban o diagrama de Gantt: cuál usar en tu proyecto](https://quinlist.matubyte.com/blog/herramientas/kanban-o-gantt-cual-usar): Kanban muestra el flujo del trabajo; Gantt muestra el tiempo. Cuándo conviene cada uno y por qué muchos equipos usan los dos sobre las mismas tareas.
 
 ## Opcional
 - [Contenido completo para IA](https://quinlist.matubyte.com/llms-full.txt)

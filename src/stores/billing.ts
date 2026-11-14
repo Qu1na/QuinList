@@ -45,6 +45,31 @@ export const useBillingStore = defineStore('billing', () => {
 
   const planLabel = computed(() => (isVip.value ? 'VIP' : 'Gratis'))
 
+  const boardUsage = computed(() => {
+    const userId = auth.currentUserId
+    if (!userId) return 0
+    return countOwnedBoards(userId)
+  })
+
+  const projectUsage = computed(() => {
+    const userId = auth.currentUserId
+    if (!userId) return 0
+    return countOwnedProjects(userId)
+  })
+
+  /** Plan Gratis: ya no puede crear más tableros. */
+  const boardLimitReached = computed(
+    () => !isVip.value && boardUsage.value >= FREE_BOARD_LIMIT,
+  )
+
+  /** Plan Gratis: ya no puede crear más proyectos. */
+  const projectLimitReached = computed(
+    () => !isVip.value && projectUsage.value >= FREE_PROJECT_LIMIT,
+  )
+
+  /** Alcanzó al menos un límite del plan Gratis. */
+  const freeLimitReached = computed(() => boardLimitReached.value || projectLimitReached.value)
+
   function openUpgrade(kind: UpgradeKind) {
     upgradeKind.value = kind
     upgradeOpen.value = true
@@ -189,6 +214,13 @@ export const useBillingStore = defineStore('billing', () => {
     upgradeKind,
     isVip,
     planLabel,
+    boardUsage,
+    projectUsage,
+    boardLimitReached,
+    projectLimitReached,
+    freeLimitReached,
+    freeBoardLimit: FREE_BOARD_LIMIT,
+    freeProjectLimit: FREE_PROJECT_LIMIT,
     openUpgrade,
     closeUpgrade,
     allowCreate,

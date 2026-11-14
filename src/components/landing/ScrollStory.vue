@@ -17,7 +17,6 @@ import type { IconName, VisualKind } from '@/seo/showcase'
 const chapters: {
   key: string
   icon: IconName
-  tone: string
   label: string
   title: string
   text: string
@@ -29,7 +28,6 @@ const chapters: {
   {
     key: 'organiza',
     icon: 'LayoutGrid',
-    tone: 'bg-[#e6f4fb] text-[#2a72a8]',
     label: 'Organiza',
     title: 'Todo el trabajo, visible en un tablero',
     text: 'Cada tarea es una tarjeta con responsable, fecha y prioridad. El equipo la mueve de “Por hacer” a “Hecho” y todos ven lo mismo, en tiempo real.',
@@ -41,7 +39,6 @@ const chapters: {
   {
     key: 'planea',
     icon: 'SquareChartGantt',
-    tone: 'bg-violet-50 text-violet-700',
     label: 'Planea',
     title: 'El cronograma se arma solo',
     text: 'Pon fecha de inicio y fin a las tareas y el diagrama de Gantt aparece listo, con la línea de hoy para ver qué va atrasado.',
@@ -52,8 +49,7 @@ const chapters: {
   },
   {
     key: 'controla',
-    icon: 'Wallet',
-    tone: 'bg-emerald-50 text-emerald-700',
+    icon: 'CircleDollarSign',
     label: 'Controla el dinero',
     title: 'Las tareas y la plata, juntas',
     text: 'Cada proyecto tiene su caja: presupuesto, ingresos, egresos, flujo de caja y rentabilidad, en la moneda de tu cliente.',
@@ -65,7 +61,6 @@ const chapters: {
   {
     key: 'coordina',
     icon: 'MessagesSquare',
-    tone: 'bg-[#fff1ea] text-[#c2410c]',
     label: 'Coordina',
     title: 'La conversación, junto al trabajo',
     text: 'Chat de equipo con canales, menciones y presencia. Las decisiones quedan escritas, no perdidas en un audio de WhatsApp.',
@@ -76,8 +71,7 @@ const chapters: {
   },
   {
     key: 'decide',
-    icon: 'Bot',
-    tone: 'bg-[#eef5fb] text-[#215d8a]',
+    icon: 'Cpu',
     label: 'Decide con IA',
     title: 'Pregúntale a tu proyecto',
     text: '“¿Qué está atrasado?”, “Resume el avance para el cliente”. El asistente conoce tus tableros y proyectos y responde con ese contexto.',
@@ -146,19 +140,11 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section id="como-funciona" ref="section" class="ql-story relative bg-white py-20 lg:py-28" aria-labelledby="story-heading">
-    <div class="mx-auto max-w-6xl px-5 lg:px-8">
-      <div class="max-w-2xl">
-        <p class="ql-eyebrow">Cómo funciona</p>
-        <h2 id="story-heading" class="mt-3 text-3xl font-bold text-[#172b4d] lg:text-[2.75rem] lg:leading-[1.1]">
-          Un proyecto, de la idea a la entrega
-        </h2>
-        <p class="mt-4 text-[15px] leading-relaxed text-[#44546f] lg:text-lg">
-          Desliza y mira cómo QuinList acompaña cada etapa de tu proyecto.
-        </p>
-      </div>
+  <section id="como-funciona" ref="section" class="ql-story relative bg-white py-12 lg:py-16" aria-labelledby="story-heading">
+    <div class="mx-auto max-w-[1200px] px-5 lg:px-8">
+      <h2 id="story-heading" class="sr-only">Cómo funciona QuinList</h2>
 
-      <div class="mt-12 lg:grid lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-16">
+      <div class="lg:grid lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-16">
         <!-- Capítulos -->
         <ol class="relative" :class="dim ? 'is-dim' : ''">
           <li
@@ -175,27 +161,30 @@ onUnmounted(() => {
               :aria-current="active === i ? 'step' : undefined"
               @click="goTo(i)"
             >
-              <span class="flex h-11 w-11 items-center justify-center rounded-xl transition-transform duration-300" :class="[c.tone, active === i ? 'scale-110' : '']">
-                <MktIcon :name="c.icon" :size="21" />
+              <span
+                class="flex h-10 w-10 items-center justify-center rounded-lg border transition-colors duration-200"
+                :class="active === i ? 'border-[#101214] text-[#101214]' : 'border-[#dfe1e6] text-[#42526e]'"
+              >
+                <MktIcon :name="c.icon" :size="20" :stroke-width="1.4" />
               </span>
-              <span class="text-sm font-bold uppercase tracking-[0.08em] text-[#5e6c84]">
+              <span class="text-sm font-bold uppercase tracking-[0.08em] text-[#42526e]">
                 {{ String(i + 1).padStart(2, '0') }} · {{ c.label }}
               </span>
             </button>
-            <h3 class="mt-4 text-2xl font-bold leading-tight text-[#172b4d] lg:text-[2rem]">{{ c.title }}</h3>
-            <p class="mt-3 text-[15px] leading-relaxed text-[#44546f] lg:text-base">{{ c.text }}</p>
+            <h3 class="mt-4 text-2xl font-bold leading-tight text-[#101214] lg:text-[2rem]">{{ c.title }}</h3>
+            <p class="mt-3 text-[15px] leading-relaxed text-[#42526e] lg:text-base">{{ c.text }}</p>
             <ul class="mt-4 flex flex-wrap gap-2">
-              <li v-for="p in c.points" :key="p" class="rounded-full bg-[#f6f8fb] px-3 py-1.5 text-xs font-semibold text-[#44546f] ring-1 ring-[#e4e9f0]">
+              <li v-for="p in c.points" :key="p" class="rounded-full bg-[#f0f1f2] px-3 py-1 text-[13px] font-medium text-[#42526e]">
                 {{ p }}
               </li>
             </ul>
-            <RouterLink :to="c.to" class="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-[#2a72a8] hover:underline">
+            <RouterLink :to="c.to" class="ql-link mt-5 text-[15px]">
               Conocer más <ArrowRight :size="15" aria-hidden="true" />
             </RouterLink>
 
             <!-- En celular, cada capítulo trae su propia ilustración -->
-            <div class="mt-8 lg:hidden">
-              <SolutionVisual :kind="c.visual" :label="c.visualLabel" />
+            <div class="ql-shot mt-8 p-5 lg:hidden">
+              <div class="ql-shot__tilt"><SolutionVisual :kind="c.visual" :label="c.visualLabel" /></div>
             </div>
           </li>
         </ol>
@@ -204,16 +193,12 @@ onUnmounted(() => {
         <div class="hidden lg:block" aria-hidden="true">
           <div class="sticky top-[calc(50vh-15rem)]">
             <div class="mb-5 flex items-center gap-3">
-              <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-[#eef1f6]">
-                <div class="h-full origin-left rounded-full bg-[#2a72a8]" :style="{ transform: `scaleX(${progress})` }" />
+              <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-[#f0f1f2]">
+                <div class="h-full origin-left rounded-full bg-[#1868db]" :style="{ transform: `scaleX(${progress})` }" />
               </div>
-              <span class="w-16 text-right text-xs font-bold tabular-nums text-[#5e6c84]">{{ active + 1 }} / {{ chapters.length }}</span>
+              <span class="w-16 text-right text-xs font-bold tabular-nums text-[#42526e]">{{ active + 1 }} / {{ chapters.length }}</span>
             </div>
-            <div class="relative h-[30rem] rounded-[2rem] bg-[#f6f8fb] p-6 ring-1 ring-[#e4e9f0]">
-              <div
-                class="pointer-events-none absolute inset-0 rounded-[2rem] opacity-70"
-                style="background-image: radial-gradient(rgba(45, 126, 184, 0.14) 1px, transparent 1px); background-size: 20px 20px"
-              />
+            <div class="relative h-[30rem] rounded-[20px] bg-[#1868db] p-8">
               <div
                 v-for="(c, i) in chapters"
                 :key="c.key"
@@ -228,7 +213,7 @@ onUnmounted(() => {
                 v-for="(c, i) in chapters"
                 :key="c.key"
                 class="h-1.5 rounded-full transition-all duration-300"
-                :class="active === i ? 'w-8 bg-[#2a72a8]' : 'w-1.5 bg-[#cfd8e3]'"
+                :class="active === i ? 'w-8 bg-[#1868db]' : 'w-1.5 bg-[#b7b9be]'"
               />
             </div>
           </div>

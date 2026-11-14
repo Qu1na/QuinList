@@ -3,7 +3,7 @@
  * Réplica de la app real (header azul, escritorio de proyectos) para el hero.
  * Es HTML puro: pesa casi nada, se ve nítido y sale en el HTML prerenderizado.
  */
-import { Bell, CheckCircle2, ChevronDown, CircleAlert, Clock, Plus, Search, TrendingUp, Wallet } from '@lucide/vue'
+import { Bell, ChevronDown, CircleAlert, Clock, Plus, Search, TrendingUp } from '@lucide/vue'
 
 const folders = [
   { name: 'Remodelación oficina', pct: 68, tone: '#5b8def' },
@@ -14,7 +14,7 @@ const folders = [
 </script>
 
 <template>
-  <div class="relative mx-auto w-full max-w-[600px]" role="img" aria-label="Vista de la app QuinList: escritorio de proyectos con avance, tareas y notificaciones">
+  <div class="relative mx-auto w-full max-w-[600px]" role="img" aria-label="Vista de la app QuinList: escritorio de proyectos con avance y tareas">
     <!-- Ventana de la app -->
     <div class="ql-window landing-product-frame" aria-hidden="true">
       <div class="ql-window__bar">
@@ -26,17 +26,17 @@ const folders = [
       <!-- Header azul, igual al de la app -->
       <div class="flex items-center gap-2 bg-[#2a72a8] px-3 py-2">
         <span class="flex h-6 w-6 items-center justify-center rounded-md bg-[#1d5d8c] text-[10px] font-extrabold text-white">Q</span>
-        <span class="hidden items-center gap-1 rounded-md bg-[#1d5d8c] px-2 py-1 text-[10px] font-semibold text-white sm:inline-flex">
+        <span class="hidden shrink-0 items-center gap-1 rounded-md bg-[#1d5d8c] px-2 py-1 text-[10px] font-semibold text-white xl:inline-flex">
           Espacio de tu empresa <ChevronDown :size="11" />
         </span>
-        <span class="flex flex-1 items-center gap-1.5 rounded-md bg-[#1d5d8c] px-2 py-1 text-[10px] text-white">
-          <Search :size="11" /> Buscar tarjetas, proyectos…
+        <span class="flex min-w-0 flex-1 items-center gap-1.5 truncate whitespace-nowrap rounded-md bg-[#1d5d8c] px-2 py-1 text-[10px] text-white">
+          <Search :size="11" class="shrink-0" /> <span class="truncate">Buscar tarjetas, proyectos…</span>
         </span>
-        <span class="inline-flex items-center gap-1 rounded-full bg-[#1d5d8c] px-2 py-1 text-[10px] font-semibold text-white">
+        <span class="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#1d5d8c] px-2 py-1 text-[10px] font-semibold text-white">
           <Plus :size="11" /> Crear
         </span>
         <Bell :size="13" class="text-white" />
-        <span class="flex h-6 w-6 items-center justify-center rounded-full bg-[#6554c0] text-[9px] font-bold text-white">AR</span>
+        <span class="flex h-6 w-6 items-center justify-center rounded-full bg-[#6554c0] text-[9px] font-bold text-white">JE</span>
       </div>
 
       <!-- Escritorio de proyectos -->
@@ -53,7 +53,7 @@ const folders = [
               <span class="inline-flex items-center gap-0.5 text-red-700"><CircleAlert :size="10" /><b>1</b> vencido</span>
             </div>
           </div>
-          <span class="rounded-lg bg-[#f4845f] px-2.5 py-1.5 text-[10px] font-bold text-[#1a2b4a]">+ Nuevo proyecto</span>
+          <span class="shrink-0 whitespace-nowrap rounded-lg bg-[#f4845f] px-2.5 py-1.5 text-[10px] font-bold text-[#1a2b4a]">+ Nuevo proyecto</span>
         </div>
 
         <ul class="mt-5 grid grid-cols-4 gap-2">
@@ -83,54 +83,5 @@ const folders = [
         </div>
       </div>
     </div>
-
-    <!-- Notificaciones flotantes estilo iOS -->
-    <div
-      class="ql-glass ql-note ql-float absolute -top-9 right-4 hidden w-60 items-start gap-2.5 rounded-2xl p-3 sm:flex lg:-right-6"
-      aria-hidden="true"
-    >
-      <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-[9px] bg-emerald-500 text-white"><CheckCircle2 :size="16" /></span>
-      <span class="min-w-0 text-[11px] leading-snug text-[#172b4d]">
-        <b class="block text-[11px]">Ana completó una tarea</b>
-        “Entrega de planos” · hace 2 min
-      </span>
-    </div>
-    <div
-      class="ql-glass ql-note ql-float absolute -bottom-10 -left-2 hidden w-60 items-start gap-2.5 rounded-2xl p-3 sm:flex lg:-left-8"
-      style="animation-delay: -3s"
-      aria-hidden="true"
-    >
-      <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-[9px] bg-[#f4845f] text-white"><Wallet :size="16" /></span>
-      <span class="min-w-0 text-[11px] leading-snug text-[#172b4d]">
-        <b class="block text-[11px]">Presupuesto al 54%</b>
-        Remodelación oficina va al 68% de avance
-      </span>
-    </div>
   </div>
 </template>
-
-<style scoped>
-.ql-note {
-  background: rgba(255, 255, 255, 0.92);
-}
-
-.ql-float {
-  animation: ql-float 7s ease-in-out infinite;
-}
-
-@keyframes ql-float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ql-float {
-    animation: none;
-  }
-}
-</style>
