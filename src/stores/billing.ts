@@ -97,12 +97,6 @@ export const useBillingStore = defineStore('billing', () => {
     waitingCheckout = false
   }
 
-  /** Solo para previsualizar el diseño (sin tocar el cobro). */
-  function previewPaymentModal(status: PaymentModalStatus) {
-    waitingCheckout = false
-    openPaymentModal(status)
-  }
-
   function applyRecord(record: BillingRecord) {
     subscription.value = record
     ownerCache.set(record.userId, record)
@@ -302,7 +296,6 @@ export const useBillingStore = defineStore('billing', () => {
     closeUpgrade,
     openPaymentModal,
     closePaymentModal,
-    previewPaymentModal,
     allowCreate,
     requestCreateBoard,
     countOwnedBoards,
