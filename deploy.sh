@@ -127,19 +127,22 @@ ensure_pm2() {
 
 start_pm2() {
   ensure_pm2
-  echo "==> PM2 start ${APP_NAME}..."
+  echo "==> PM2 start (app + billing)..."
   pm2 delete "$APP_NAME" 2>/dev/null || true
+  pm2 delete "${APP_NAME}-billing" 2>/dev/null || true
   pm2 start ecosystem.config.cjs
   pm2 save
 }
 
 restart_pm2() {
   ensure_pm2
-  if pm2 describe "$APP_NAME" >/dev/null 2>&1; then
-    echo "==> PM2 restart ${APP_NAME}..."
-    pm2 restart "$APP_NAME"
+  # Reinicia app estática y API de cobros (Landa Pay en :4012)
+  if pm2 describe "$APP_NAME" >/dev/null 2>&1 || pm2 describe "${APP_NAME}-billing" >/dev/null 2>&1; then
+    echo "==> PM2 restart ecosystem (quinlist + quinlist-billing)..."
+    pm2 startOrReload ecosystem.config.cjs --update-env
+    pm2 save
   else
-    echo "==> PM2 no encontró ${APP_NAME}, iniciando..."
+    echo "==> PM2 no encontró procesos, iniciando ecosystem..."
     pm2 start ecosystem.config.cjs
     pm2 save
   fi
@@ -151,6 +154,15 @@ verify_local() {
     echo "OK — app respondiendo en puerto ${APP_PORT}"
   else
     echo "AVISO: no hubo respuesta en :${APP_PORT}. Revisa: pm2 logs ${APP_NAME}"
+  fi
+
+  echo "==> Verificando billing http://127.0.0.1:4012/api/health..."
+  if curl -sf "http://127.0.0.1:4012/api/health"; then
+    echo ""
+    echo "OK — billing respondiendo en puerto 4012"
+  else
+    echo "AVISO: billing no responde en :4012. Revisa: pm2 logs ${APP_NAME}-billing"
+    echo "        y que nginx tenga location /api/ → 127.0.0.1:4012"
   fi
 }
 
