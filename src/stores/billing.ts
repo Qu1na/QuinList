@@ -8,6 +8,7 @@ import {
   createVipCheckout,
   fetchPlanOffer,
   loadBillingRecord,
+  subscribeBillingRealtime,
   syncCheckout,
   type BillingRecord,
 } from '@/services/billing'
@@ -18,6 +19,9 @@ import { useQuinListStore } from './quinlist'
 import { useUiStore } from './ui'
 
 export type UpgradeKind = 'board' | 'project' | 'ai'
+export type PaymentModalStatus = 'processing' | 'approved' | 'failed'
+
+const FAILED_CHECKOUT = new Set(['cancelled', 'canceled', 'expired', 'failed', 'void'])
 
 function ownerIdOf(workspace: Workspace | undefined): string | null {
   return workspace?.members.find((member) => member.role === 'owner')?.userId ?? null
@@ -37,9 +41,13 @@ export const useBillingStore = defineStore('billing', () => {
   const checkoutError = ref('')
   const upgradeOpen = ref(false)
   const upgradeKind = ref<UpgradeKind>('board')
+  const paymentModalOpen = ref(false)
+  const paymentModalStatus = ref<PaymentModalStatus>('processing')
   const ownerCache = new Map<string, BillingRecord>()
   let loadedFor: string | null = null
   let initPromise: Promise<void> | null = null
+  let billingRealtimeUnsub: (() => void) | null = null
+  let waitingCheckout = false
 
   const isVip = computed(() => isVipAccess(subscription.value?.plan, subscription.value?.status))
 
@@ -77,6 +85,43 @@ export const useBillingStore = defineStore('billing', () => {
 
   function closeUpgrade() {
     upgradeOpen.value = false
+  }
+
+  function openPaymentModal(status: PaymentModalStatus) {
+    paymentModalStatus.value = status
+    paymentModalOpen.value = true
+  }
+
+  function closePaymentModal() {
+    paymentModalOpen.value = false
+    waitingCheckout = false
+  }
+
+  /** Solo para previsualizar el diseño (sin tocar el cobro). */
+  function previewPaymentModal(status: PaymentModalStatus) {
+    waitingCheckout = false
+    openPaymentModal(status)
+  }
+
+  function applyRecord(record: BillingRecord) {
+    subscription.value = record
+    ownerCache.set(record.userId, record)
+    if (waitingCheckout && isVipAccess(record.plan, record.status)) {
+      waitingCheckout = false
+      openPaymentModal('approved')
+    }
+  }
+
+  function startBillingRealtime(userId: string) {
+    billingRealtimeUnsub?.()
+    billingRealtimeUnsub = subscribeBillingRealtime(userId, (record) => {
+      applyRecord(record)
+    })
+  }
+
+  function stopBillingRealtime() {
+    billingRealtimeUnsub?.()
+    billingRealtimeUnsub = null
   }
 
   async function ensureOwnerRecord(ownerId: string): Promise<BillingRecord> {
@@ -127,7 +172,10 @@ export const useBillingStore = defineStore('billing', () => {
   async function init() {
     const userId = auth.currentUserId
     if (!userId) return
-    if (loadedFor === userId && ready.value) return
+    if (loadedFor === userId && ready.value) {
+      startBillingRealtime(userId)
+      return
+    }
     if (initPromise) return initPromise
 
     initPromise = (async () => {
@@ -138,6 +186,7 @@ export const useBillingStore = defineStore('billing', () => {
         ownerCache.set(userId, record)
         loadedFor = userId
         ready.value = true
+        startBillingRealtime(userId)
       } finally {
         initPromise = null
       }
@@ -170,14 +219,40 @@ export const useBillingStore = defineStore('billing', () => {
 
   async function confirmReturn(checkoutId: string) {
     checkoutError.value = ''
-    checkoutBusy.value = true
+    waitingCheckout = true
+    openPaymentModal('processing')
+    const userId = auth.currentUserId
+    if (userId) startBillingRealtime(userId)
+
     try {
-      await syncCheckout(checkoutId)
-      await refresh()
+      const result = await syncCheckout(checkoutId)
+      if (result.subscription) {
+        applyRecord(result.subscription)
+      }
+
+      if (isVipAccess(result.subscription?.plan, result.subscription?.status)) {
+        waitingCheckout = false
+        openPaymentModal('approved')
+        return
+      }
+
+      const status = result.checkoutStatus.toLowerCase()
+      if (FAILED_CHECKOUT.has(status)) {
+        waitingCheckout = false
+        openPaymentModal('failed')
+        return
+      }
+
+      // Sigue pending: el modal queda en "processing" y MatuDB WebSocket
+      // actualizará a approved cuando el webhook escriba billing_subscriptions.
+      if (!result.pending && !isVip.value) {
+        waitingCheckout = false
+        openPaymentModal('failed')
+      }
     } catch (error) {
+      waitingCheckout = false
       checkoutError.value = error instanceof Error ? error.message : 'No se pudo confirmar el pago.'
-    } finally {
-      checkoutBusy.value = false
+      openPaymentModal('failed')
     }
   }
 
@@ -212,6 +287,8 @@ export const useBillingStore = defineStore('billing', () => {
     checkoutError,
     upgradeOpen,
     upgradeKind,
+    paymentModalOpen,
+    paymentModalStatus,
     isVip,
     planLabel,
     boardUsage,
@@ -223,6 +300,9 @@ export const useBillingStore = defineStore('billing', () => {
     freeProjectLimit: FREE_PROJECT_LIMIT,
     openUpgrade,
     closeUpgrade,
+    openPaymentModal,
+    closePaymentModal,
+    previewPaymentModal,
     allowCreate,
     requestCreateBoard,
     countOwnedBoards,
@@ -232,5 +312,6 @@ export const useBillingStore = defineStore('billing', () => {
     startVipCheckout,
     confirmReturn,
     cancelVip,
+    stopBillingRealtime,
   }
 })

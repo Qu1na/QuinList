@@ -80,12 +80,18 @@ const vipVisible = computed(() =>
   showMoreVip.value ? vipRows.value : vipRows.value.slice(0, PREVIEW),
 )
 
+const showModalPreview = computed(() => route.query.preview_modals === '1')
+
 onMounted(async () => {
   await Promise.all([billing.init(), projects.init()])
   const checkoutId = route.query.checkout_id
   if (typeof checkoutId === 'string' && checkoutId) {
+    // Limpia la URL ya; el modal de estado sigue abierto encima.
+    await router.replace({
+      name: 'plans',
+      query: showModalPreview.value ? { preview_modals: '1' } : {},
+    })
     await billing.confirmReturn(checkoutId)
-    await router.replace({ name: 'plans' })
     return
   }
   if (route.query.checkout === '1' && !billing.isVip) {
@@ -98,6 +104,23 @@ onMounted(async () => {
 <template>
   <div class="h-full overflow-y-auto">
   <div class="mx-auto w-full max-w-4xl px-6 py-8">
+    <div
+      v-if="showModalPreview"
+      class="mb-6 flex flex-wrap items-center gap-2 rounded-xl border border-[#091e4221] bg-[#f7f8f9] px-4 py-3"
+    >
+      <span class="mr-1 text-[12px] font-semibold uppercase tracking-wide text-[#626f86]">
+        Vista previa modales
+      </span>
+      <button type="button" class="btn-brand-ghost text-[13px]" @click="billing.previewPaymentModal('processing')">
+        Procesando
+      </button>
+      <button type="button" class="btn-brand-ghost text-[13px]" @click="billing.previewPaymentModal('approved')">
+        Aprobado
+      </button>
+      <button type="button" class="btn-brand-ghost text-[13px]" @click="billing.previewPaymentModal('failed')">
+        Fallido
+      </button>
+    </div>
     <div class="mb-8">
       <div class="flex flex-wrap items-center gap-2">
         <p class="text-xs font-semibold tracking-wide text-[#6554c0] uppercase">Planes</p>
@@ -254,7 +277,6 @@ onMounted(async () => {
           >
             Cancelar al final del periodo
           </button>
-          <RouterLink to="/app/ia" class="btn-brand inline-flex">Abrir asistente de IA</RouterLink>
         </div>
       </section>
     </div>

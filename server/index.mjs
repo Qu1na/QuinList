@@ -248,8 +248,10 @@ app.post('/api/billing/sync', async (req, res) => {
       await saveSubscription(recordFromSubscription(user.id, subscription))
     }
     const row = await readSubscription(user.id)
+    const checkoutStatus = String(checkout.status || 'pending')
     return res.json({
-      pending: checkout.status !== 'completed',
+      pending: checkoutStatus !== 'completed',
+      checkoutStatus,
       subscription: publicSubscription(row, user.id),
     })
   } catch (error) {

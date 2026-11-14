@@ -6,9 +6,12 @@ import { useRouter } from 'vue-router'
 import AppWindow from '@/components/ui/AppWindow.vue'
 import AppConfirmDialog from '@/components/ui/AppConfirmDialog.vue'
 import UpgradeModal from '@/components/billing/UpgradeModal.vue'
+import PaymentStatusModal from '@/components/billing/PaymentStatusModal.vue'
+import { useBillingStore } from '@/stores/billing'
 
 const ui = useUiStore()
 const store = useQuinListStore()
+const billing = useBillingStore()
 const router = useRouter()
 
 const promptValue = ref('')
@@ -295,4 +298,9 @@ function submitWorkspace() {
     </div>
   </Teleport>
   <UpgradeModal />
+  <PaymentStatusModal
+    :open="billing.paymentModalOpen"
+    :status="billing.paymentModalStatus"
+    @close="billing.closePaymentModal()"
+  />
 </template>

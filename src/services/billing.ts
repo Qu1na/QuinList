@@ -1,6 +1,7 @@
 import type { PlanOffer } from '@/config/plans'
 import { VIP_PRICE_USD } from '@/config/plans'
 import { getMatuClient, isMatuConfigured } from '@/lib/matu'
+import { matuRealtimeRow, matuRealtimeTableChannel, rowUserId } from '@/lib/matuRealtime'
 import { isMissingTableError, markTableMissing } from '@/lib/matuTables'
 
 export interface BillingRecord {
@@ -123,17 +124,57 @@ export async function createVipCheckout(): Promise<string> {
   return data.checkoutUrl
 }
 
-export async function syncCheckout(checkoutId: string): Promise<BillingRecord | null> {
+export interface SyncCheckoutResult {
+  pending: boolean
+  checkoutStatus: string
+  subscription: BillingRecord | null
+}
+
+export async function syncCheckout(checkoutId: string): Promise<SyncCheckoutResult> {
   const res = await billingFetch('/api/billing/sync', {
     method: 'POST',
     body: JSON.stringify({ checkoutId }),
   })
   const data = (await res.json().catch(() => ({}))) as {
     error?: string
+    pending?: boolean
+    checkoutStatus?: string
     subscription?: BillingRecord
   }
   if (!res.ok) throw new Error(data.error || 'No se pudo confirmar el pago.')
-  return data.subscription ?? null
+  return {
+    pending: Boolean(data.pending),
+    checkoutStatus: String(data.checkoutStatus || (data.pending ? 'pending' : 'completed')),
+    subscription: data.subscription ?? null,
+  }
+}
+
+/** WebSocket MatuDB: cambios en billing_subscriptions del usuario (sin polling). */
+export function subscribeBillingRealtime(
+  userId: string,
+  onChange: (record: BillingRecord) => void,
+): () => void {
+  if (!isMatuConfigured()) return () => {}
+
+  const db = getMatuClient()
+  const channel = db
+    .channel(matuRealtimeTableChannel('billing_subscriptions'))
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'billing_subscriptions' },
+      (raw: unknown) => {
+        const p = raw as Record<string, unknown>
+        const event = String(p.eventType ?? p.action ?? 'UPDATE').toUpperCase()
+        const row = matuRealtimeRow(p, event) as DbBillingRow | undefined
+        if (!row || rowUserId(row as Record<string, unknown>) !== userId) return
+        onChange(fromRow(row))
+      },
+    )
+    .subscribe()
+
+  return () => {
+    db.removeChannel(channel)
+  }
 }
 
 export async function cancelVipAtPeriodEnd(): Promise<void> {
