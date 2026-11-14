@@ -6,6 +6,7 @@ module.exports = {
       cwd: __dirname,
       script: 'npm',
       args: 'run start',
+      exec_mode: 'fork',
       instances: 1,
       autorestart: true,
       watch: false,
@@ -15,11 +16,13 @@ module.exports = {
       },
     },
     {
+      // ESM (server/index.mjs): siempre fork. Cluster rompe con --env-file / import.
       name: 'quinlist-billing',
       cwd: __dirname,
       script: 'server/index.mjs',
       interpreter: 'node',
       node_args: '--env-file=.env',
+      exec_mode: 'fork',
       instances: 1,
       autorestart: true,
       watch: false,
