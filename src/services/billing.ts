@@ -166,7 +166,7 @@ export function subscribeBillingRealtime(
         const p = raw as Record<string, unknown>
         const event = String(p.eventType ?? p.action ?? 'UPDATE').toUpperCase()
         const row = matuRealtimeRow(p, event) as DbBillingRow | undefined
-        if (!row || rowUserId(row as Record<string, unknown>) !== userId) return
+        if (!row || row.user_id !== userId) return
         onChange(fromRow(row))
       },
     )
