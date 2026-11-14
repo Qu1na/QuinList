@@ -1,7 +1,7 @@
 import type { PlanOffer } from '@/config/plans'
 import { VIP_PRICE_USD } from '@/config/plans'
 import { getMatuClient, isMatuConfigured } from '@/lib/matu'
-import { matuRealtimeRow, matuRealtimeTableChannel, rowUserId } from '@/lib/matuRealtime'
+import { matuRealtimeRow, matuRealtimeTableChannel } from '@/lib/matuRealtime'
 import { isMissingTableError, markTableMissing } from '@/lib/matuTables'
 
 export interface BillingRecord {
