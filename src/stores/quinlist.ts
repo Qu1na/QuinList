@@ -679,6 +679,12 @@ export const useQuinListStore = defineStore('quinlist', () => {
   }
 
   async function createWorkspace(name: string, icon: string, color: string) {
+    const billing = useBillingStore()
+    const allowed = await billing.allowTeam()
+    if (!allowed) {
+      billing.openUpgrade('team')
+      return null
+    }
     const auth = useAuthStore()
     const ws: Workspace = {
       id: generateId(),
@@ -1057,6 +1063,13 @@ export const useQuinListStore = defineStore('quinlist', () => {
     const ws = currentWorkspace.value
     if (!ws || !auth.currentUserId) throw new Error('No hay espacio activo')
 
+    const billing = useBillingStore()
+    const allowed = await billing.allowTeam(ws.id)
+    if (!allowed) {
+      billing.openUpgrade('team')
+      throw new Error('El plan Gratis no incluye equipo. Pasa a VIP para invitar miembros.')
+    }
+
     if (isMatuConfigured()) {
       const { inviteMember } = await import('@/services/matuData')
       await inviteMember(ws.id, email, role, auth.currentUserId)
@@ -1084,6 +1097,12 @@ export const useQuinListStore = defineStore('quinlist', () => {
     const auth = useAuthStore()
     const ws = currentWorkspace.value
     if (!ws || !auth.currentUserId) throw new Error('No hay espacio activo')
+
+    const billing = useBillingStore()
+    if (!(await billing.allowTeam(ws.id))) {
+      billing.openUpgrade('team')
+      throw new Error('El plan Gratis no incluye gestión de equipo. Pasa a VIP.')
+    }
 
     const target = ws.members.find((m) => m.userId === userId)
     if (!target) throw new Error('Miembro no encontrado')

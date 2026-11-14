@@ -213,8 +213,8 @@ function openIntegrations() {
           <p class="mt-1">
             {{
               billing.isVip
-                ? 'Tableros y proyectos ilimitados, con asistente de IA.'
-                : 'Puedes crear un tablero y un proyecto. VIP quita ese límite y activa la IA.'
+                ? 'Tableros y proyectos ilimitados, equipo con miembros ilimitados y asistente de IA.'
+                : 'Puedes crear un tablero y un proyecto. No incluye equipo. VIP quita límites, permite invitaciones y activa la IA.'
             }}
           </p>
         </div>

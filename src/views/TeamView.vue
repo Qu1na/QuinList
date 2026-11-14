@@ -4,6 +4,7 @@ import { UserPlus, Loader2, Ban, ChevronRight } from '@lucide/vue'
 import { useQuinListStore } from '@/stores/quinlist'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
+import { useBillingStore } from '@/stores/billing'
 import {
   roleLabel,
   canManageMembers,
@@ -25,6 +26,7 @@ import {
 const store = useQuinListStore()
 const auth = useAuthStore()
 const ui = useUiStore()
+const billing = useBillingStore()
 
 const inviteEmail = ref('')
 const inviteRole = ref<UserRole>('member')
@@ -35,7 +37,8 @@ const selectedUserId = ref<string | null>(null)
 const actionError = ref('')
 
 const actorRole = computed(() => store.getUserRole(store.currentWorkspaceId))
-const canInvite = computed(() => canManageMembers(actorRole.value))
+const canInvite = computed(() => canManageMembers(actorRole.value) && billing.isVip)
+const teamLocked = computed(() => canManageMembers(actorRole.value) && !billing.isVip)
 const isOwnerActor = computed(() => canSuspendUsers(actorRole.value))
 
 const members = computed(() => {
@@ -80,12 +83,16 @@ async function ensureWorkspaceMemberProfiles() {
 }
 
 onMounted(() => {
+  void billing.init()
   void ensureWorkspaceMemberProfiles()
 })
 
 async function sendInvite() {
   inviteError.value = ''
   inviteSuccess.value = ''
+
+  const allowed = await billing.requestInviteTeam()
+  if (!allowed) return
 
   if (!inviteEmail.value.trim()) {
     inviteError.value = 'Ingresa un correo electrónico'
@@ -217,6 +224,24 @@ function roleBadgeClass(role: UserRole) {
 
 <template>
   <AccountShell>
+    <div
+      v-if="teamLocked"
+      class="mb-6 rounded-xl border border-[#6554c033] bg-[#faf8ff] px-5 py-4"
+    >
+      <p class="text-sm font-semibold text-[#172b4d]">Equipo disponible en VIP</p>
+      <p class="mt-1 text-sm text-[#626f86]">
+        El plan Gratis es individual: no puedes invitar miembros ni gestionar roles. Con VIP
+        añades usuarios ilimitados a tu equipo.
+      </p>
+      <button
+        type="button"
+        class="btn-brand mt-3"
+        @click="billing.openUpgrade('team')"
+      >
+        Ver plan VIP
+      </button>
+    </div>
+
     <div
       v-if="canInvite"
       class="mb-6 rounded-xl border border-[#091e4214] bg-white p-5 shadow-sm"

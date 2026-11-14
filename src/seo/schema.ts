@@ -97,7 +97,7 @@ export function softwareApplicationSchema() {
         name: 'Gratis',
         price: '0',
         priceCurrency: 'USD',
-        description: '1 tablero Kanban y 1 proyecto, para siempre. Sin tarjeta.',
+        description: '1 tablero Kanban y 1 proyecto, para siempre. Sin tarjeta ni equipo.',
         url: `${SITE_URL}/precios`,
         availability: 'https://schema.org/InStock',
       },
@@ -106,7 +106,7 @@ export function softwareApplicationSchema() {
         name: 'VIP',
         price: String(PRODUCT.vipPriceUsd),
         priceCurrency: 'USD',
-        description: 'Tableros y proyectos ilimitados y asistente de IA. Suscripción mensual.',
+        description: 'Tableros y proyectos ilimitados, equipo con miembros ilimitados y asistente de IA. Suscripción mensual.',
         url: `${SITE_URL}/precios`,
         availability: 'https://schema.org/InStock',
         priceSpecification: {

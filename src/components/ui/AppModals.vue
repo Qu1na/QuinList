@@ -81,9 +81,15 @@ async function submitTask() {
   if (card) ui.openCard(card.id)
 }
 
-function submitWorkspace() {
+async function submitWorkspace() {
   if (!workspaceName.value.trim()) return
-  store.createWorkspace(workspaceName.value.trim(), workspaceName.value[0] ?? 'W', workspaceColor.value)
+  const allowed = await billing.allowTeam()
+  if (!allowed) {
+    ui.closeModal()
+    billing.openUpgrade('team')
+    return
+  }
+  await store.createWorkspace(workspaceName.value.trim(), workspaceName.value[0] ?? 'W', workspaceColor.value)
   ui.closeModal()
 }
 </script>

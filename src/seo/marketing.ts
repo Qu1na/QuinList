@@ -86,7 +86,7 @@ export const landingFaqs: MarketingFaq[] = [
   },
   {
     q: '¿Cuánto cuesta QuinList?',
-    a: 'Hay un plan Gratis para siempre, con 1 tablero y 1 proyecto, sin tarjeta de crédito. El plan VIP cuesta 7 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA. El cobro se hace en pesos colombianos, a la tasa del día, a través de Landa Pay.',
+    a: 'Hay un plan Gratis para siempre, con 1 tablero y 1 proyecto, sin tarjeta de crédito y sin crear equipo. El plan VIP cuesta 7 USD al mes e incluye tableros y proyectos ilimitados, equipo con miembros ilimitados y el asistente de IA. El cobro se hace en pesos colombianos, a la tasa del día, a través de Landa Pay.',
   },
   {
     q: '¿En qué se diferencia de Trello, Asana o Monday?',
@@ -148,7 +148,7 @@ const U = CONTENT_UPDATED
 
 const CTA_FAQ_PRICE: MarketingFaq = {
   q: '¿Cuánto cuesta?',
-  a: 'Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto. El plan VIP cuesta 7 USD al mes e incluye tableros y proyectos ilimitados y el asistente de IA.',
+  a: 'Puedes empezar gratis, sin tarjeta, con 1 tablero y 1 proyecto (sin equipo). El plan VIP cuesta 7 USD al mes e incluye tableros y proyectos ilimitados, equipo con miembros ilimitados y el asistente de IA.',
 }
 
 function countryPage(input: {
@@ -213,7 +213,7 @@ function countryPage(input: {
       {
         heading: 'Precio claro, en dólares',
         body: [
-          `El plan Gratis incluye 1 tablero y 1 proyecto, para siempre. El plan VIP cuesta 7 USD al mes con tableros y proyectos ilimitados y asistente de IA. ${input.paymentNote}`,
+          `El plan Gratis incluye 1 tablero y 1 proyecto, para siempre, sin crear equipo. El plan VIP cuesta 7 USD al mes con tableros y proyectos ilimitados, equipo con miembros ilimitados y asistente de IA. ${input.paymentNote}`,
         ],
       },
     ],
@@ -317,7 +317,7 @@ export const marketingPages: MarketingPage[] = [
       },
       {
         q: '¿Cuántas personas pueden usarlo?',
-        a: 'Puedes invitar a tu equipo a tu espacio de trabajo y asignar a cada persona un rol: Propietario, Administrador, Miembro u Observador.',
+        a: 'En el plan VIP puedes invitar a tu equipo a tu espacio de trabajo y asignar a cada persona un rol: Propietario, Administrador, Miembro u Observador. El plan Gratis es individual y no incluye invitaciones.',
       },
       CTA_FAQ_PRICE,
     ],
@@ -1327,7 +1327,7 @@ export const marketingPages: MarketingPage[] = [
       },
       {
         q: '¿Hay cobro por usuario?',
-        a: 'No. El plan Gratis incluye 1 tablero y 1 proyecto. El plan VIP cuesta 7 USD al mes con tableros y proyectos ilimitados y asistente de IA, sin cobro por asiento.',
+        a: 'No. El plan Gratis incluye 1 tablero y 1 proyecto, sin equipo. El plan VIP cuesta 7 USD al mes con tableros y proyectos ilimitados, equipo con miembros ilimitados y asistente de IA, sin cobro por asiento.',
       },
       landingFaqs[3]!,
     ],
@@ -1913,7 +1913,7 @@ export const marketingPages: MarketingPage[] = [
     navLabel: 'Precios',
     title: 'Precios de QuinList: plan Gratis y VIP por 7 USD/mes',
     description:
-      'QuinList tiene plan Gratis para siempre (1 tablero y 1 proyecto) y plan VIP por 7 USD al mes con todo ilimitado y asistente de IA. Sin contratos ni cobro por asiento.',
+      'QuinList tiene plan Gratis para siempre (1 tablero y 1 proyecto, sin equipo) y plan VIP por 7 USD al mes con todo ilimitado, equipo con miembros ilimitados y asistente de IA. Sin contratos ni cobro por asiento.',
     keywords: [
       'precio software gestión de proyectos',
       'software de proyectos barato',
@@ -1984,9 +1984,8 @@ export const marketingPages: MarketingPage[] = [
         ['Cronograma Gantt e hitos', 'Sí', 'Sí'],
         ['Entregables y riesgos', 'Sí', 'Sí'],
         ['Presupuesto, flujo de caja y rentabilidad', 'Sí', 'Sí'],
-        ['Chat de equipo y notificaciones', 'Sí', 'Sí'],
         ['Calendario, OKRs y reportes', 'Sí', 'Sí'],
-        ['Roles y permisos', 'Sí', 'Sí'],
+        ['Equipo e invitaciones', 'No', 'Miembros ilimitados'],
         ['Asistente de IA', 'No', 'Sí'],
         ['Precio', '0 USD', '7 USD al mes'],
       ],

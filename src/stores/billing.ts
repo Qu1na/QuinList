@@ -18,7 +18,7 @@ import { useProjectsStore } from './projects'
 import { useQuinListStore } from './quinlist'
 import { useUiStore } from './ui'
 
-export type UpgradeKind = 'board' | 'project' | 'ai'
+export type UpgradeKind = 'board' | 'project' | 'ai' | 'team'
 export type PaymentModalStatus = 'processing' | 'approved' | 'failed'
 
 const FAILED_CHECKOUT = new Set(['cancelled', 'canceled', 'expired', 'failed', 'void'])
@@ -163,6 +163,39 @@ export const useBillingStore = defineStore('billing', () => {
     return countOwnedProjects(ownerId) < FREE_PROJECT_LIMIT
   }
 
+  /** Crear espacios o invitar/gestionar equipo: solo VIP (dueño del espacio o usuario actual). */
+  async function allowTeam(workspaceId?: string): Promise<boolean> {
+    if (!ready.value) await init()
+    if (workspaceId) {
+      const quinlist = useQuinListStore()
+      const workspace = quinlist.workspaces.find((item) => item.id === workspaceId)
+      const ownerId = ownerIdOf(workspace)
+      if (!ownerId) return false
+      const record = await ensureOwnerRecord(ownerId)
+      return isVipAccess(record.plan, record.status)
+    }
+    return isVip.value
+  }
+
+  async function requestCreateWorkspace() {
+    const allowed = await allowTeam()
+    if (!allowed) {
+      openUpgrade('team')
+      return
+    }
+    useUiStore().openCreateWorkspace()
+  }
+
+  async function requestInviteTeam(workspaceId?: string) {
+    const quinlist = useQuinListStore()
+    const allowed = await allowTeam(workspaceId || quinlist.currentWorkspaceId)
+    if (!allowed) {
+      openUpgrade('team')
+      return false
+    }
+    return true
+  }
+
   async function init() {
     const userId = auth.currentUserId
     if (!userId) return
@@ -297,7 +330,10 @@ export const useBillingStore = defineStore('billing', () => {
     openPaymentModal,
     closePaymentModal,
     allowCreate,
+    allowTeam,
     requestCreateBoard,
+    requestCreateWorkspace,
+    requestInviteTeam,
     countOwnedBoards,
     countOwnedProjects,
     init,

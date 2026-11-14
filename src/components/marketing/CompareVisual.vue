@@ -23,7 +23,7 @@ const receipt = computed(() =>
         ['Proyectos completos', 'Ilimitados'],
         ['Gantt, riesgos y entregables', 'Incluido'],
         ['Presupuesto y flujo de caja', 'Incluido'],
-        ['Chat de equipo', 'Incluido'],
+        ['Equipo / miembros', 'Ilimitados'],
         ['Asistente de IA', 'Incluido'],
       ]
     : [
@@ -31,7 +31,7 @@ const receipt = computed(() =>
         ['Proyectos completos', '1'],
         ['Gantt, riesgos y entregables', 'Incluido'],
         ['Presupuesto y flujo de caja', 'Incluido'],
-        ['Chat de equipo', 'Incluido'],
+        ['Equipo / miembros', '—'],
         ['Asistente de IA', '—'],
       ],
 )

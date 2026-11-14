@@ -25,8 +25,8 @@ const rows: { label: string; free: string | boolean; vip: string | boolean }[] =
   { label: 'Proyectos completos', free: '1', vip: 'Ilimitados' },
   { label: 'Gantt, hitos, entregables y riesgos', free: true, vip: true },
   { label: 'Presupuesto y flujo de caja', free: true, vip: true },
-  { label: 'Chat, calendario y notificaciones', free: true, vip: true },
-  { label: 'Roles y permisos', free: true, vip: true },
+  { label: 'Calendario y notificaciones', free: true, vip: true },
+  { label: 'Equipo e invitaciones', free: false, vip: 'Miembros ilimitados' },
   { label: 'Asistente de IA', free: false, vip: true },
 ]
 </script>
@@ -38,7 +38,7 @@ const rows: { label: string; free: string | boolean; vip: string | boolean }[] =
       <p class="text-[12px] font-medium text-[#42526e]">Para empezar</p>
       <h3 class="ql-display mt-2 text-[1.75rem] font-semibold tracking-tight text-[#101214]">Gratis</h3>
       <p class="mt-1.5 text-[15px] leading-relaxed text-[#42526e]">
-        Un proyecto real para probar QuinList con tu equipo.
+        Un proyecto real para probar QuinList por tu cuenta.
       </p>
 
       <div class="mt-7 border-b border-[#f0f1f2] pb-7">
@@ -99,7 +99,7 @@ const rows: { label: string; free: string | boolean; vip: string | boolean }[] =
 
       <h3 class="ql-display mt-2 text-[1.75rem] font-semibold tracking-tight">VIP</h3>
       <p class="mt-1.5 text-[15px] leading-relaxed text-white/75">
-        Sin límites, con el asistente de IA incluido.
+        Sin límites, con equipo e IA incluidos.
       </p>
 
       <div class="mt-7 border-b border-white/10 pb-7">

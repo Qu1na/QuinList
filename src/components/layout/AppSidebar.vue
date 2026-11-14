@@ -16,10 +16,12 @@ import {
 } from '@lucide/vue'
 import { useQuinListStore } from '@/stores/quinlist'
 import { useUiStore } from '@/stores/ui'
+import { useBillingStore } from '@/stores/billing'
 import AppLogo from '@/components/brand/AppLogo.vue'
 
 const store = useQuinListStore()
 const ui = useUiStore()
+const billing = useBillingStore()
 const router = useRouter()
 const route = useRoute()
 
@@ -125,7 +127,7 @@ function openBoard(boardId: string) {
       <button
         class="flex w-full items-center justify-center rounded-lg border border-dashed border-blue-500/40 bg-blue-500/15 py-3 text-blue-400 transition-colors hover:bg-blue-500/25"
         title="Crear espacio"
-        @click="ui.openCreateWorkspace()"
+        @click="billing.requestCreateWorkspace()"
       >
         <Plus :size="20" />
       </button>

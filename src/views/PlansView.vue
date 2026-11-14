@@ -38,8 +38,7 @@ const sharedFeatures = [
   'Proyectos con lista, Kanban y cronograma Gantt',
   'Hitos, entregables y matriz de riesgos',
   'Presupuesto, ingresos, egresos, flujo de caja y rentabilidad',
-  'Chat de equipo, calendario y notificaciones',
-  'Roles: Propietario, Administrador, Miembro y Observador',
+  'Calendario y notificaciones',
   '9 monedas (COP, MXN, USD…)',
 ]
 
@@ -63,6 +62,7 @@ const freeRows = computed((): PlanRow[] => [
       : undefined,
   },
   ...sharedFeatures.map((label, i) => ({ id: `s${i}`, kind: 'ok' as const, label })),
+  { id: 'team', kind: 'no', label: 'Sin equipo ni invitaciones de miembros' },
   { id: 'ai', kind: 'no', label: 'Sin asistente de IA' },
 ])
 
@@ -70,6 +70,11 @@ const vipRows = computed((): PlanRow[] => [
   { id: 'boards', kind: 'ok', label: 'Tableros Kanban ilimitados' },
   { id: 'projects', kind: 'ok', label: 'Proyectos ilimitados' },
   ...sharedFeatures.map((label, i) => ({ id: `s${i}`, kind: 'ok' as const, label })),
+  {
+    id: 'team',
+    kind: 'ok',
+    label: 'Equipo con miembros ilimitados y roles',
+  },
   { id: 'ai', kind: 'ok', label: 'Asistente de IA (priorizar, resumir, redactar)' },
 ])
 
@@ -107,7 +112,7 @@ onMounted(async () => {
       <h1 class="mt-1 text-2xl font-bold text-[#172b4d]">Elige cómo trabajar en QuinList</h1>
       <p class="mt-2 max-w-2xl text-sm leading-relaxed text-[#626f86]">
         Estás en el plan <span class="font-semibold text-[#172b4d]">{{ billing.planLabel }}</span>.
-        Ambos planes incluyen las mismas funciones de trabajo; VIP quita los límites y suma la IA.
+        VIP quita los límites, permite crear equipo con miembros ilimitados y suma la IA.
       </p>
     </div>
 

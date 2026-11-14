@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, watch, onUnmounted, ref, useAttrs } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { LayoutGrid, Search, Bell, ChevronDown, Plus, UserPlus, X, Users, BarChart3, LogOut, FolderKanban, Cpu } from '@lucide/vue'
+import { LayoutGrid, Search, Bell, ChevronDown, Plus, UserPlus, X, Users, BarChart3, LogOut, FolderKanban } from '@lucide/vue'
 import { useQuinListStore } from '@/stores/quinlist'
 import AppLogo from '@/components/brand/AppLogo.vue'
 import PlanBadge from '@/components/billing/PlanBadge.vue'
@@ -355,6 +355,7 @@ onUnmounted(() => {
             <span>Planes y facturación</span>
             <span class="text-xs font-semibold text-[#6554c0]">{{ billing.planLabel }}</span>
           </RouterLink>
+          <!-- Temporalmente oculto en la app; sigue documentado en Planes.
           <RouterLink
             to="/app/ia"
             class="flex items-center gap-2 px-4 py-2 text-sm text-[#172b4d] hover:bg-[#091e420a]"
@@ -363,6 +364,7 @@ onUnmounted(() => {
             <Cpu :size="14" />
             Asistente de IA
           </RouterLink>
+          -->
           <RouterLink
             to="/app/settings"
             class="block px-4 py-2 text-sm text-[#172b4d] hover:bg-[#091e420a]"

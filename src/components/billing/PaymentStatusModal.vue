@@ -17,7 +17,7 @@ const copy = computed(() => {
     return {
       title: 'Pago aprobado',
       message:
-        'Tu suscripción VIP ya está activa. Tableros y proyectos ilimitados, y el asistente de IA, listos para usar.',
+        'Tu suscripción VIP ya está activa. Tableros, proyectos y equipo ilimitados, listos para usar.',
       confirm: 'Empezar con VIP',
       tone: 'success' as const,
     }
